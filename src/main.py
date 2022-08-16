@@ -1,3 +1,12 @@
+"""
+General purpose Discord bot
+~~~~~~~~~~~~~~~~~~~
+
+A general purpose Discord bot for VTubers, built with Pycord
+
+:copyright: (c) 2022-present Mirage Aegis
+:license: MIT, see LICENSE for more details.
+"""
 from os import listdir, getenv
 import discord
 from discord.ext import commands

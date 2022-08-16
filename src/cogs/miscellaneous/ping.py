@@ -1,3 +1,12 @@
+"""
+Core moderation commands
+~~~~~~~~~~~~~~~~~~~
+
+The basic moderation commands of the bot. This module should only be loaded as a cog
+
+:copyright: (c) 2022-present Mirage Aegis
+:license: MIT, see LICENSE for more details.
+"""
 import discord
 from discord.ext import commands
 
