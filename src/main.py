@@ -24,7 +24,7 @@ def main():
         debug_guilds=[getenv("DEV1"), getenv("DEV2")]
     )
 
-    for directory in listdir("cogs"):
+    for directory in listdir("./cogs"):
         for file in listdir(f"./cogs/{directory}"):
             if file.endswith(".py"):
                 bot.load_extension(f"cogs.{directory}.{file[:-3]}")
@@ -37,5 +37,5 @@ def main():
     bot.run(getenv("TOKEN"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
