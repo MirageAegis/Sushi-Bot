@@ -12,7 +12,7 @@ from discord import option
 from discord.ext import commands
 
 
-class Core(commands.Cog):
+class ModerationCore(commands.Cog):
 
     KICK = 1
     BAN = 2
@@ -152,4 +152,4 @@ class Core(commands.Cog):
 
 
 def setup(bot: discord.Bot):
-    bot.add_cog(Core(bot))
+    bot.add_cog(ModerationCore(bot))
