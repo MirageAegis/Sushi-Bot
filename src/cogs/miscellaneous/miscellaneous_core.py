@@ -36,7 +36,7 @@ class MiscellaneousCore(commands.Cog):
         disptime = f"{int(uptime // 3600)} hour(s), " \
                    f"{int((uptime % 3600) // 60)} minute(s), {int((uptime % 3600) % 60)} second(s)"
 
-        embed = discord.Embed(
+        e = discord.Embed(
             title='Status',
             colour=discord.Colour.blue(),
             description="These are the current status of Sushi Bot"
@@ -57,14 +57,14 @@ class MiscellaneousCore(commands.Cog):
             .add_field(name='Version', value='2.0.0-dev', inline=False)\
             .set_footer(text='Bot is hosted.')
 
-        await ctx.send_response(embed=embed)
+        await ctx.send_response(embed=e)
 
     @commands.slash_command(description="Get a link to the bot's repository")
     async def info(self, ctx: discord.ApplicationContext):
         """
         Provides a link to the bot's repository on GitHub
         """
-        embed = discord.Embed(
+        e = discord.Embed(
             title='Information',
             colour=discord.Colour.blue(),
             description="Follow this [link](https://github.com/MirageAegis/Sushi-Bot \"Link to Sushi Bot's "
@@ -76,14 +76,14 @@ class MiscellaneousCore(commands.Cog):
                          '/OkFinalSushiBotPfpHere.jpg'
             )
 
-        await ctx.send_response(embed=embed)
+        await ctx.send_response(embed=e)
 
     @commands.slash_command(description="View who has contributed to the bot")
     async def credits(self, ctx: discord.ApplicationContext):
         """
         Displays the bot's credits, including programmers, artists, concept idea sources, etc.
         """
-        embed = discord.Embed(
+        e = discord.Embed(
             title='Credits',
             colour=discord.Colour.blue(),
             description="Here are the people who have worked on Sushi Bot!"
@@ -100,7 +100,7 @@ class MiscellaneousCore(commands.Cog):
             )\
             .add_field(name="Lead Artist", value="Chade (<@283653964816187392>)", inline=False)
 
-        await ctx.send_response(embed=embed)
+        await ctx.send_response(embed=e)
 
 
 def setup(bot: commands.Bot):
