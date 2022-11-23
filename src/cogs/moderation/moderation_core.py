@@ -18,9 +18,6 @@ class ModerationCore(commands.Cog):
     BAN = 2
     UNBAN = 3
 
-    def __init__(self, bot: discord.Bot):
-        self.bot = bot
-
     def _embed_gen(
             self, user: discord.User | discord.Member, server: discord.Guild, cmd_type: int, reason: str
     ) -> discord.Embed:
@@ -31,8 +28,8 @@ class ModerationCore(commands.Cog):
         :param server: The server this action is performed in
         :param cmd_type: The type of command. 1 = kick, 2 = ban, 3 = unban
         :param reason: The reason for the action
-        :return:
-        :raises ValueError:
+        :return: An embed formatted to fit the command and target user
+        :raises ValueError: If an invalid command is specified
         """
         title: str
         colour: discord.Colour
@@ -67,6 +64,9 @@ class ModerationCore(commands.Cog):
             .add_field(name="System user", value=f"{user.system}")
 
         return e
+
+    def __init__(self, bot: discord.Bot):
+        self.bot = bot
 
     @commands.slash_command(description="Kick a user")
     @commands.has_permissions(kick_members=True)
