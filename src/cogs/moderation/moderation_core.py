@@ -150,6 +150,54 @@ class ModerationCore(commands.Cog):
 
         await ctx.send_response(embed=e, ephemeral=discrete)
 
+    @commands.slash_command(description="Change the nickname of a member")
+    @commands.has_permissions(manage_nicknames=True)
+    @option(
+        "member",
+        description="The member to change nickname for"
+    )
+    @option(
+        "nickname",
+        description="The new nickname to be given"
+    )
+    @option(
+        "discrete",
+        description="Should the response be shown?"
+    )
+    async def nickname(
+            self, ctx: discord.ApplicationContext,
+            member: discord.Member,
+            nickname: str,
+            discrete: bool = None
+    ):
+        """
+        Command allows members with the "Manage nicknames" permission to edit other members' nicknames
+        so long as the target doesn't have a higher level role compared to the one executing the command
+        :return:
+        """
+        pre_nick = member.display_name
+
+        await member.edit(nick=nickname)
+
+        e = discord.Embed(
+            title=f"{member.name}#{member.discriminator}",
+            colour=discord.Colour.blurple(),
+        )\
+            .set_author(name="Nickname changed", icon_url=ctx.guild.icon.url)\
+            .set_thumbnail(url=member.avatar.url)\
+            .add_field(name="User ID", value=f"{member.id}")\
+            .add_field(name="Created", value=f"<t:{int(member.created_at.timestamp())}>")\
+            .add_field(
+                name="Joined",
+                value=f"<t:{int(member.joined_at.timestamp())}>"
+            )\
+            .add_field(name="Changed from", value=pre_nick)\
+            .add_field(name="Changed to", value=nickname)\
+            .add_field(name="Bot user", value=f"{member.bot}")\
+            .add_field(name="System user", value=f"{member.system}")
+
+        await ctx.send_response(embed=e, ephemeral=discrete)
+
 
 def setup(bot: discord.Bot):
     bot.add_cog(ModerationCore(bot))
