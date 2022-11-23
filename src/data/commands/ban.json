@@ -1,0 +1,14 @@
+{
+  "title": "Ban",
+  "description": "A moderation command for banning users from the server the command is executed in",
+  "fields": [
+    {
+      "name": "Format",
+      "value": "`/ban user:<user>`"
+    },
+    {
+      "name": "user",
+      "value": "Required parameter. The user to ban. Can be specified by either mention or user ID"
+    }
+  ]
+}

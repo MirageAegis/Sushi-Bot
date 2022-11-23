@@ -1,0 +1,10 @@
+{
+  "title": "Ping",
+  "description": "A command that displays the current latency of the bot in milliseconds",
+  "fields": [
+    {
+      "name": "Format",
+      "value": "`/ping`"
+    }
+  ]
+}
