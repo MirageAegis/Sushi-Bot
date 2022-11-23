@@ -1,0 +1,10 @@
+{
+  "title": "Credits",
+  "description": "A command that displays the people who have contributed to Sushi Bot's development",
+  "fields": [
+    {
+      "name": "Format",
+      "value": "`/credits`"
+    }
+  ]
+}

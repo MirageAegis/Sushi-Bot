@@ -1,0 +1,14 @@
+{
+  "title": "Kick",
+  "description": "A moderation command for kicking users from the server the command is executed in",
+  "fields": [
+    {
+      "name": "Format",
+      "value": "`/kick user:<user>`"
+    },
+    {
+      "name": "user",
+      "value": "Required parameter. The user to kick. Can be specified by either mention or user ID"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "title": "Unban",
+  "description": "A moderation command for unbanning users from the server the command is executed in",
+  "fields": [
+    {
+      "name": "Format",
+      "value": "`/unban user:<user>`"
+    },
+    {
+      "name": "user",
+      "value": "Required parameter. The user to unban. Can be specified by either mention or user ID"
+    }
+  ]
+}
