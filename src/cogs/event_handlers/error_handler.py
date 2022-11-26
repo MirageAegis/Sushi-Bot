@@ -1,10 +1,18 @@
+from os import getenv
 import discord
 from discord.ext import commands
+from dotenv import load_dotenv
 
 
 class ErrorHandler(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
+        self.log_channel: discord.TextChannel
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        load_dotenv()
+        self.log_channel = self.bot.get_channel(int(getenv("LOG_CHANNEL")))
 
     @commands.Cog.listener()
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
@@ -15,8 +23,13 @@ class ErrorHandler(commands.Cog):
                 "This action is forbidden. You may lack required permissions to perform it",
                 ephemeral=True
             )
-        else:
-            print(f"{ctx.user} tried to use {ctx.command.name} which resulted in {error}")
+        await self.log_channel.send(
+            "Error Report\n"
+            f"User: {ctx.user}\n"
+            f"Command: {ctx.command.name}\n"
+            f"Payload: {error}\n"
+            "---------------"
+        )
 
 
 def setup(bot: discord.Bot):
