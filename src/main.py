@@ -18,7 +18,7 @@ def main():
 
     intents = discord.Intents().all()
     bot = commands.Bot(
-        "@€$€rT¤",  # Funny prefix to effectively render text bot_commands unusable
+        "sushi ",
         intents=intents,
         help_command=None,
         debug_guilds=[getenv("DEV1"), getenv("DEV2")]
