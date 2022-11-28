@@ -89,8 +89,9 @@ class ModerationCore(commands.Cog):
             discrete: bool = False
     ):
         """
-        Kicks a member of a server.
-        This command can only be used by members with the "kick members" permission.
+        Kicks a member from the server this command is executed in
+
+        Requires the "Kick Members" permission.
         """
         await member.kick(reason=reason)
 
@@ -114,13 +115,18 @@ class ModerationCore(commands.Cog):
     )
     async def ban(
             self, ctx: discord.ApplicationContext,
-            member: discord.Member,
+            user: discord.User,
             reason: str = None,
             discrete: bool = False
     ):
-        await member.ban(reason=reason)
+        """
+        Bans a user from the server this command is executed in
 
-        e = self._embed_gen(member, ctx.guild, self.BAN, reason)
+        Requires the "Ban Members" permission
+        """
+        await ctx.guild.ban(user, reason=reason)
+
+        e = self._embed_gen(user, ctx.guild, self.BAN, reason)
 
         await ctx.send_response(embed=e, ephemeral=discrete)
 
@@ -144,6 +150,11 @@ class ModerationCore(commands.Cog):
             reason: str = None,
             discrete: bool = False
     ):
+        """
+        Unbans a user from the server this command is executed in
+
+        Requires the "Ban Members" permission
+        """
         await ctx.guild.unban(user, reason=reason)
 
         e = self._embed_gen(user, ctx.guild, self.UNBAN, reason)
@@ -173,7 +184,8 @@ class ModerationCore(commands.Cog):
         """
         Command allows members with the "Manage nicknames" permission to edit other members' nicknames
         so long as the target doesn't have a higher level role compared to the one executing the command
-        :return:
+
+        Requires the "Manage Nicknames" permission
         """
         pre_nick = member.display_name
 
@@ -207,6 +219,12 @@ class ModerationCore(commands.Cog):
         max_value=100
     )
     async def clear(self, ctx: discord.ApplicationContext, amount: int = 1):
+        """
+        Deletes a specified amount of messages from a channel (between 1 - 100)
+        or a single message is no amount is specified
+
+        Requires the "Manage Messages" permission
+        """
         await ctx.channel.purge(limit=amount)
         await ctx.send_response(
             f"Deleted {amount} message{'s' if amount > 1 else ''} in this channel",
