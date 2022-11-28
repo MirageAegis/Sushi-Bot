@@ -16,11 +16,17 @@ class ErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException):
+        # Gets the cause of an ApplicationCommandInvokeError, which essentially wraps errors raised from within commands
+        if isinstance(error, discord.errors.ApplicationCommandInvokeError):
+            error = error.__cause__
+
         if isinstance(error, commands.MissingPermissions):
-            await ctx.send_response("You do not have the required permission(s) to use this command.", ephemeral=True)
+            await ctx.send_response("You do not have the required permission(s) to use this command", ephemeral=True)
+        # Caused by a 403 Forbidden response from Discord
         elif isinstance(error, discord.Forbidden):
             await ctx.send_response(
-                "This action is forbidden. You may lack required permissions to perform it",
+                "This action is forbidden\n"
+                "Either you or I may lack required permission(s) to perform it",
                 ephemeral=True
             )
         await self.log_channel.send(
