@@ -48,7 +48,7 @@ class ModerationCore(commands.Cog):
                 raise ValueError("Only 1-3 are allowed")
 
         e = discord.Embed(
-            title=f"{user.name}#{user.discriminator}",
+            title=f"{user}",
             colour=colour,
         )\
             .set_author(name=title, icon_url=server.icon.url)\
@@ -180,7 +180,7 @@ class ModerationCore(commands.Cog):
         await member.edit(nick=nickname)
 
         e = discord.Embed(
-            title=f"{member.name}#{member.discriminator}",
+            title=f"{member}",
             colour=discord.Colour.blurple(),
         )\
             .set_author(name="Nickname changed", icon_url=ctx.guild.icon.url)\
