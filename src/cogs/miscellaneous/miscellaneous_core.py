@@ -62,18 +62,36 @@ class MiscellaneousCore(commands.Cog):
     @commands.slash_command(description="Get a link to the bot's repository")
     async def info(self, ctx: discord.ApplicationContext):
         """
-        Provides a link to the bot's repository on GitHub
+        Provides useful links that lead to the GitHub repository and select wiki pages
         """
         e = discord.Embed(
             title='Information',
             colour=discord.Colour.blue(),
-            description="Follow this [link](https://github.com/MirageAegis/Sushi-Bot \"Link to Sushi Bot's "
-                        "repository\") to the bot's repository for more information"
+            description="Here are three useful links with information about the bot"
         )\
             .set_author(
                 name='Sushi Bot',
                 icon_url='https://cdn.discordapp.com/attachments/775125652504313857/795419478744891422'
                          '/OkFinalSushiBotPfpHere.jpg'
+            )\
+            .add_field(
+                name="Repository",
+                value="Follow this [link](https://github.com/MirageAegis/Sushi-Bot \"Link to Sushi Bot's "
+                      "repository\") to the bot's repository to see its source code and wiki pages"
+            )\
+            .add_field(
+                name="Terms of Service",
+                value="The bot's Terms of Service can be found "
+                      "[here](https://github.com/MirageAegis/Sushi-Bot/wiki/Terms-of-Service \"Link to Sushi Bot's"
+                      "Terms of Service\")\n"
+                      "By using Sushi Bot, you agree to the ToS"
+            )\
+            .add_field(
+                name="Privacy Policy",
+                value="The bot's Privacy Policy can be found "
+                      "[here](https://github.com/MirageAegis/Sushi-Bot/wiki/Privacy-Policy \"Link to Sushi Bot's"
+                      "Privacy Policy\")\n"
+                      "Find out what kind of data the bot collects and how it's being used"
             )
 
         await ctx.send_response(embed=e)
