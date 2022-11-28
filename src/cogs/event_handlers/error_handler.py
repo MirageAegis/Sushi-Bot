@@ -29,6 +29,12 @@ class ErrorHandler(commands.Cog):
                 "Either you or I may lack required permission(s) to perform it",
                 ephemeral=True
             )
+        elif isinstance(error, discord.NotFound):
+            await ctx.send_response(
+                "The action you're trying to perform could not be performed because the resource you're "
+                "trying to access doesn't exist",
+                ephemeral=True
+            )
         await self.log_channel.send(
             "Error Report\n"
             f"User: {ctx.user}\n"
