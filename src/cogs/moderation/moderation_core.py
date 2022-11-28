@@ -198,6 +198,21 @@ class ModerationCore(commands.Cog):
 
         await ctx.send_response(embed=e, ephemeral=discrete)
 
+    @commands.slash_command(description="Delete messages from the current channel")
+    @commands.has_permissions(manage_messages=True)
+    @option(
+        "amount",
+        description="The amount of messages to delete",
+        min_value=1,
+        max_value=100
+    )
+    async def clear(self, ctx: discord.ApplicationContext, amount: int = 1):
+        await ctx.channel.purge(limit=amount)
+        await ctx.send_response(
+            f"Deleted {amount} message{'s' if amount > 1 else ''} in this channel",
+            ephemeral=True, delete_after=5
+        )
+
 
 def setup(bot: discord.Bot):
     bot.add_cog(ModerationCore(bot))
