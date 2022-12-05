@@ -76,8 +76,8 @@ class Help(commands.Cog):
                 description="These are the commands offered by Sushi Bot. Some commands have certain notations that "
                             "mean different things.\n"
                             "Parameters without any notation are required.\n"
-                            "[parameters] denoted like this are optional."
-                            "<values> denoted like this indicate that you should replace the angled brackets with a "
+                            "`[parameters]` denoted like this are optional.\n"
+                            "`<values>` denoted like this indicate that you should replace the angled brackets with a "
                             "value.\n"
                             "Use `/help topic:<topic>` to get help for a specific command!"
             )\
