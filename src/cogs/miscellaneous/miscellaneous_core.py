@@ -19,6 +19,7 @@ class MiscellaneousCore(commands.Cog):
         self.start = datetime.datetime.utcnow()
 
     @commands.slash_command(description="Get the bot's response time")
+    @commands.guild_only()
     async def ping(self, ctx: discord.ApplicationContext):
         """
         Displays the bot's latency in milliseconds
@@ -26,6 +27,7 @@ class MiscellaneousCore(commands.Cog):
         await ctx.send_response(f":ping_pong: {round(self.bot.latency * 1000)} ms")
 
     @commands.slash_command(description="View the current statistics of the bot")
+    @commands.guild_only()
     async def status(self, ctx: discord.ApplicationContext):
         """
         Displays the current status of the bot in a rich embed.
@@ -60,6 +62,7 @@ class MiscellaneousCore(commands.Cog):
         await ctx.send_response(embed=e)
 
     @commands.slash_command(description="Get a link to the bot's repository")
+    @commands.guild_only()
     async def info(self, ctx: discord.ApplicationContext):
         """
         Provides useful links that lead to the GitHub repository and select wiki pages
@@ -97,6 +100,7 @@ class MiscellaneousCore(commands.Cog):
         await ctx.send_response(embed=e)
 
     @commands.slash_command(description="View who has contributed to the bot")
+    @commands.guild_only()
     async def credits(self, ctx: discord.ApplicationContext):
         """
         Displays the bot's credits, including programmers, artists, concept idea sources, etc.

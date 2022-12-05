@@ -46,6 +46,7 @@ class Help(commands.Cog):
                 self.command_data[file[:-5]] = json.load(f)
 
     @commands.slash_command()
+    @commands.guild_only()
     @option(
         "topic",
         description="The topic to get more information about",
