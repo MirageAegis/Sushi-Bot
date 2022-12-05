@@ -21,7 +21,7 @@ def main():
         "sushi ",
         intents=intents,
         help_command=None,
-        debug_guilds=[getenv("DEV1"), getenv("DEV2")]
+        # debug_guilds=[getenv("DEV1"), getenv("DEV2")]  # Uncomment to test commands
     )
 
     for directory in listdir("./cogs"):

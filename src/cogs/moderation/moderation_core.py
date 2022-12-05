@@ -69,6 +69,7 @@ class ModerationCore(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(description="Kick a user")
+    @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     @option(
         "user",
@@ -100,6 +101,7 @@ class ModerationCore(commands.Cog):
         await ctx.send_response(embed=e, ephemeral=discrete)
 
     @commands.slash_command(description="Ban a user")
+    @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     @option(
         "user",
@@ -131,6 +133,7 @@ class ModerationCore(commands.Cog):
         await ctx.send_response(embed=e, ephemeral=discrete)
 
     @commands.slash_command(description="Unban a user")
+    @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     @option(
         "user",
