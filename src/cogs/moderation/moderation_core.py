@@ -165,6 +165,7 @@ class ModerationCore(commands.Cog):
         await ctx.send_response(embed=e, ephemeral=discrete)
 
     @commands.slash_command(description="Change the nickname of a member")
+    @commands.guild_only()
     @commands.has_permissions(manage_nicknames=True)
     @option(
         "member",
@@ -214,6 +215,7 @@ class ModerationCore(commands.Cog):
         await ctx.send_response(embed=e, ephemeral=discrete)
 
     @commands.slash_command(description="Delete messages from the current channel")
+    @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @option(
         "amount",
