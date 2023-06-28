@@ -1,0 +1,29 @@
+{
+    "name": "sushi-bot",
+    "version": "1.0.0",
+    "description": "Sushi Bot, a Discord bot for vTubers, built with TypeScript and discord.js",
+    "main": "dist/index.js",
+    "scripts": {
+      "build": "tsc --build --verbose",
+      "dev": "nodemon ./dist/index.js",
+      "start": "node ./dist/index.js",
+      "update": "node ./dist/deploy-commands.js",
+      "reload": "node ./dist/deploy-commands.js && node ./dist/index.js",
+      "rm-win": "rmdir /s /q dist",
+      "rm-unix": "rm -rf dist"
+    },
+    "author": "Mirage Aegis",
+    "license": "MIT",
+    "dependencies": {
+      "discord.js": "^14.11.0",
+      "dotenv": "^16.0.3"
+    },
+    "devDependencies": {
+      "@typescript-eslint/eslint-plugin": "^5.60.1",
+      "@typescript-eslint/parser": "^5.60.1",
+      "eslint": "^8.43.0",
+      "nodemon": "^2.0.22",
+      "typescript": "^5.1.3"
+    }
+  }
+  
