@@ -11,7 +11,6 @@
         "brace-style": "off",
         "no-undef": "off",
         "semi": "off",
-        "class-methods-use-this": "error",
         "curly": "error",
         "eqeqeq": "error",
         "func-names": ["error", "always"],

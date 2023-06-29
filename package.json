@@ -1,7 +1,7 @@
 {
     "name": "sushi-bot",
     "version": "1.0.0",
-    "description": "Sushi Bot, a Discord bot for vTubers, built with TypeScript and discord.js",
+    "description": "Sushi Bot, a Discord bot for VTubers, built with TypeScript and discord.js",
     "main": "dist/index.js",
     "scripts": {
       "build": "tsc --build --verbose",
