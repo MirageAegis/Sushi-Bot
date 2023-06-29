@@ -26,6 +26,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { Command } from "../../command-template.js";
+import { defaultErrorHandler } from "../../error-handler.js";
 
 // This command module differs from all other commands because it needs to load them
 // to access the help embed of each command
@@ -137,6 +138,9 @@ export default {
             return;
         }
     },
+
+    // Error handler
+    error: defaultErrorHandler,
     
     // Help command embed
     help: help

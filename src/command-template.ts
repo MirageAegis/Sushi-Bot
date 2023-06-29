@@ -23,25 +23,29 @@
  */
 
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import { ErrorHandler } from "./error-handler.js";
 
-export interface Command {
+export type Command = {
     /**
      * Metadata for the slash command.
      * Must include name, description, and DM permissions.
      * May also include command options
      */
-    data: SlashCommandBuilder;
+    readonly data: SlashCommandBuilder;
 
     /**
-     * The callback function to execute whenever a slash command is used.
+     * The callback function to execute whenever a slash command is used
      * 
      * @param ctx the command context
      */
     execute(ctx: ChatInputCommandInteraction): Promise<void>;
 
+
+    readonly error: ErrorHandler;
+
     /**
      * The embed to display when help regarding the command is requested.
      * Must include title, description, and appropriate fields (such as format)
      */
-    help: EmbedBuilder;
-}
+    readonly help: EmbedBuilder;
+};

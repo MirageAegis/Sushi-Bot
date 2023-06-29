@@ -24,6 +24,7 @@
 
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { Command } from "../../command-template.js";
+import { defaultErrorHandler } from "../../error-handler.js";
 
 export default {
     // Command headers
@@ -37,6 +38,9 @@ export default {
         // Retrieves the avarage ping from the websocket
         await ctx.reply(`:ping_pong: ${ctx.client.ws.ping} ms`);
     },
+
+    // Error handler
+    error: defaultErrorHandler,
     
     // Help command embed
     help: new EmbedBuilder()

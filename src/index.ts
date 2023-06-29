@@ -95,7 +95,7 @@ for (const folder of cmdFolders) {
 }
 
 // Command handler
-client.on(Events.InteractionCreate, async (ctx: Interaction) => {
+client.on(Events.InteractionCreate, async (ctx: Interaction): Promise<void> => {
     // Do nothing if it's not a chat command
     if (!ctx.isChatInputCommand()) {
         return;
@@ -114,18 +114,7 @@ client.on(Events.InteractionCreate, async (ctx: Interaction) => {
     try {
         await cmd.execute(ctx);
     } catch (e) { // Command error handling
-        console.error(e);
-        if (ctx.replied || ctx.deferred) {
-            await ctx.followUp({
-                content: "Oops! Something seems to have gone wrong...",
-                ephemeral: true
-            });
-        } else {
-            await ctx.reply({
-                content: "Oops! Something seems to have gone wrong...",
-                ephemeral: true
-            });
-        }
+        await cmd.error(ctx, e);
     }
 });
 
