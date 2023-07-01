@@ -52,13 +52,6 @@ const formatUptime = (uptime: number): string => {
     return `${hours} hour(s), ${minutes} minute(s), ${seconds} second(s)`;
 };
 
-// Static embed data
-const embed: EmbedBuilder = new EmbedBuilder()
-    .setTitle("Status")
-    .setColor(BLUE)
-    .setDescription("This is the current status of Sushi Bot")
-    .setFooter({ text: "Bot runs locally" });
-
 const name: string = "status";
 
 export default {
@@ -70,11 +63,16 @@ export default {
 
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
-        // Dynamically fetch the bot's data
-        embed.setAuthor({
-            name: "Sushi Bot",
-            iconURL: ctx.client.user.avatarURL()
-        })
+        // Generate embed with bot stats
+        const embed: EmbedBuilder = new EmbedBuilder()
+            .setTitle("Status")
+            .setColor(BLUE)
+            .setDescription("This is the current status of Sushi Bot")
+            .setFooter({ text: "Bot runs locally" });
+            embed.setAuthor({
+                name: "Sushi Bot",
+                iconURL: ctx.client.user.avatarURL()
+            })
             .setFields(
                 {
                     name: "Bot Created",
