@@ -93,12 +93,14 @@ for (const folder of cmdFolders) {
     defaultEmbed.addFields({ name: name, value: categoryCommands });
 }
 
+const name: string = "help";
+
 // Help command embed
 const help: EmbedBuilder = new EmbedBuilder()
     .setTitle("Help")
     .setDescription("The help command which displays useful command information!")
     .addFields(
-        { name: "Format", value: "`/help [topic]`" },
+        { name: "Format", value: `\`/${name} [topic]\`` },
         { name: "[topic]", value: "Optional parameter. The command that you want to know more about" }
     )
     .setColor(EMBED_COLOUR);
@@ -118,7 +120,7 @@ const choices = Array.from(commands.keys()).map((cmd: string): { name: string, v
 export default {
     // Command headers
     data: new SlashCommandBuilder()
-        .setName("help")
+        .setName(name)
         .setDescription("Wanna know more about me?")
         .setDMPermission(false)
         .addStringOption(o =>

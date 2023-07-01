@@ -30,10 +30,12 @@ import { defaultErrorHandler } from "../../error-handler.js";
  * Displays the bot's latency in milliseconds
  */
 
+const name: string = "ping";
+
 export default {
     // Command headers
     data: new SlashCommandBuilder()
-        .setName("ping")
+        .setName(name)
         .setDescription("Get the bot's response time")
         .setDMPermission(false),
     
@@ -51,6 +53,6 @@ export default {
         .setTitle("Ping")
         .setDescription("A command that displays the current latency of the bot in milliseconds")
         .addFields(
-            { name: "Format", value: "`/ping`" }
+            { name: "Format", value: `\`/${name}\`` }
         )
 } as Command;
