@@ -27,6 +27,7 @@ import path from "node:path";
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { Command } from "../../command-template.js";
 import { defaultErrorHandler } from "../../error-handler.js";
+import { MAGENTA } from "../../util/colours.js";
 
 /*
  * The help command of the bot, which displays information
@@ -38,13 +39,11 @@ import { defaultErrorHandler } from "../../error-handler.js";
  * to access the help embed of each command
  */
 
-const EMBED_COLOUR: number = 0xE91E63;
-
 // The default help window to show when no topic is specified
 const defaultEmbed: EmbedBuilder = new EmbedBuilder()
     .setTitle("General Help")
     .setDescription("Here are my commands! Use `/help <topic>` to get help for a specific command")
-    .setColor(EMBED_COLOUR);
+    .setColor(MAGENTA);
 
 
 // ----- LOAD HELP COMMAND EMBEDS -----
@@ -79,7 +78,7 @@ for (const folder of cmdFolders) {
         if ("data" in cmd && "execute" in cmd && "help" in cmd) {
             const name: string = cmd.data.name;
             // The colour is set to magenta here
-            commands.set(name, cmd.help.setColor(EMBED_COLOUR));
+            commands.set(name, cmd.help.setColor(MAGENTA));
             categoryCommands += `\`/${name}\`, `;
         }
     }
@@ -103,7 +102,7 @@ const help: EmbedBuilder = new EmbedBuilder()
         { name: "Format", value: `\`/${name} [topic]\`` },
         { name: "[topic]", value: "Optional parameter. The command that you want to know more about" }
     )
-    .setColor(EMBED_COLOUR);
+    .setColor(MAGENTA);
 
 // Add the help field of the help command
 commands.set("help", help);
