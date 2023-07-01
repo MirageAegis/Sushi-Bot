@@ -25,6 +25,7 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { Command } from "../../command-template.js";
 import { defaultErrorHandler } from "../../error-handler.js";
+import { BLUE } from "../../util/colours.js";
 
 /*
  * Provides useful links that lead to the GitHub repository and select wiki pages
@@ -43,8 +44,7 @@ export default {
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         const embed = new EmbedBuilder()
             .setTitle("Information")
-            // eslint-disable-next-line no-magic-numbers
-            .setColor(0x3498DB) // Blue
+            .setColor(BLUE)
             .setDescription("Here are some useful links!")
             .setAuthor({
                 name: "Sushi Bot",
@@ -71,8 +71,8 @@ export default {
                            "Find out what kind of data the bot collects and how it's being used"
                 }
             );
-        
-            await ctx.reply({ embeds: [embed] });
+
+        await ctx.reply({ embeds: [embed] });
     },
 
     // Error handler
