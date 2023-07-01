@@ -68,8 +68,7 @@ export default {
             .setTitle("Status")
             .setColor(BLUE)
             .setDescription("This is the current status of Sushi Bot")
-            .setFooter({ text: "Bot runs locally" });
-            embed.setAuthor({
+            .setAuthor({
                 name: "Sushi Bot",
                 iconURL: ctx.client.user.avatarURL()
             })
@@ -99,7 +98,8 @@ export default {
                     name: "Version",
                     value: process.env.npm_package_version
                 }
-            );
+            )
+            .setFooter({ text: "Bot runs locally" });
 
         await ctx.reply({ embeds: [embed] });
     },
@@ -115,6 +115,6 @@ export default {
             "It contains the bot's date of creation, server count, uptime, developers, and version"
         )
         .addFields(
-            { name: "Format", value: `\`/name\`` }
+            { name: "Format", value: `\`/${name}\`` }
         )
 } as Command;
