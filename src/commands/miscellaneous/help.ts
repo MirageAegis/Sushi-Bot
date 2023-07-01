@@ -28,8 +28,15 @@ import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "
 import { Command } from "../../command-template.js";
 import { defaultErrorHandler } from "../../error-handler.js";
 
-// This command module differs from all other commands because it needs to load them
-// to access the help embed of each command
+/*
+ * The help command of the bot, which displays information
+ * about the commands that the bot has
+ */
+
+/*
+ * This command module differs from all other commands because it needs to load them
+ * to access the help embed of each command
+ */
 
 const EMBED_COLOUR: number = 0xE91E63;
 

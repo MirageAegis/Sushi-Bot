@@ -26,6 +26,10 @@ import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "
 import { Command } from "../../command-template.js";
 import { defaultErrorHandler } from "../../error-handler.js";
 
+/*
+ * Displays the bot's latency in milliseconds
+ */
+
 export default {
     // Command headers
     data: new SlashCommandBuilder()
