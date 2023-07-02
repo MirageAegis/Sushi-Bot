@@ -1,7 +1,8 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021-present Mirage Aegis
+ * Copyright (c) 2022-present Mirage Aegis
+ * Copyright (c) 2023-present Zahatikoff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +47,7 @@ export default {
 		const embed: EmbedBuilder = new EmbedBuilder()
 			.setTitle("Credits")
 			.setColor(BLUE)
-			.setDescription("Bot's credits")
+			.setDescription("Here are the people who have worked on Sushi Bot!")
 			.setAuthor({
 				name: "Sushi Bot",
 				iconURL: ctx.client.user.avatarURL()
@@ -56,13 +57,18 @@ export default {
 					name: "Lead Developer and Programmer",
 					value: "Mirage Aegis (<@123456133368119296>)",
 					inline: false
+				},
+				{
+					name: "Lead Artist",
+					value: "Chade (<@283653964816187392>)",
+					inline: false
+				},
+				{
+					name: "Developers",
+					value: "Zahatikoff (<@458627903211569162>)"
 				}
-			)
-			.addFields({
-				name: "Lead Artist",
-				value: "Chade (<@283653964816187392>)",
-				inline: false
-			});
+			);
+
 		await ctx.reply({ embeds: [embed] });
 	},
 
@@ -72,9 +78,11 @@ export default {
 	// Help command embed
 	help: new EmbedBuilder()
 		.setTitle("Credits")
-		.setDescription("A command that displays the current contributors of the project" +
-			"It contains the list of names and roles of the contributors")
+		.setDescription(
+			"A command that displays the current contributors of the project" +
+			"It contains the list of names and roles of the contributors"
+		)
 		.addFields(
-			{ name: "Format", value: `\`/name\`` }
+			{ name: "Format", value: `\`/${name}\`` }
 		)
 } as Command;
