@@ -90,7 +90,8 @@ export default {
                 },
                 {
                     name: "Developers",
-                    value: "<@123456133368119296>\n\n" +
+                    value: "<@123456133368119296>\n" + // Mira
+                           "<@458627903211569162>\n\n" + // Zaha
                            "Feel free to leave suggestions and report bugs to us!",
                     inline: false
                 },
