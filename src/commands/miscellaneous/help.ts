@@ -72,7 +72,7 @@ for (const folder of cmdFolders) {
         
         // Get the path of the current directory (./src) > "commands" > category > command
         const cmdPath: string = path.join(cmdFolder, file);
-        const cmd: Command = require(cmdPath).default;
+        const cmd: Command = require(cmdPath).command;
         
         // If the imported file is a valid command, add it
         if ("data" in cmd && "execute" in cmd && "help" in cmd) {
@@ -116,9 +116,9 @@ const choices = Array.from(commands.keys()).map((cmd: string): { name: string, v
 // ----- END LOAD HELP COMMAND EMBEDS -----
 
 
-export default {
+export const command: Command = {
     // Command headers
-    data: new SlashCommandBuilder()
+    data: <SlashCommandBuilder> new SlashCommandBuilder()
         .setName(name)
         .setDescription("Wanna know more about me?")
         .setDMPermission(false)
@@ -152,4 +152,4 @@ export default {
     
     // Help command embed
     help: help
-} as Command;
+};

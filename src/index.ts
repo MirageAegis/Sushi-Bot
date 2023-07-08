@@ -82,7 +82,7 @@ for (const folder of cmdFolders) {
     for (const file of cmdFiles) {
         // Get the path of the current directory (./src) > "commands" > category > command
         const cmdPath: string = join(cmdFolder, file);
-        const cmd: Command = require(cmdPath).default;
+        const cmd: Command = require(cmdPath).command;
         
         
         // If the imported file is a valid command, add it

@@ -54,7 +54,7 @@ const formatUptime = (uptime: number): string => {
 
 const name: string = "status";
 
-export default {
+export const command: Command = {
     // Command headers
     data: new SlashCommandBuilder()
         .setName(name)
@@ -118,4 +118,4 @@ export default {
         .addFields(
             { name: "Format", value: `\`/${name}\`` }
         )
-} as Command;
+};

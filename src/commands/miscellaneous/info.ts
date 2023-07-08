@@ -33,7 +33,7 @@ import { BLUE } from "../../util/colours.js";
 
 const name: string = "info";
 
-export default {
+export const command: Command = {
     // Command headers
     data: new SlashCommandBuilder()
         .setName("info")
@@ -85,4 +85,4 @@ export default {
         .addFields(
             { name: "Format", value: `\`/${name}\`` }
         )
-} as Command;
+};

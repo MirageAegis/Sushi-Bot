@@ -32,7 +32,7 @@ import { defaultErrorHandler } from "../../error-handler.js";
 
 const name: string = "ping";
 
-export default {
+export const command: Command = {
     // Command headers
     data: new SlashCommandBuilder()
         .setName(name)
@@ -55,4 +55,4 @@ export default {
         .addFields(
             { name: "Format", value: `\`/${name}\`` }
         )
-} as Command;
+};
