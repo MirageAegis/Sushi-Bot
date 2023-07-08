@@ -22,36 +22,17 @@
  * SOFTWARE.
  */
 
-import { ChatInputCommandInteraction, InteractionReplyOptions } from "discord.js";
-import { NoMemberFoundError } from "./util/errors";
+/*
+ * This module contains errors/exceptions that command executions may throw
+ */
 
-export type ErrorHandler = { (ctx: ChatInputCommandInteraction, err: Error): Promise<void> };
-
-export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInteraction, err: Error): Promise<void> => {
-    // TODO: Implement default error handler
-    console.log(err);
-
-    let reply: InteractionReplyOptions;
-    // eslint-disable-next-line prefer-const
-
-    switch (true) {
-        case err instanceof NoMemberFoundError:
-            reply = {
-                content: "Could not find the member. The user might not be in the server"
-            };
-            break;
-        default:       
-            reply = {
-                content: "Oops! Something seems to have gone wrong..."
-            };
-            break;
+/**
+ * An error thrown when trying to find a server member that doesn't exist.
+ * Usually occurs when entering a valid user ID of a user who isn't in the
+ * server a command is executed in
+ */
+export class NoMemberFoundError extends Error {
+    public constructor() {
+        super("No such server member found");
     }
-
-    reply.ephemeral = true;
-    
-    if (ctx.replied || ctx.deferred) {
-        await ctx.followUp(reply);
-    } else {
-        await ctx.reply(reply);
-    }
-};
+}
