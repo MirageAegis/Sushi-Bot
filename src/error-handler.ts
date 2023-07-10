@@ -38,43 +38,31 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
     // TODO: Implement default error handler
     console.log(err);
 
-    let reply: InteractionReplyOptions;
+    const reply: InteractionReplyOptions = {};
     // eslint-disable-next-line prefer-const
 
     switch (true) {
         case err instanceof NoMemberFoundError:
-            reply = {
-                content: "Could not find the member. The user might not be in the server"
-            };
+            reply.content = "Could not find the member. The user might not be in the server";
             break;
         case err instanceof UserIsMemberError:
-            reply = {
-                content: "The user is already a member"
-            };
+            reply.content = "The user is already a member";
             break;
         case err instanceof DiscordAPIError:
             switch ((<DiscordAPIError> err).code) {
                 case MISSING_PERMISSIONS:
-                    reply = {
-                        content: "I seem to be missing permissions for this action. Ask the server owner/administrators for help"
-                    };
+                    reply.content = "I seem to be missing permissions for this action. Ask the server owner/administrators for help";
                     break;
                 case UNKNOWN_BAN:
-                    reply = {
-                        content: "This user isn't banned from the server"
-                    };
+                    reply.content = "This user isn't banned from the server";
                     break;
                 default:
-                    reply = {
-                        content: "Oops! Something seems to have gone wrong..."
-                    };
+                    reply.content = "Oops! Something seems to have gone wrong...";
                     break;
             }
             break;
         default:       
-            reply = {
-                content: "Oops! Something seems to have gone wrong..."
-            };
+            reply.content = "Oops! Something seems to have gone wrong...";
             break;
     }
 
