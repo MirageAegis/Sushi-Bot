@@ -22,8 +22,15 @@
  * SOFTWARE.
  */
 
-import { ChatInputCommandInteraction, InteractionReplyOptions } from "discord.js";
-import { NoMemberFoundError } from "./util/errors";
+import { ChatInputCommandInteraction, DiscordAPIError, InteractionReplyOptions } from "discord.js";
+import { NoMemberFoundError, UserIsMemberError } from "./util/errors";
+
+// ----- ERROR CODES -----
+
+export const MISSING_PERMISSIONS: number = 50013;
+export const UNKNOWN_BAN: number = 10026;
+
+// ----- !ERROR CODES -----
 
 export type ErrorHandler = { (ctx: ChatInputCommandInteraction, err: Error): Promise<void> };
 
@@ -39,6 +46,30 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
             reply = {
                 content: "Could not find the member. The user might not be in the server"
             };
+            break;
+        case err instanceof UserIsMemberError:
+            reply = {
+                content: "The user is already a member"
+            };
+            break;
+        case err instanceof DiscordAPIError:
+            switch ((<DiscordAPIError> err).code) {
+                case MISSING_PERMISSIONS:
+                    reply = {
+                        content: "I seem to be missing permissions for this action. Ask the server owner/administrators for help"
+                    };
+                    break;
+                case UNKNOWN_BAN:
+                    reply = {
+                        content: "This user isn't banned from the server"
+                    };
+                    break;
+                default:
+                    reply = {
+                        content: "Oops! Something seems to have gone wrong..."
+                    };
+                    break;
+            }
             break;
         default:       
             reply = {

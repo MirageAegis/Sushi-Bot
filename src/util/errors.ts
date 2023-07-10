@@ -36,3 +36,9 @@ export class NoMemberFoundError extends Error {
         super("No such server member found");
     }
 }
+
+export class UserIsMemberError extends Error {
+    public constructor() {
+        super("The requested user is a member of the server this command was executed in");
+    }
+}
