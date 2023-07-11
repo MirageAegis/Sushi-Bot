@@ -23,7 +23,7 @@
  */
 
 import { ChatInputCommandInteraction, DiscordAPIError, InteractionReplyOptions } from "discord.js";
-import { NoMemberFoundError, UserIsMemberError } from "./util/errors";
+import { NoMemberFoundError, UserIsMemberError } from "./errors";
 
 // ----- ERROR CODES -----
 

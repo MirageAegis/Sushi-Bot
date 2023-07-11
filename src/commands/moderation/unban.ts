@@ -23,8 +23,8 @@
  */
 
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, PermissionsBitField, User } from "discord.js";
-import { Command } from "../../command-template.js";
-import { defaultErrorHandler } from "../../error-handler.js";
+import { Command } from "../../util/command-template.js";
+import { defaultErrorHandler } from "../../util/error-handler.js";
 import { UserIsMemberError } from "../../util/errors.js";
 import { Action, genEmbed } from "../../util/mod-embed-factory.js";
 

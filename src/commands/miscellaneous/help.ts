@@ -25,8 +25,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
-import { Command } from "../../command-template.js";
-import { defaultErrorHandler } from "../../error-handler.js";
+import { Command } from "../../util/command-template.js";
+import { defaultErrorHandler } from "../../util/error-handler.js";
 import { MAGENTA } from "../../util/colours.js";
 
 /*

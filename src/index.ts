@@ -25,7 +25,7 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { Client, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
-import { Command } from "./command-template.js";
+import { Command } from "./util/command-template.js";
 
 // Loads the environment variables
 require("dotenv").config();

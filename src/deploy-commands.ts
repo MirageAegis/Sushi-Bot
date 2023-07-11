@@ -25,7 +25,7 @@
 import { REST, Routes, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord.js";
 import fs from "node:fs";
 import path from "node:path";
-import { Command } from "./command-template.js";
+import { Command } from "./util/command-template.js";
 
 // Loads the environment variables
 require("dotenv").config();
