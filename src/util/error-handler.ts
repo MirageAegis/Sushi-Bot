@@ -39,7 +39,6 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
     console.log(err);
 
     const reply: InteractionReplyOptions = {};
-    // eslint-disable-next-line prefer-const
 
     switch (true) {
         case err instanceof NoMemberFoundError:
