@@ -1,18 +1,17 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: Feature plan
+about: The developers' plans for the bot. Removed if not opened by the developers.
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-# Feature Request
-A clear and concise description of what you want to add to the project
+# Feature
+The reason the feature should be added and what it should do.
 
 ## Acceptance Criteria
-A clear and concise description of what you want to happen.
-This section will be discussed between you and the developers.
+The requirements that must be met for this feature to be complete.
 - [ ] Acceptance criterion 1
 - [ ] Acceptance criterion 2
 - [ ] Acceptance criterion 3

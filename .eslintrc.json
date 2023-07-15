@@ -1,0 +1,26 @@
+{
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "root": true,
+    "rules": {
+        "camelcase": ["warn", { "properties": "always" }],
+        "brace-style": "off",
+        "no-undef": "off",
+        "semi": "off",
+        "curly": "error",
+        "eqeqeq": "error",
+        "func-names": ["error", "always"],
+        "func-style": ["error", "expression"],
+        "no-magic-numbers": ["warn", { "ignoreArrayIndexes": true }],
+        "@typescript-eslint/brace-style": ["warn", "1tbs",  { "allowSingleLine": true }],
+        "@typescript-eslint/semi": "error",
+        "@typescript-eslint/explicit-function-return-type": "error",
+        "@typescript-eslint/explicit-member-accessibility": "error",
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-inferrable-types": "off"
+    }
+}
