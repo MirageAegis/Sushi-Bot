@@ -24,7 +24,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Collection } from "discord.js";
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { MAGENTA } from "../../util/colours.js";
@@ -32,23 +32,21 @@ import { MAGENTA } from "../../util/colours.js";
 /*
  * The help command of the bot, which displays information
  * about the commands that the bot has
- */
-
-/*
+ *
  * This command module differs from all other commands because it needs to load them
  * to access the help embed of each command
  */
 
-// The default help window to show when no topic is specified
+// The default help window to show when no command is specified
 const defaultEmbed: EmbedBuilder = new EmbedBuilder()
     .setTitle("General Help")
-    .setDescription("Here are my commands! Use `/help <topic>` to get help for a specific command")
+    .setDescription("Here are my commands! Use `/help <command>` to get help for a specific command")
     .setColor(MAGENTA);
 
 
 // ----- LOAD HELP COMMAND EMBEDS -----
 
-const commands: Map<string, EmbedBuilder> = new Map();
+const commands: Collection<string, EmbedBuilder> = new Collection();
 
 // Get the path of the commands directory (./src) > "commands"
 const cmdFoldersPath: string = path.join(__dirname, "..");
@@ -56,10 +54,16 @@ const cmdFolders: string[] = fs.readdirSync(cmdFoldersPath);
 
 // Look through each command category folder
 for (const folder of cmdFolders) {
+    // Skip the admin commands as they are unique
+    if (folder === "admin") {
+        continue;
+    }
+
     // Get the path of the current directory (./src) > "commands" > category
     const cmdFolder: string = path.join(cmdFoldersPath, folder);
     const cmdFiles: string[] = fs.readdirSync(cmdFolder).filter(f => f.endsWith(".js"));
 
+    // The string used to accumulate all commands in the current category
     let categoryCommands: string = "";
 
     // Look through each JS file in each command category folder
@@ -75,7 +79,7 @@ for (const folder of cmdFolders) {
         const cmd: Command = require(cmdPath).command;
         
         // If the imported file is a valid command, add it
-        if ("data" in cmd && "execute" in cmd && "help" in cmd) {
+        if ("data" in cmd && "execute" in cmd && "error" in cmd && "help" in cmd) {
             const name: string = cmd.data.name;
             // The colour is set to magenta here
             commands.set(name, cmd.help.setColor(MAGENTA));
@@ -99,8 +103,8 @@ const help: EmbedBuilder = new EmbedBuilder()
     .setTitle("Help")
     .setDescription("The help command which displays useful command information!")
     .addFields(
-        { name: "Format", value: `\`/${name} [topic]\`` },
-        { name: "[topic]", value: "Optional parameter. The command that you want to know more about" }
+        { name: "Format", value: `\`/${name} [command]\`` },
+        { name: "[command]", value: "Optional parameter. The command that you want to know more about" }
     )
     .setColor(MAGENTA);
 
@@ -123,20 +127,20 @@ export const command: Command = {
         .setDescription("Wanna know more about me?")
         .setDMPermission(false)
         .addStringOption(o =>
-            o.setName("topic")
-                .setDescription("The topic to get more information about")
+            o.setName("command")
+                .setDescription("The command to get more information about")
                 .addChoices(...choices)
         ),
     
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
-        // Get the topic if it exists
-        const topic = ctx.options.getString("topic") ?? null;
+        // Get the command if it exists
+        const command = ctx.options.getString("command") ?? null;
         
-        // If there is a topic, send its embed
-        if (topic) {
+        // If there is a command, send its embed
+        if (command) {
             // Set the embed author field to "Help" and add the server's icon
-            const embed = commands.get(topic)
+            const embed = commands.get(command)
                 .setAuthor({ name: "Help", iconURL: ctx.guild.iconURL() });
             await ctx.reply({ embeds: [embed] });
             return;
