@@ -37,8 +37,31 @@ export class NoMemberFoundError extends Error {
     }
 }
 
+/**
+ * An error thrown when requesting a user that isn't a member of the server
+ * in context, but a member is provided instead
+ */
 export class UserIsMemberError extends Error {
     public constructor() {
         super("The requested user is a member of the server this command was executed in");
+    }
+}
+
+/**
+ * An error thrown when a discord client object is required but none was provided
+ */
+export class NoClientProvidedError extends Error {
+    public constructor() {
+        super("No client object was provided when one is required");
+    }
+}
+
+/**
+ * An error thrown when a text channel is expected but another type os channel was
+ * provided
+ */
+export class NotTextChannelError extends Error {
+    public constructor() {
+        super("Expected a text channel but got another type");
     }
 }

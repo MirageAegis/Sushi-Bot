@@ -24,6 +24,7 @@
  */
 
 import { TextChannel, Client, Channel, ChannelType } from "discord.js";
+import { NoClientProvidedError, NotTextChannelError } from "./errors";
 
 // The sincgleton representing the user reports channel in the admin/official server
 let userReportChannel: TextChannel = null;
@@ -43,14 +44,14 @@ export const getUserReportsChannel = (client: Client = null): TextChannel => {
 
     // If there's no client and no channel, the channel can't be fetched
     if (!client) {
-        throw new Error("No client was passed when trying to fetch the user report channel");
+        throw new NoClientProvidedError();
     }
 
     const channel: Channel = client.channels
         .cache.get(process.env.USER_REPORTS_CHANNEL_ID);
 
     if (channel.type !== ChannelType.GuildText) {
-        throw new Error("The requested channel is not a text channel");
+        throw new NotTextChannelError();
     }
 
     return userReportChannel = <TextChannel> channel;
