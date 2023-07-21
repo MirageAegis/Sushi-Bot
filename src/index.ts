@@ -24,8 +24,12 @@
 
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { Client, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
+import { Channel, Client, ClientOptions, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
+import mongoose from "mongoose";
 import { Command } from "./util/command-template.js";
+import { Blacklist, BlacklistT } from "./schemas/blacklist.js";
+import { createBlacklist } from "./util/create-blacklist.js";
+import { getUserReportsChannel } from "./util/channels.js";
 
 // Loads the environment variables
 require("dotenv").config();
@@ -38,7 +42,12 @@ class Bot extends Client {
     /**
      * A collection of slash commands that the bot has
      */
-    public commands: Collection<string, Command>;
+    public readonly commands: Collection<string, Command>;
+
+    public constructor(options: ClientOptions) {
+        super(options);
+        this.commands = new Collection();
+    }
 }
 
 // Client instance with all required intents
@@ -60,13 +69,15 @@ const client = new Bot({
 
 // Listener for the on ready event
 client.once(Events.ClientReady, (c: Client): void => {
+    console.log("Fetching the user reports channel...");
+    const userReports: Channel = getUserReportsChannel(c);
+    console.log(`Found ${userReports}`);
+    
     console.log(`Bot ready! I'm ${c.user.tag}!`);
 });
 
 
 // ----- LOAD COMMANDS -----
-
-client.commands = new Collection();
 
 // Get the path of the commands directory (./src) > "commands"
 const cmdFoldersPath: string = join(__dirname, "commands");
@@ -86,7 +97,7 @@ for (const folder of cmdFolders) {
         
         
         // If the imported file is a valid command, add it
-        if ("data" in cmd && "execute" in cmd && "help" in cmd) {
+        if ("data" in cmd && "execute" in cmd && "error" in cmd && "help" in cmd) {
             client.commands.set(cmd.data.name, cmd);
         } else { // Otherwise print a warning
             console.log(`---WARNING--- ${cmdPath} exports a command without the required "data", "execute", or "help" property.`);
@@ -120,6 +131,26 @@ client.on(Events.InteractionCreate, async (ctx: Interaction): Promise<void> => {
 
 // ----- END LOAD COMMANDS -----
 
+// Connect to the database
+mongoose.connect(process.env.MONGO_DB_URI)
+    .then(async () => {
+        console.log("Connected to MongoDB");
+
+        // Check that the blacklist exists
+        const bl: BlacklistT = await Blacklist.findById(process.env.BLACKLIST_ID);
+
+        // If there is no blacklist, create one
+        if (!bl) {
+            await createBlacklist();
+        } else {
+            console.log("Blacklist found!");
+        }
+    })
+    .catch((err: Error) => {
+        console.error("Failed to connect to MongoDB");
+        console.error(err);
+        process.exit();
+    });
 
 // Log in to Discord with the login token
 client.login(process.env.TOKEN);
