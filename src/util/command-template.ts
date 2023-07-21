@@ -2,6 +2,7 @@
  * MIT License
  *
  * Copyright (c) 2022-present Mirage Aegis
+ * Copyright (c) 2023-present Zahatikoff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +23,7 @@
  * SOFTWARE.
  */
 
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { ErrorHandler } from "./error-handler.js";
 
 export type Command = {
@@ -32,6 +33,31 @@ export type Command = {
      * May also include command options
      */
     readonly data: SlashCommandBuilder;
+
+    /**
+     * The callback function to execute whenever a slash command is used
+     * 
+     * @param ctx the command context
+     */
+    execute(ctx: ChatInputCommandInteraction): Promise<void>;
+
+
+    readonly error: ErrorHandler;
+
+    /**
+     * The embed to display when help regarding the command is requested.
+     * Must include title, description, and appropriate fields (such as format)
+     */
+    readonly help: EmbedBuilder;
+};
+
+export type Subcommand = {
+    /**
+     * Metadata for the slash command subcommand.
+     * Must include name and description.
+     * May also include command options
+     */
+    readonly data: SlashCommandSubcommandBuilder;
 
     /**
      * The callback function to execute whenever a slash command is used
