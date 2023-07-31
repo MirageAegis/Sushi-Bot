@@ -1,12 +1,3 @@
----
-name: Bugfix
-about: Pull requests for bugfixes.
-title: ''
-labels: ''
-assignees: ''
-
----
-
 # Which Bug Does This PR Address?
 Describe which bug this PR addresses and how.
 

@@ -1,12 +1,3 @@
----
-name: Task completion
-about: Pull requests for tasks completed by the developers.
-title: ''
-labels: ''
-assignees: ''
-
----
-
 # What Does This PR Do?
 Describe what this PR brings to the project and why it should be added.
 
