@@ -1,12 +1,3 @@
----
-name: Feature implementation
-about: Pull requests for additional features.
-title: ''
-labels: ''
-assignees: ''
-
----
-
 # What Does This PR Do?
 Describe what this PR brings to the project and why it should be added.
 
