@@ -38,3 +38,26 @@ It should also  use the imperative, present tense; just like the subject.
 
 In case the changes were made by multiple developers on the same machine,
 add a co-author to the footer.
+
+## Reverting Changes
+
+### Message Format
+
+When reverting a commit, use the following as the commit message:
+```
+revert: <commit header>
+
+This reverts <commit hash>, <reason>
+```
+
+### Commit Header
+
+The exact header that was used for the commit being reverted.
+
+### Commit Hash
+
+The SHA hash of the commit being reverted.
+
+### Reason
+
+Clearly state why this revert is being made.
