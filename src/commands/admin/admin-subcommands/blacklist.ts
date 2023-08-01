@@ -23,11 +23,16 @@
  * SOFTWARE.
  */
 
-import { SlashCommandSubcommandBuilder, EmbedBuilder, ChatInputCommandInteraction, User, Collection, Guild, DiscordAPIError } from "discord.js";
+import { 
+    SlashCommandSubcommandBuilder, EmbedBuilder, ChatInputCommandInteraction, User,
+    Collection, Guild, DiscordAPIError, ButtonBuilder, ButtonStyle, ActionRowBuilder,
+    Message, CollectorFilter, ButtonInteraction, MessageComponentInteraction
+} from "discord.js";
 import { Subcommand } from "../../../util/command-template.js";
 import { MISSING_PERMISSIONS, defaultErrorHandler } from "../../../util/error-handler.js";
 import { BlacklistT, Blacklist } from "../../../schemas/blacklist.js";
 import { createBlacklist } from "../../../util/create-blacklist.js";
+import { RED } from "../../../util/colours.js";
 
 /*
  * A command for the administrators of Sushi Bot to use for
@@ -71,13 +76,77 @@ export const command: Subcommand = {
             await createBlacklist();
         }
 
-        const users: string[] = bl.users;
+        const users: Map<string, string> = bl.users;
 
-        if (users.includes(uid)) {
+        // Do nothing if the user has already been blacklisted
+        if (users.get(uid)) {
             await ctx.followUp("The specified user is already blacklisted");
             return;
         }
 
+        const millisToSecs: number = 1000;
+
+        // Ask for confirmation before blacklisting the target user
+        const embed: EmbedBuilder = new EmbedBuilder()
+            .setTitle(`Blacklist ${user.username}?`)
+            .setDescription("The following action will be difficult to reverse, are you sure?")
+            .setColor(RED)
+            .setAuthor({ name: "Blacklist", iconURL: ctx.client.user.avatarURL() })
+            .setThumbnail(user.avatarURL())
+            .addFields(
+                { name: "User ID", value: user.id, inline: true },
+                { name: "Created", value: `<t:${Math.floor(user.createdTimestamp / millisToSecs)}>`, inline: true },
+                { name: "Reason", value: reason }
+            );
+        
+        const yes: ButtonBuilder = new ButtonBuilder()
+            .setCustomId("yes")
+            .setLabel("Yes")
+            .setStyle(ButtonStyle.Success);
+        
+        const no: ButtonBuilder = new ButtonBuilder()
+            .setCustomId("no")
+            .setLabel("No")
+            .setStyle(ButtonStyle.Danger);
+
+        const row: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(yes, no);
+
+        const prompt: Message = await ctx.followUp({
+            embeds: [embed],
+            components: [row]
+        });
+
+        // Check if the user pressing the button is the same user
+        const check: CollectorFilter<[ButtonInteraction]> = (m: ButtonInteraction): boolean => m.user.id === ctx.user.id;
+
+        // Disable the buttons to signify that the interaction has ended
+        row.components.forEach(c => c.setDisabled(true));
+
+        try {
+            const confirmation: MessageComponentInteraction = await prompt.awaitMessageComponent({ filter: check, time: 10_000 });
+
+            // End the interaction as soon as a button is pressed
+            await confirmation.update({
+                components: [row]
+            });
+
+            // If the user selected no, abort blacklisting
+            if (confirmation.customId === "no") {
+                await ctx.followUp("Blacklisting denied, aborting opertation");
+                return;
+            }
+        } catch (e) {
+            // End the interaction upon timeout
+            await prompt.edit({
+                components: [row]
+            });
+            // If the interaction timed out, abort as well
+            await ctx.followUp("Interaction timed out, aborting operation");
+            return;
+        }
+
+        // Proceed if the user pressed yes
         await ctx.followUp(`Commencing blacklisting of \`${user.id}\` (<@${user.id}>)...`);
 
         // All the servers that the bot is in
@@ -125,7 +194,7 @@ export const command: Subcommand = {
         }
 
         // Save to the database
-        users.push(uid);
+        users.set(uid, reason);
         await bl.save();
 
         await ctx.followUp(report);
