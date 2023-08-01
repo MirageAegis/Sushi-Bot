@@ -55,3 +55,34 @@ export const getUserReportsChannel = (client: Client = null): TextChannel => {
 
     return userReportChannel = <TextChannel> channel;
 };
+
+// The sincgleton representing the user reports channel in the admin/official server
+let adminLogsChannel: TextChannel = null;
+
+/**
+ * Gets the channel for admin logs.
+ * Used to log errors that the bot may encounter
+ * 
+ * @param client the client to fetch the channel from if uninitialised
+ * @returns the admin logs channel
+ */
+export const getAdminLogsChannel = (client: Client = null): TextChannel => {
+    // If the channel has been instantiated, return it
+    if (adminLogsChannel) {
+        return adminLogsChannel;
+    }
+
+    // If there's no client and no channel, the channel can't be fetched
+    if (!client) {
+        throw new NoClientProvidedError();
+    }
+
+    const channel: Channel = client.channels
+        .cache.get(process.env.LOGS_CHANNEL_ID);
+
+    if (channel.type !== ChannelType.GuildText) {
+        throw new NotTextChannelError();
+    }
+
+    return adminLogsChannel = <TextChannel> channel;
+};
