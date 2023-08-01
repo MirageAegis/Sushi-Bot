@@ -29,7 +29,8 @@ import mongoose from "mongoose";
 import { Command } from "./util/command-template.js";
 import { Blacklist, BlacklistT } from "./schemas/blacklist.js";
 import { createBlacklist } from "./util/create-blacklist.js";
-import { getUserReportsChannel } from "./util/channels.js";
+import { getAdminLogsChannel, getUserReportsChannel } from "./util/channels.js";
+import { refreshBlacklist } from "./util/refresh.js";
 
 // Loads the environment variables
 require("dotenv").config();
@@ -68,10 +69,18 @@ const client = new Bot({
 });
 
 // Listener for the on ready event
-client.once(Events.ClientReady, (c: Client): void => {
+client.once(Events.ClientReady, async (c: Client): Promise<void> => {
     console.log("Fetching the user reports channel...");
     const userReports: Channel = getUserReportsChannel(c);
     console.log(`Found ${userReports}`);
+
+    console.log("Fetching the error logs channel...");
+    const logs: Channel = getAdminLogsChannel(c);
+    console.log(`Found ${logs}`);
+
+    console.log("Running initialisation routines...");
+    await refreshBlacklist(c);
+    console.log("Done initialising!");
     
     console.log(`Bot ready! I'm ${c.user.tag}!`);
 });
