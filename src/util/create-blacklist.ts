@@ -33,7 +33,7 @@ export const createBlacklist = async (): Promise<void> => {
 
     const bl: BlacklistT = new Blacklist({
         _id: process.env.BLACKLIST_ID,
-        users: []
+        users: new Map<string, string>()
     });
     await bl.save();
 

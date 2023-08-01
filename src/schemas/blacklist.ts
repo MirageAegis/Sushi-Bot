@@ -27,7 +27,7 @@ import mongoose, { InferSchemaType, Schema } from "mongoose";
 
 const blacklistSchema: Schema = new Schema({
     _id: Number,
-    users: [String]
+    users: { type: Map, of: String }
 });
 
 export type BlacklistT = InferSchemaType<typeof blacklistSchema>;
