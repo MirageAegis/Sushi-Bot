@@ -134,13 +134,5 @@ export const command: Subcommand = {
     error: defaultErrorHandler,
 
     // Help command embed
-    help: new EmbedBuilder()
-        .setTitle("Blacklist")
-        .setDescription(
-            "An administrative command that adds a user to Sushi Bot's global blacklist and bans them from all " +
-            "servers that Sushi Bot is in")
-        .addFields(
-            { name: "Format", value: `\`/admin ${name} <user>\`` },
-            { name: "<user>", value: "Required parameter. The user to blacklist from Sushi Bot's servers" }
-        )
+    help: help
 };
