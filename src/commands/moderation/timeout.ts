@@ -112,10 +112,10 @@ export const command: Command = {
             await member.timeout(duration, reason);
 
             await ctx.reply(`Timed **${member.displayName}** out for ` +
-                            `${days ? `${days} day(s)`: ""} ` +
-                            `${hours ? `${hours} hour(s)`: ""} ` +
-                            `${minutes ? `${minutes} minute(s)`: ""} ` +
-                            `${seconds ? `${seconds} second(s)`: ""} `
+                            `${days ? `${days} day(s) `: ""}` +
+                            `${hours ? `${hours} hour(s) `: ""}` +
+                            `${minutes ? `${minutes} minute(s) `: ""}` +
+                            `${seconds ? `${seconds} second(s)`: ""}`
             );
         } else { // Remove time out if it is 0
             await member.timeout(null, reason);
