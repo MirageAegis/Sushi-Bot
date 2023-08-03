@@ -2,7 +2,6 @@
  * MIT License
  *
  * Copyright (c) 2022-present Mirage Aegis
- * Copyright (c) 2023-present Zahatikoff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -210,7 +209,7 @@ export const command: Subcommand = {
             "An administrative command that adds a user to Sushi Bot's global blacklist and bans them from all " +
             "servers that Sushi Bot is in")
         .addFields(
-            { name: "Format", value: `\`/admin ${name} <user>\`` },
+            { name: "Format", value: `\`/admin ${name} <user> <reason>\`` },
             { name: "<user>", value: "Required parameter. The user to blacklist from Sushi Bot's servers" },
             { name: "<reason>", value: "Required parameter. The reason to blacklist the user" }
         )
