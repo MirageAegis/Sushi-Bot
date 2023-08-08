@@ -24,13 +24,9 @@
 
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { Channel, Client, ClientOptions, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
-import mongoose from "mongoose";
+import { Client, ClientOptions, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
 import { Command } from "./util/command-template.js";
-import { Blacklist, BlacklistT } from "./schemas/blacklist.js";
-import { createBlacklist } from "./util/create-blacklist.js";
-import { getAdminLogsChannel, getUserReportsChannel } from "./util/channels.js";
-import { refreshBlacklist } from "./util/refresh.js";
+import { init } from "./util/init.js";
 
 // Loads the environment variables
 require("dotenv").config();
@@ -70,16 +66,8 @@ const client = new Bot({
 
 // Listener for the on ready event
 client.once(Events.ClientReady, async (c: Client): Promise<void> => {
-    console.log("Fetching the user reports channel...");
-    const userReports: Channel = getUserReportsChannel(c);
-    console.log(`Found ${userReports}`);
-
-    console.log("Fetching the error logs channel...");
-    const logs: Channel = getAdminLogsChannel(c);
-    console.log(`Found ${logs}`);
-
     console.log("Running initialisation routines...");
-    await refreshBlacklist(c);
+    await init(c);
     console.log("Done initialising!");
     
     console.log(`Bot ready! I'm ${c.user.tag}!`);
@@ -139,27 +127,6 @@ client.on(Events.InteractionCreate, async (ctx: Interaction): Promise<void> => {
 });
 
 // ----- END LOAD COMMANDS -----
-
-// Connect to the database
-mongoose.connect(process.env.MONGO_DB_URI)
-    .then(async () => {
-        console.log("Connected to MongoDB");
-
-        // Check that the blacklist exists
-        const bl: BlacklistT = await Blacklist.findById(process.env.BLACKLIST_ID);
-
-        // If there is no blacklist, create one
-        if (!bl) {
-            await createBlacklist();
-        } else {
-            console.log("Blacklist found!");
-        }
-    })
-    .catch((err: Error) => {
-        console.error("Failed to connect to MongoDB");
-        console.error(err);
-        process.exit();
-    });
 
 // Log in to Discord with the login token
 client.login(process.env.TOKEN);

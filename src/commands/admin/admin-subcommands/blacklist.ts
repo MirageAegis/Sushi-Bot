@@ -29,8 +29,7 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../../util/command-template.js";
 import { MISSING_PERMISSIONS, defaultErrorHandler } from "../../../util/error-handler.js";
-import { BlacklistT, Blacklist } from "../../../schemas/blacklist.js";
-import { createBlacklist } from "../../../util/create-blacklist.js";
+import { Blacklist } from "../../../schemas/blacklist.js";
 import { RED } from "../../../util/colours.js";
 
 /*
@@ -67,15 +66,9 @@ export const command: Subcommand = {
 
         await ctx.deferReply();
 
-        const bl: BlacklistT = await Blacklist.findById(process.env.BLACKLIST_ID);
+        const bl: Blacklist = await Blacklist.get();
 
-        // Should ideally not be null but in the off-chance,
-        // throw an error
-        if (!bl) {
-            await createBlacklist();
-        }
-
-        const users: Map<string, string> = bl.users;
+        const users: ReadonlyMap<string, string> = bl.users;
 
         // Do nothing if the user has already been blacklisted
         if (users.get(uid)) {
@@ -193,8 +186,7 @@ export const command: Subcommand = {
         }
 
         // Save to the database
-        users.set(uid, reason);
-        await bl.save();
+        await bl.add(uid, reason);
 
         await ctx.followUp(report);
     },

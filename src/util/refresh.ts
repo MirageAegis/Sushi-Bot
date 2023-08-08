@@ -23,7 +23,7 @@
  */
 
 import { Client, Guild, TextChannel } from "discord.js";
-import { Blacklist, BlacklistT } from "../schemas/blacklist";
+import { Blacklist } from "../schemas/blacklist";
 import { getAdminLogsChannel } from "./channels";
 
 /**
@@ -39,14 +39,13 @@ import { getAdminLogsChannel } from "./channels";
  */
 export const refreshBlacklist = async (client: Client): Promise<void> => {
     // Fetch the blacklisted users and the reasons for blacklisting them
-    const bl: BlacklistT = await Blacklist.findById(process.env.BLACKLIST_ID);
-    const users: Map<string, string> = bl.users;
+    const bl: ReadonlyMap<string, string> = (await Blacklist.get()).users;
 
     // The error log channel
     const logs: TextChannel = getAdminLogsChannel();
 
     // Ban each user in the blacklist from each of Sushi Bot's servers
-    for await (const [uid, reason] of users) {
+    for await (const [uid, reason] of bl) {
 
         // The failed bans of each blacklisted user
         const fails: Guild[] = [];

@@ -22,12 +22,81 @@
  * SOFTWARE.
  */
 
-import mongoose, { InferSchemaType, Schema } from "mongoose";
+import mongoose, { InferSchemaType, Schema, Document } from "mongoose";
 
 const blacklistSchema: Schema = new Schema({
     _id: Number,
     users: { type: Map, of: String }
 });
 
-export type BlacklistT = InferSchemaType<typeof blacklistSchema>;
-export const Blacklist = mongoose.model("Blacklist", blacklistSchema);
+type BlacklistT = InferSchemaType<typeof blacklistSchema>;
+
+export class Blacklist {
+    /**
+     * The corresponding Mongo model used for reading and writing to the database
+     */
+    private static readonly model = mongoose.model("Blacklist", blacklistSchema);
+
+    /**
+     * The singleton instance of the blacklist
+     */
+    private static instance: Blacklist = null;
+
+    /**
+     * The instance data from the database
+     */
+    private data: Document;
+
+    /**
+     * Instantiates a singleton with data
+     */
+    private constructor(data: Document) {
+        this.data = data;
+    }
+
+    /**
+     * Gets the blacklist singleton
+     * 
+     * @returns the blacklist
+     */
+    public static async get(): Promise<Blacklist> {
+        if (Blacklist.instance) {
+            return Blacklist.instance;
+        }
+
+        const data: Document = await Blacklist.model.findById(process.env.BLACKLIST_ID);
+
+        if (data) {
+            // If theres a blacklist in the database, use it
+            return new Blacklist(data);
+        } else {
+            // Otherwise create one
+            return new Blacklist(
+                new Blacklist.model({
+                    _id: process.env.BLACKLIST_ID,
+                    users: new Map<string, string>()
+                })
+            );
+        }
+    }
+
+    /**
+     * Adds a user to the blacklist and saves it
+     * 
+     * @param id the id of the user being blacklisted
+     * @param reason the reason the user is being blacklisted
+     */
+    public async add(id: string, reason: string): Promise<void> {
+        (<BlacklistT> this.data).users.set(id, reason);
+        await this.data.save();
+    }
+
+    /**
+     * Gets a readonly version of the map of blacklisted users
+     * 
+     * @returns the map of blacklisted users with
+     */
+    public get users(): ReadonlyMap<string, string> {
+        return <ReadonlyMap<string, string>> (<BlacklistT> this.data).users;
+    }
+}

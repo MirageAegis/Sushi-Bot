@@ -25,8 +25,7 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, PermissionsBitField, User, Guild, TextChannel, Message } from "discord.js";
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
-import { Blacklist, BlacklistT } from "../../schemas/blacklist.js";
-import { createBlacklist } from "../../util/create-blacklist.js";
+import { Blacklist } from "../../schemas/blacklist.js";
 import { getUserReportsChannel } from "../../util/channels.js";
 
 /*
@@ -71,17 +70,11 @@ export const command: Command = {
 
         await ctx.deferReply({ ephemeral: true });
 
-        const bl: BlacklistT = await Blacklist.findById(process.env.BLACKLIST_ID);
+        const bl: Blacklist = await Blacklist.get();
 
-        // Should ideally not be null but in the off-chance,
-        // recreate it
-        if (!bl) {
-            await createBlacklist();
-        }
+        const users: ReadonlyMap<string, string> = bl.users;
 
-        const users: string[] = bl.users;
-
-        if (users.includes(uid)) {
+        if (users.get(uid)) {
             await ctx.followUp({ content: "The specified user is already blacklisted", ephemeral: true });
             return;
         }
