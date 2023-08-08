@@ -24,14 +24,13 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Collection } from "discord.js";
-import { Command } from "../../util/command-template.js";
-import { defaultErrorHandler } from "../../util/error-handler.js";
-import { MAGENTA } from "../../util/colours.js";
+import { SlashCommandSubcommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Collection } from "discord.js";
+import { Subcommand } from "../../../util/command-template.js";
+import { defaultErrorHandler } from "../../../util/error-handler.js";
+import { MAGENTA } from "../../../util/colours.js";
 
 /*
- * The help command of the bot, which displays information
- * about the commands that the bot has
+ * The help command for all admin commands
  *
  * This command module differs from all other commands because it needs to load them
  * to access the help embed of each command
@@ -39,8 +38,8 @@ import { MAGENTA } from "../../util/colours.js";
 
 // The default help window to show when no command is specified
 const defaultEmbed: EmbedBuilder = new EmbedBuilder()
-    .setTitle("General Help")
-    .setDescription("Here are my commands! Use `/help <command>` to get help for a specific command")
+    .setTitle("Admin Help")
+    .setDescription("Here are my administrator commands! Use `/admin help <command>` to get help for a specific command")
     .setColor(MAGENTA);
 
 
@@ -48,53 +47,37 @@ const defaultEmbed: EmbedBuilder = new EmbedBuilder()
 
 const commands: Collection<string, EmbedBuilder> = new Collection();
 
-// Get the path of the commands directory (./src) > "commands"
-const cmdFoldersPath: string = path.join(__dirname, "..");
-const cmdFolders: string[] = fs.readdirSync(cmdFoldersPath);
+// The the contents of this folder
+const cmdFiles: string[] = fs.readdirSync(__dirname).filter(f => f.endsWith(".js"));
 
-// Look through each command category folder
-for (const folder of cmdFolders) {
-    // Skip the admin commands as they are unique
-    if (folder === "admin") {
+// The string used to accumulate all commands
+let cmdstr: string = "";
+
+// Look through each JS file in each command in this folder
+for (const file of cmdFiles) {
+    // Skip this file
+    if (file === "help.js") {
+        cmdstr += "`/admin help`, ";
         continue;
     }
 
-    // Get the path of the current directory (./src) > "commands" > category
-    const cmdFolder: string = path.join(cmdFoldersPath, folder);
-    const cmdFiles: string[] = fs.readdirSync(cmdFolder).filter(f => f.endsWith(".js"));
-
-    // The string used to accumulate all commands in the current category
-    let categoryCommands: string = "";
-
-    // Look through each JS file in each command category folder
-    for (const file of cmdFiles) {
-        // Skip this file
-        if (file === "help.js") {
-            categoryCommands += "`/help`, ";
-            continue;
-        }
-        
-        // Get the path of the current directory (./src) > "commands" > category > command
-        const cmdPath: string = path.join(cmdFolder, file);
-        const cmd: Command = require(cmdPath).command;
-        
-        // If the imported file is a valid command, add it
-        if ("data" in cmd && "execute" in cmd && "error" in cmd && "help" in cmd) {
-            const name: string = cmd.data.name;
-            // The colour is set to magenta here
-            commands.set(name, cmd.help.setColor(MAGENTA));
-            categoryCommands += `\`/${name}\`, `;
-        }
+    // Get the path of the current directory (./src) > "commands" > category > command
+    const cmdPath: string = path.join(__dirname, file);
+    const cmd: Subcommand = require(cmdPath).command;
+    
+    // If the imported file is a valid command, add it
+    if ("data" in cmd && "execute" in cmd && "error" in cmd && "help" in cmd) {
+        const name: string = cmd.data.name;
+        // The colour is set to magenta here
+        commands.set(name, cmd.help.setColor(MAGENTA));
+        cmdstr += `\`/admin ${name}\`, `;
     }
-
-    // Remove the dangling comma
-    // eslint-disable-next-line no-magic-numbers
-    categoryCommands = categoryCommands.slice(0, categoryCommands.length - 2);
-
-    // Capitalise the category name
-    const name: string = folder.replace(folder[0], folder[0].toUpperCase());
-    defaultEmbed.addFields({ name: name, value: categoryCommands });
 }
+// Remove the dangling comma
+// eslint-disable-next-line no-magic-numbers
+cmdstr = cmdstr.slice(0, cmdstr.length - 2);
+
+defaultEmbed.addFields({ name: "Commands", value: cmdstr });
 
 const name: string = "help";
 
@@ -103,7 +86,7 @@ const help: EmbedBuilder = new EmbedBuilder()
     .setTitle("Help")
     .setDescription("The help command which displays useful command information!")
     .addFields(
-        { name: "Format", value: `\`/${name} [command]\`` },
+        { name: "Format", value: `\`/admin ${name} [command]\`` },
         { name: "[command]", value: "Optional parameter. The command that you want to know more about" }
     )
     .setColor(MAGENTA);
@@ -117,27 +100,23 @@ const choices = Array.from(commands.keys()).map((cmd: string): { name: string, v
     return { name: cmd, value: cmd };
 });
 
-// ----- END LOAD HELP COMMAND EMBEDS -----
-
-
-export const command: Command = {
+export const command: Subcommand = {
     // Command headers
-    data: <SlashCommandBuilder> new SlashCommandBuilder()
+    data: new SlashCommandSubcommandBuilder()
         .setName(name)
-        .setDescription("Wanna know more about me?")
-        .setDMPermission(false)
+        .setDescription("Need help with my admin commands?")
         .addStringOption(o =>
             o.setName("command")
                 .setDescription("The command to get more information about")
                 .addChoices(...choices)
         ),
-    
+
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
-        // Get the command if it exists
+        // Get the topic if it exists
         const command = ctx.options.getString("command") ?? null;
         
-        // If there is a command, send its embed
+        // If there is a topic, send its embed
         if (command) {
             // Set the embed author field to "Help" and add the server's icon
             const embed = commands.get(command)
@@ -153,7 +132,7 @@ export const command: Command = {
 
     // Error handler
     error: defaultErrorHandler,
-    
+
     // Help command embed
     help: help
 };

@@ -29,6 +29,8 @@ import { NoMemberFoundError, UserIsMemberError } from "./errors";
 
 export const MISSING_PERMISSIONS: number = 50013;
 export const UNKNOWN_BAN: number = 10026;
+export const MESSAGES_TOO_OLD_FOR_BULK_DELETION: number = 50034;
+export const INT_OVER_100: number = 50035;
 
 // ----- !ERROR CODES -----
 

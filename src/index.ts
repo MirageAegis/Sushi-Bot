@@ -24,8 +24,9 @@
 
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { Client, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
+import { Client, ClientOptions, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
 import { Command } from "./util/command-template.js";
+import { init } from "./util/init.js";
 
 // Loads the environment variables
 require("dotenv").config();
@@ -38,7 +39,12 @@ class Bot extends Client {
     /**
      * A collection of slash commands that the bot has
      */
-    public commands: Collection<string, Command>;
+    public readonly commands: Collection<string, Command>;
+
+    public constructor(options: ClientOptions) {
+        super(options);
+        this.commands = new Collection();
+    }
 }
 
 // Client instance with all required intents
@@ -59,14 +65,16 @@ const client = new Bot({
 });
 
 // Listener for the on ready event
-client.once(Events.ClientReady, (c: Client): void => {
+client.once(Events.ClientReady, async (c: Client): Promise<void> => {
+    console.log("Running initialisation routines...");
+    await init(c);
+    console.log("Done initialising!");
+    
     console.log(`Bot ready! I'm ${c.user.tag}!`);
 });
 
 
 // ----- LOAD COMMANDS -----
-
-client.commands = new Collection();
 
 // Get the path of the commands directory (./src) > "commands"
 const cmdFoldersPath: string = join(__dirname, "commands");
@@ -86,7 +94,7 @@ for (const folder of cmdFolders) {
         
         
         // If the imported file is a valid command, add it
-        if ("data" in cmd && "execute" in cmd && "help" in cmd) {
+        if ("data" in cmd && "execute" in cmd && "error" in cmd && "help" in cmd) {
             client.commands.set(cmd.data.name, cmd);
         } else { // Otherwise print a warning
             console.log(`---WARNING--- ${cmdPath} exports a command without the required "data", "execute", or "help" property.`);
@@ -119,7 +127,6 @@ client.on(Events.InteractionCreate, async (ctx: Interaction): Promise<void> => {
 });
 
 // ----- END LOAD COMMANDS -----
-
 
 // Log in to Discord with the login token
 client.login(process.env.TOKEN);

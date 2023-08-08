@@ -31,6 +31,7 @@ import { Command } from "./util/command-template.js";
 require("dotenv").config();
 
 const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
+const adminCommands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
 
 // Get the path of the commands directory (./src) > "commands"
 const cmdFoldersPath: string = path.join(__dirname, "commands");
@@ -49,7 +50,14 @@ for (const folder of cmdFolders) {
         const cmd: Command = require(cmdPath).command;
 
         // If the imported file is a valid command, add it
-        if ("data" in cmd && "execute" in cmd && "help" in cmd) {
+        if ("data" in cmd && "execute" in cmd && "error" in cmd && "help" in cmd) {
+            // Add the admin commands to a different array to be loaded as server commands
+            // in the admin/official server
+            if (folder === "admin") {
+                adminCommands.push(cmd.data.toJSON());
+                continue;
+            }
+
             commands.push(cmd.data.toJSON());
         }
     }
@@ -61,6 +69,16 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 // and deploy your commands!
 (async (): Promise<void> => {
     try {
+        console.log(`Started refreshing ${adminCommands.length} admin application (/) commands.`);
+
+        // The put method is used to fully refresh all commands with the current set
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const adminData: any = await rest.put(
+            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.ADMIN_SERVER_ID),
+            { body: adminCommands }
+        );
+
+        console.log(`Successfully reloaded ${adminData.length} admin application (/) commands.`);
         console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
         // The put method is used to fully refresh all commands with the current set
