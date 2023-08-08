@@ -31,6 +31,10 @@ const blacklistSchema: Schema = new Schema({
 
 type BlacklistT = InferSchemaType<typeof blacklistSchema>;
 
+/**
+ * Wrapper class for the blacklist.
+ * It has functions and methods for all necessary operations on the blacklist
+ */
 export class Blacklist {
     /**
      * The corresponding Mongo model used for reading and writing to the database
