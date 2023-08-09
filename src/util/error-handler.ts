@@ -28,6 +28,7 @@ import { NoMemberFoundError, UserIsMemberError } from "./errors";
 // ----- ERROR CODES -----
 
 export const MISSING_PERMISSIONS: number = 50013;
+export const UNKNOWN_MEMBER: number = 10007;
 export const UNKNOWN_BAN: number = 10026;
 export const MESSAGES_TOO_OLD_FOR_BULK_DELETION: number = 50034;
 export const INT_OVER_100: number = 50035;
@@ -37,7 +38,7 @@ export const INT_OVER_100: number = 50035;
 export type ErrorHandler = { (ctx: ChatInputCommandInteraction, err: Error): Promise<void> };
 
 export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInteraction, err: Error): Promise<void> => {
-    // TODO: Implement default error handler
+    // TODO: Log to error log channel
     console.log(err);
 
     const reply: InteractionReplyOptions = {};
