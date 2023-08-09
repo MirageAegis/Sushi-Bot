@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-import { Client, Guild, TextChannel } from "discord.js";
+import { Client, Collection, Guild, GuildMember, TextChannel, User } from "discord.js";
 import { Blacklist } from "../schemas/blacklist";
-import { getAdminLogsChannel } from "./channels";
+import { getAdminLogsChannel, getAdminServer } from "./channels";
 
 /**
  * This module contains functions for refreshing things.
@@ -35,7 +35,7 @@ import { getAdminLogsChannel } from "./channels";
 /**
  * Refreshes the blacklist, very simple
  * 
- * @param client the client that performs the initialisation
+ * @param client the client that performs the refreshing
  */
 export const refreshBlacklist = async (client: Client): Promise<void> => {
     // Fetch the blacklisted users and the reasons for blacklisting them
@@ -79,5 +79,79 @@ export const refreshBlacklist = async (client: Client): Promise<void> => {
         }
 
         await logs.send(report);
+    }
+};
+
+/**
+ * Checks whether a user is eligible to have Sushi Bot in their server
+ * 
+ * @param user the user to check
+ * @returns whether the user is eligible or not
+ */
+export const verify = async (user: User): Promise<boolean> => {
+    // The official server
+    const adminServer: Guild = await getAdminServer();
+
+    // The member object tied to the user, if they're a member
+    let member: GuildMember;
+    try {
+        // Try fetching the member
+        member = await adminServer.members.fetch(user);
+    } catch (e) {
+        // Any error is probably an unknown member error, aka. the user
+        // isn't a member
+        return false;
+    }
+    
+    // If they have the VTuber role, they're eligible, else they're not
+    return member.roles.cache.get(process.env.VTUBER_ROLE_ID) ? true : false;
+};
+
+/**
+ * Refreshes the bot's servers, leaving any ineligible server
+ * 
+ * @param client the client that performs the refreshing
+ */
+export const refreshServers = async (client: Client): Promise<void> => {
+    // All the servers that Sushi Bot is currently in
+    const servers: Collection<string, Guild> = client.guilds.cache;
+    
+    // The error log channel
+    const logs: TextChannel = getAdminLogsChannel();
+
+    for await (const s of servers) {
+        const server: Guild = s[1];
+        
+        await leaveIneligibleServer(client, server, logs);
+    }
+};
+
+/**
+ * Leaves a server if it doesn't fulfill the requirements.
+ * 
+ * @param client the Discord bot
+ * @param server the server to check
+ * @param logs the admin logs channel
+ */
+export const leaveIneligibleServer = async (client: Client, server: Guild, logs: TextChannel): Promise<void> => {
+    const owner: User = (await server.fetchOwner()).user;
+
+    const eligible: boolean = await verify(owner);
+
+    // Notify the ineligible server owners and leave their server
+    if (!eligible) {
+        try {
+            await (await owner.createDM())
+                .send(
+                    `Your server, **${server.name}** is not eligible for my services. ` +
+                    "Please join my official server and view the requirements there!\n\n" +
+                    "https://discord.gg/Pqv2JkDKAg"
+                );
+        } catch (e) {
+            await logs.send(`Couldn't DM <@${owner.id}>`);
+        }
+        
+        await server.leave();
+        await logs.send(`Left <@${owner.id}>'s server, **${server.name}**`);
     }
 };
