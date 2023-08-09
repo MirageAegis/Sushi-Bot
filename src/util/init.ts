@@ -22,16 +22,24 @@
  * SOFTWARE.
  */
 
-import { Channel, Client } from "discord.js";
+import { Channel, Client, Events, Guild } from "discord.js";
 import mongoose from "mongoose";
-import { getAdminLogsChannel, getUserReportsChannel } from "./channels";
-import { refreshBlacklist } from "./refresh";
+import { getAdminLogsChannel, getAdminServer, getUserReportsChannel } from "./channels";
+import { refreshBlacklist, refreshServers } from "./refresh";
 import { Blacklist } from "../schemas/blacklist";
+import { onServerJoin } from "./events";
 
 /**
  * This module has an initialisation routine for the bot
  */
 
+/**
+ * The initialisation routine for Sushi Bot.
+ * Includes connecting to the MongoDB Atlas database, fetching resources from
+ * Discord, and refreshing server states.
+ * 
+ * @param client the Discord bot
+ */
 export const init = async (client: Client): Promise<void> => {
     console.log("Connecting to database...");
     try {
@@ -42,6 +50,10 @@ export const init = async (client: Client): Promise<void> => {
         console.error(e);
         process.exit();
     }
+    
+    console.log("Fetching the admin server...");
+    const adminServer: Guild = await getAdminServer(client);
+    console.log(`Found ${adminServer.name}`);
     
     console.log("Fetching the user reports channel...");
     const userReports: Channel = getUserReportsChannel(client);
@@ -54,8 +66,18 @@ export const init = async (client: Client): Promise<void> => {
     console.log("Fetching blacklist...");
     await Blacklist.get();
     console.log("Blacklist fetched");
-    
+
+    console.log("Refreshing servers...");
+    await refreshServers(client);
+    console.log("Servers refreshed");
+
     console.log("Refreshing blacklist...");
     await refreshBlacklist(client);
     console.log("Blacklist refreshed");
+};
+
+export const loadListeners = (client: Client): void => {
+    client.on(Events.GuildCreate, async (server: Guild): Promise<void> => {
+        await onServerJoin(client, server);
+    });
 };
