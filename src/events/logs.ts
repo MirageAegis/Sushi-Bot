@@ -50,7 +50,7 @@ export const genMemberJoinEmbed = (member: GuildMember): EmbedBuilder => {
         .setThumbnail(member.avatarURL())
         .addFields(
             { name: "ID", value: member.id, inline: true },
-            { name: "Created", value: `<t:${member.user.createdTimestamp / millisToSecs}>`, inline: true },
+            { name: "Created", value: `<t:${Math.floor(member.user.createdTimestamp / millisToSecs)}>`, inline: true },
             { name: "Bot user", value: `${member.user.bot}`, inline: true }
         );
 
@@ -74,8 +74,8 @@ export const genMemberLeaveEmbed = (member: GuildMember): EmbedBuilder => {
         .setThumbnail(member.avatarURL())
         .addFields(
             { name: "ID", value: member.id, inline: true },
-            { name: "Created", value: `<t:${member.user.createdTimestamp / millisToSecs}>`, inline: true },
-            { name: "Joined", value: `<t:${member.joinedTimestamp / millisToSecs}>`, inline: true },
+            { name: "Created", value: `<t:${Math.floor(member.user.createdTimestamp / millisToSecs)}>`, inline: true },
+            { name: "Joined", value: `<t:${Math.floor(member.joinedTimestamp / millisToSecs)}>`, inline: true },
             { name: "Bot user", value: `${member.user.bot}`, inline: true }
         );
 
@@ -99,7 +99,7 @@ export const genMemberBanEmbed = (ban: GuildBan): EmbedBuilder => {
         .setThumbnail(ban.user.avatarURL())
         .addFields(
             { name: "ID", value: ban.user.id, inline: true },
-            { name: "Created", value: `<t:${ban.user.createdTimestamp / millisToSecs}>`, inline: true },
+            { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
             { name: "Bot user", value: `${ban.user.bot}`, inline: true }
         );
 
@@ -123,7 +123,7 @@ export const genMemberUnbanEmbed = (ban: GuildBan): EmbedBuilder => {
         .setThumbnail(ban.user.avatarURL())
         .addFields(
             { name: "ID", value: ban.user.id, inline: true },
-            { name: "Created", value: `<t:${ban.user.createdTimestamp / millisToSecs}>`, inline: true },
+            { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
             { name: "Bot user", value: `${ban.user.bot}`, inline: true }
         );
 
@@ -285,6 +285,7 @@ export const genMessageEditEmbed = (before: Message, after: Message): EmbedBuild
             name: "Message edited",
             iconURL: before.guild.iconURL()
         })
+        .setTimestamp(before.createdAt)
         .addFields(
             { name: "Member ID", value: author.id, inline: true },
             { name: "Message ID", value: before.id, inline: true },
@@ -295,7 +296,7 @@ export const genMessageEditEmbed = (before: Message, after: Message): EmbedBuild
     // and if the old message actually had text
     if (
         oldContent !== newContent &&
-	oldContent
+        oldContent
     ) {
         embed.addFields(
             { name: "Old content", value: oldContent, inline: false },
@@ -353,6 +354,7 @@ export const genMessageDeleteEmbed = (message: Message): EmbedBuilder | null => 
             name: "Message deleted",
             iconURL: message.guild.iconURL()
         })
+        .setTimestamp(message.createdAt)
         .addFields(
             { name: "Member ID", value: author.id, inline: true },
             { name: "Message ID", value: message.id, inline: true },
