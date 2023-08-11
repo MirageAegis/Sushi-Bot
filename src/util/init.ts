@@ -22,12 +22,17 @@
  * SOFTWARE.
  */
 
-import { Channel, Client, Events, Guild } from "discord.js";
+import {
+    Channel, Client, Events, Guild, GuildBan, GuildMember, Message, User
+} from "discord.js";
 import mongoose from "mongoose";
 import { getAdminLogsChannel, getAdminServer, getUserReportsChannel } from "./channels";
 import { refreshBlacklist, refreshServers } from "./refresh";
 import { Blacklist } from "../schemas/blacklist";
-import { onServerJoin } from "./events";
+import {
+    onMemberBan, onMemberJoin, onMemberLeave, onMemberUnban, onMemberUpdate,
+    onMessageDelete, onMessageEdit, onServerJoin, onUserUpdate
+} from "../events/events";
 
 /**
  * This module has an initialisation routine for the bot
@@ -79,5 +84,37 @@ export const init = async (client: Client): Promise<void> => {
 export const loadListeners = (client: Client): void => {
     client.on(Events.GuildCreate, async (server: Guild): Promise<void> => {
         await onServerJoin(client, server);
+    });
+
+    client.on(Events.GuildMemberAdd, async (member: GuildMember): Promise<void> => {
+        await onMemberJoin(client, member);
+    });
+
+    client.on(Events.GuildMemberRemove, async (member: GuildMember): Promise<void> => {
+        await onMemberLeave(client, member);
+    });
+
+    client.on(Events.GuildBanAdd, async (ban: GuildBan): Promise<void> => {
+        await onMemberBan(client, ban);
+    });
+
+    client.on(Events.GuildBanRemove, async (ban: GuildBan): Promise<void> => {
+        await onMemberUnban(client, ban);
+    });
+
+    client.on(Events.GuildMemberUpdate, async (before: GuildMember, after: GuildMember): Promise<void> => {
+        await onMemberUpdate(client, before, after);
+    });
+
+    client.on(Events.UserUpdate, async (before: User, after: User): Promise<void> => {
+        await onUserUpdate(client, before, after);
+    });
+
+    client.on(Events.MessageUpdate, async (before: Message, after: Message): Promise<void> => {
+        await onMessageEdit(client, before, after);
+    });
+
+    client.on(Events.MessageDelete, async (message: Message): Promise<void> => {
+        await onMessageDelete(client, message);
     });
 };
