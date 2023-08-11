@@ -305,11 +305,18 @@ export const onMessageDelete = async (client: Client, message: Message): Promise
         return;
     }
 
+    const embed: EmbedBuilder = genMessageDeleteEmbed(message);
+
+    // If embed is null, the message wasn't significant to Sushi Bot
+    if (!embed) {
+        return;
+    }
+
     const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
 
     try {
         // Log to the logs channel
-        await logs.send({ embeds: [genMessageDeleteEmbed(message)] });
+        await logs.send({ embeds: [embed] });
     } catch {
         // Remove configurations if logging failed.
         // Most likely causes are that the channel was deleted or that

@@ -266,9 +266,11 @@ export const genMessageEditEmbed = (before: Message, after: Message): EmbedBuild
 
     const diffAttachments: boolean = !oldAttachments.equals(newAttachments);
 
-    // No enbed generated if content and attachments stay the same
+    // No enbed generated if content and attachments stay the same,
+    // or if the attachments stay the same but there was no old content
     if (
-        oldContent === newContent &&
+        (oldContent === newContent ||
+	!oldContent) &&
         !diffAttachments
     ) {
         return null;
@@ -289,11 +291,15 @@ export const genMessageEditEmbed = (before: Message, after: Message): EmbedBuild
             { name: "Channel", value: before.channel.toString() }
         );
 
-    // Add this if the content was updated
-    if (oldContent !== newContent) {
+    // Add this if the content was updated,
+    // and if the old message actually had text
+    if (
+        oldContent !== newContent &&
+	oldContent
+    ) {
         embed.addFields(
             { name: "Old content", value: oldContent, inline: false },
-            { name: "New content", value: newContent, inline: false }
+            { name: "New content", value: newContent ? newContent : "_ _", inline: false }
         );
     }
 
@@ -314,8 +320,8 @@ export const genMessageEditEmbed = (before: Message, after: Message): EmbedBuild
         }
 
         embed.addFields(
-            { name: "Old attachments", value: oldUrls, inline: false },
-            { name: "New attachments", value: newUrls, inline: false }
+            { name: "Old attachments", value: oldUrls ? oldUrls : "_ _", inline: false },
+            { name: "New attachments", value: newUrls ? newUrls : "_ _", inline: false }
         );
     }
 
@@ -326,13 +332,19 @@ export const genMessageEditEmbed = (before: Message, after: Message): EmbedBuild
  * Generates an embed for whenever a message is deleted.
  * 
  * @param message the deleted message
- * @returns en embed for logging
+ * @returns en embed for logging,
+ * or null if the message had neithe text nor attachments
  */
-export const genMessageDeleteEmbed = (message: Message): EmbedBuilder => {
+export const genMessageDeleteEmbed = (message: Message): EmbedBuilder | null => {
     // The components to log
     const content: string = message.content;
     const attachments: Collection<string, Attachment> = message.attachments;
     const author: User = message.author;
+
+    // No embed generated if the message had no content nor attachments
+    if (!content && !attachments.size) {
+        return null;
+    }
 
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(author.username)
