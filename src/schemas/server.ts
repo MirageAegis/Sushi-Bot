@@ -39,38 +39,38 @@ const serverLifetime: number = 1_200_000;
 
 export class Server {
     /**
-     * The corresponding Mongo model used for reading and writing to the database
+     * The corresponding Mongo model used for reading and writing to the database.
      */
     private static readonly model = mongoose.model("Server", serverSchema);
 
     /**
      * The cached servers.
      * The servers are stored along with the ID for the timer responsible for
-     * clearing the memory
+     * clearing the memory.
      */
     private static cache: Map<string, [Server, NodeJS.Timeout]> = new Map();
 
     /**
-     * The instance data from the database
+     * The instance data from the database.
      */
     declare private data: Document;
 
     /**
-     * Creates a new document for a server
+     * Creates a new document for a server.
      * 
      * @param id server ID for the new document
      */
     private constructor(id: string);
 
     /**
-     * Inflates a server object using data from the database
+     * Inflates a server object using data from the database.
      * 
      * @param data server data from database
      */
     private constructor(data: Document);
 
     /**
-     * Instantiates a server object that represents a server document
+     * Instantiates a server object that represents a server document.
      * 
      * @param arg the data passed
      */
@@ -88,7 +88,7 @@ export class Server {
     }
 
     /**
-     * Gets a server document from the database
+     * Gets a server document from the database.
      * 
      * @param id the server ID
      * @returns the requested server document or null if none was found
@@ -125,10 +125,20 @@ export class Server {
     }
 
     /**
-     * Saves the cached data to the database
+     * Saves the cached data to the database.
      */
     public async save(): Promise<void> {
         await this.data.save();
+    }
+
+    /**
+     * Deletes the server configurations from the database.
+     */
+    public async delete(): Promise<void> {
+        // Clear the server data from the cache
+        clearTimeout(Server.cache.get(this.data._id)[1]);
+        // Delete from the database
+        await Server.model.findByIdAndDelete(this.data._id);
     }
 
     /**
