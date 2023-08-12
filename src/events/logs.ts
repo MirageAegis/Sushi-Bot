@@ -47,7 +47,7 @@ export const genMemberJoinEmbed = (member: GuildMember): EmbedBuilder => {
             name: "Member joined!",
             iconURL: member.guild.iconURL()
         })
-        .setThumbnail(member.avatarURL())
+        .setThumbnail(member.displayAvatarURL())
         .addFields(
             { name: "ID", value: member.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(member.user.createdTimestamp / millisToSecs)}>`, inline: true },
@@ -71,7 +71,7 @@ export const genMemberLeaveEmbed = (member: GuildMember): EmbedBuilder => {
             name: "Member left",
             iconURL: member.guild.iconURL()
         })
-        .setThumbnail(member.avatarURL())
+        .setThumbnail(member.displayAvatarURL())
         .addFields(
             { name: "ID", value: member.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(member.user.createdTimestamp / millisToSecs)}>`, inline: true },
@@ -96,7 +96,7 @@ export const genMemberBanEmbed = (ban: GuildBan): EmbedBuilder => {
             name: "Member banned",
             iconURL: ban.guild.iconURL()
         })
-        .setThumbnail(ban.user.avatarURL())
+        .setThumbnail(ban.user.displayAvatarURL())
         .addFields(
             { name: "ID", value: ban.user.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
@@ -120,7 +120,7 @@ export const genMemberUnbanEmbed = (ban: GuildBan): EmbedBuilder => {
             name: "Member banned",
             iconURL: ban.guild.iconURL()
         })
-        .setThumbnail(ban.user.avatarURL())
+        .setThumbnail(ban.user.displayAvatarURL())
         .addFields(
             { name: "ID", value: ban.user.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
@@ -270,7 +270,7 @@ export const genMessageEditEmbed = (before: Message, after: Message): EmbedBuild
     // or if the attachments stay the same but there was no old content
     if (
         (oldContent === newContent ||
-	!oldContent) &&
+        !oldContent) &&
         !diffAttachments
     ) {
         return null;
