@@ -30,6 +30,7 @@ import { getAdminLogsChannel, getAdminServer, getUserReportsChannel } from "./ch
 import { refreshBlacklist, refreshServers } from "./refresh";
 import { Blacklist } from "../schemas/blacklist";
 import {
+    onError,
     onMemberBan, onMemberJoin, onMemberLeave, onMemberUnban, onMemberUpdate,
     onMessageDelete, onMessageEdit, onServerJoin, onUserUpdate
 } from "../events/events";
@@ -116,5 +117,9 @@ export const loadListeners = (client: Client): void => {
 
     client.on(Events.MessageDelete, async (message: Message): Promise<void> => {
         await onMessageDelete(client, message);
+    });
+
+    client.on(Events.Error, async (error: Error): Promise<void> => {
+        await onError(client, error);
     });
 };

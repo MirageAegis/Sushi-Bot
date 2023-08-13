@@ -371,3 +371,21 @@ export const onServerJoin = async (client: Client, server: Guild): Promise<void>
 export const onServerLeave = async (client: Client, server: Guild): Promise<void> => {
     await (await Server.get(server.id)).delete();
 };
+
+/**
+ * Triggered when a non-command error occurs.
+ * Errors are logged to the admin logs in the admin server.
+ * 
+ * @param client the Discord bot
+ * @param error the error
+ */
+export const onError = async (client: Client, error: Error): Promise<void> => {
+    const logs: TextChannel = getAdminLogsChannel();
+
+    const report: string = "```\n" +
+                           "Generic Error\n\n" +
+                           `${error}\n` +
+                           "```";
+    
+    await logs.send(report);
+};
