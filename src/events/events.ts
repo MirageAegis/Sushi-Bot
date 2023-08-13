@@ -346,7 +346,18 @@ export const onMessageDelete = async (client: Client, message: Message): Promise
  * @param server the Discord server joined
  */
 export const onServerJoin = async (client: Client, server: Guild): Promise<void> => {
-    await leaveIneligibleServer(client, server, getAdminLogsChannel());
+    const eligible: boolean = await leaveIneligibleServer(client, server, getAdminLogsChannel());
+
+    if (eligible) {
+        const bl: Blacklist = await Blacklist.get();
+
+        for await (const [uid, reason] of bl.users) {
+            await server.bans.create(
+                uid,
+                { reason: reason }
+            );
+        }
+    }
 };
 
 /**

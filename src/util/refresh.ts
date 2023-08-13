@@ -132,8 +132,9 @@ export const refreshServers = async (client: Client): Promise<void> => {
  * @param client the Discord bot
  * @param server the server to check
  * @param logs the admin logs channel
+ * @returns whether the server is eligible or not, true -> eligible
  */
-export const leaveIneligibleServer = async (client: Client, server: Guild, logs: TextChannel): Promise<void> => {
+export const leaveIneligibleServer = async (client: Client, server: Guild, logs: TextChannel): Promise<boolean> => {
     const owner: User = (await server.fetchOwner()).user;
 
     const eligible: boolean = await verify(owner);
@@ -153,5 +154,11 @@ export const leaveIneligibleServer = async (client: Client, server: Guild, logs:
         
         await server.leave();
         await logs.send(`Left <@${owner.id}>'s server, **${server.name}**`);
+
+        // Server ineligible
+        return false;
     }
+
+    // Server eligible
+    return true;
 };
