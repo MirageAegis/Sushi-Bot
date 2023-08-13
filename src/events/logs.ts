@@ -167,8 +167,8 @@ export const genMemberUpdateEmbed = (before: GuildMember, after: GuildMember): E
     // Add this if the nickname was updated
     if (oldNick !== newNick) {
         embed.addFields(
-            { name: "Old nickname", value: oldNick ?? before.displayName, inline: true },
-            { name: "New nickname", value: newPfp ?? after.displayName, inline: true },
+            { name: "Old nickname", value: oldNick ?? before.displayName, inline: false },
+            { name: "New nickname", value: newPfp ?? after.displayName, inline: false },
             { name: "_ _", value: "_ _", inline: true } // Empty column
         );
     }
@@ -220,25 +220,23 @@ export const genUserUpdateEmbed = (before: User, after: User): EmbedBuilder | nu
     // Add this if the username was updated
     if (oldUsername !== newUsername) {
         embed.addFields(
-            { name: "Old username", value: oldUsername, inline: true },
-            { name: "New username", value: newUsername, inline: true },
-            { name: "_ _", value: "_ _", inline: true } // Empty column
+            { name: "Old username", value: oldUsername, inline: false },
+            { name: "New username", value: newUsername, inline: false },
         );
     }
 
     // Add this if the display name was updated
     if (oldDisplayName !== newDisplayName) {
         embed.addFields(
-            { name: "Old display name", value: oldDisplayName, inline: true },
-            { name: "New display name", value: newDisplayName, inline: true },
-            { name: "_ _", value: "_ _", inline: true } // Empty column
+            { name: "Old display name", value: oldDisplayName, inline: false },
+            { name: "New display name", value: newDisplayName, inline: false },
         );
     }
 
     // Add this if the username was updated
     if (oldPfp !== newPfp) {
         embed.addFields(
-            { name: "New avatar", value: "_ _", inline: true }
+            { name: "New avatar", value: "_ _", inline: false }
         )
             .setImage(after.displayAvatarURL());
     }
@@ -289,7 +287,7 @@ export const genMessageEditEmbed = (before: Message, after: Message): EmbedBuild
         .addFields(
             { name: "Member ID", value: author.id, inline: true },
             { name: "Message ID", value: before.id, inline: true },
-            { name: "Channel", value: before.channel.toString() }
+            { name: "Channel", value: before.channel.toString(), inline: false }
         );
 
     // Add this if the content was updated,
@@ -358,7 +356,7 @@ export const genMessageDeleteEmbed = (message: Message): EmbedBuilder | null => 
         .addFields(
             { name: "Member ID", value: author.id, inline: true },
             { name: "Message ID", value: message.id, inline: true },
-            { name: "Channel", value: message.channel.toString() },
+            { name: "Channel", value: message.channel.toString(), inline: false },
         );
 
     // Add if the message has text
