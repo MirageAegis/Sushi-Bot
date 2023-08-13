@@ -33,6 +33,7 @@ import {
     genMemberBanEmbed, genMemberJoinEmbed, genMemberLeaveEmbed, genMemberUnbanEmbed,
     genMemberUpdateEmbed, genMessageDeleteEmbed, genMessageEditEmbed, genUserUpdateEmbed
 } from "./logs";
+import { Blacklist } from "../schemas/blacklist";
 
 /*
  * This module has event listeners for the bot
@@ -65,6 +66,17 @@ export const onMemberJoin = async (client: Client, member: GuildMember): Promise
         // Sushi Bot had its permissions revoked
         server.logs = null;
         await server.save();
+    }
+
+    // Check if the new member is blacklisted
+    const bl: Blacklist = await Blacklist.get();
+    const ban: string = bl.users.get(member.id);
+
+    // Immediately ban if they are
+    if (ban) {
+        await member.ban({
+            reason: ban
+        });
     }
 };
 
