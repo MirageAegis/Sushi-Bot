@@ -61,7 +61,7 @@ for (const file of cmdFiles) {
         continue;
     }
 
-    // Get the path of the current directory (./src) > "commands" > category > command
+    // Get the path of the current directory (/src) > "commands" > "admin" > "admin-subcommands" > command
     const cmdPath: string = path.join(__dirname, file);
     const cmd: Subcommand = require(cmdPath).command;
     

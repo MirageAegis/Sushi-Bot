@@ -32,8 +32,8 @@ import { Server } from "../../../schemas/server.js";
 
 /*
  * A server configuration command for setting a logging channel
- * reloading the blacklist
  */
+
 const name: string = "logs";
 
 export const command: Subcommand = {

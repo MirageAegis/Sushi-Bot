@@ -30,7 +30,7 @@ import { defaultErrorHandler } from "../../../util/error-handler.js";
 import { MAGENTA } from "../../../util/colours.js";
 
 /*
- * The help command for all admin commands
+ * The help command for all config commands
  *
  * This command module differs from all other commands because it needs to load them
  * to access the help embed of each command
@@ -61,7 +61,7 @@ for (const file of cmdFiles) {
         continue;
     }
 
-    // Get the path of the current directory (./src) > "commands" > category > command
+    // Get the path of the current directory (/src) > "commands" > "configuration" > "config-subcommands" > command
     const cmdPath: string = path.join(__dirname, file);
     const cmd: Subcommand = require(cmdPath).command;
     
