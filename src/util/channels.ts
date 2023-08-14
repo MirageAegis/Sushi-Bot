@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { TextChannel, Client, Channel, ChannelType } from "discord.js";
+import { TextChannel, Client, Channel, ChannelType, Guild } from "discord.js";
 import { NoClientProvidedError, NotTextChannelError } from "./errors";
 
 // The sincgleton representing the user reports channel in the admin/official server
@@ -85,4 +85,29 @@ export const getAdminLogsChannel = (client: Client = null): TextChannel => {
     }
 
     return adminLogsChannel = <TextChannel> channel;
+};
+
+// The sincgleton representing the admin/official server
+let adminServer: Guild = null;
+
+/**
+ * Gets the admin/official server.
+ * 
+ * @param client the client to fetch the server from if uninitialised
+ * @returns the admin/official server
+ */
+export const getAdminServer = async (client: Client = null): Promise<Guild> => {
+    // If the server has been instantiated, return it
+    if (adminServer) {
+        return adminServer;
+    }
+
+    // If there's no client and no role, the role can't be fetched
+    if (!client) {
+        throw new NoClientProvidedError();
+    }
+
+    adminServer = await client.guilds.fetch(process.env.ADMIN_SERVER_ID);
+
+    return adminServer;
 };

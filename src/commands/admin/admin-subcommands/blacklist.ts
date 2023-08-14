@@ -62,7 +62,7 @@ export const command: Subcommand = {
         // The user to blacklist
         const user: User = ctx.options.getUser("user");
         const uid: string = user.id;
-        const reason: string = ctx.options.getString("reason");
+        const reason: string = `Sushi Bot Blacklist: ${ctx.options.getString("reason")}`;
 
         await ctx.deferReply();
 

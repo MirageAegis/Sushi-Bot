@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022-present Mirage Aegis
+ * Copyright (c) 2023-present Mirage Aegis
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ import { defaultErrorHandler } from "../../../util/error-handler.js";
 import { MAGENTA } from "../../../util/colours.js";
 
 /*
- * The help command for all admin commands
+ * The help command for all config commands
  *
  * This command module differs from all other commands because it needs to load them
  * to access the help embed of each command
@@ -38,8 +38,8 @@ import { MAGENTA } from "../../../util/colours.js";
 
 // The default help window to show when no command is specified
 const defaultEmbed: EmbedBuilder = new EmbedBuilder()
-    .setTitle("Admin Help")
-    .setDescription("Here are my administrator commands! Use `/admin help <command>` to get help for a specific command")
+    .setTitle("Config Help")
+    .setDescription("Here are my server configuration commands! Use `/config help <command>` to get help for a specific command")
     .setColor(MAGENTA);
 
 
@@ -57,11 +57,11 @@ let cmdstr: string = "";
 for (const file of cmdFiles) {
     // Skip this file
     if (file === "help.js") {
-        cmdstr += "`/admin help`, ";
+        cmdstr += "`/config help`, ";
         continue;
     }
 
-    // Get the path of the current directory (/src) > "commands" > "admin" > "admin-subcommands" > command
+    // Get the path of the current directory (/src) > "commands" > "configuration" > "config-subcommands" > command
     const cmdPath: string = path.join(__dirname, file);
     const cmd: Subcommand = require(cmdPath).command;
     
@@ -70,7 +70,7 @@ for (const file of cmdFiles) {
         const name: string = cmd.data.name;
         // The colour is set to magenta here
         commands.set(name, cmd.help.setColor(MAGENTA));
-        cmdstr += `\`/admin ${name}\`, `;
+        cmdstr += `\`/config ${name}\`, `;
     }
 }
 // Remove the dangling comma
@@ -86,7 +86,7 @@ const help: EmbedBuilder = new EmbedBuilder()
     .setTitle("Help")
     .setDescription("The help command which displays useful command information!")
     .addFields(
-        { name: "Format", value: `\`/admin ${name} [command]\`` },
+        { name: "Format", value: `\`/config ${name} [command]\`` },
         { name: "[command]", value: "Optional parameter. The command that you want to know more about" }
     )
     .setColor(MAGENTA);
@@ -104,7 +104,7 @@ export const command: Subcommand = {
     // Command headers
     data: new SlashCommandSubcommandBuilder()
         .setName(name)
-        .setDescription("Need help with my admin commands?")
+        .setDescription("Need help with my server configuration commands?")
         .addStringOption(o =>
             o.setName("command")
                 .setDescription("The command to get more information about")

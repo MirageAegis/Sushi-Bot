@@ -26,7 +26,7 @@ import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { Client, ClientOptions, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
 import { Command } from "./util/command-template.js";
-import { init } from "./util/init.js";
+import { init, loadListeners } from "./util/init.js";
 
 // Loads the environment variables
 require("dotenv").config();
@@ -72,6 +72,8 @@ client.once(Events.ClientReady, async (c: Client): Promise<void> => {
     
     console.log(`Bot ready! I'm ${c.user.tag}!`);
 });
+
+loadListeners(client);
 
 
 // ----- LOAD COMMANDS -----

@@ -22,12 +22,17 @@
  * SOFTWARE.
  */
 
-import { ChatInputCommandInteraction, DiscordAPIError, InteractionReplyOptions } from "discord.js";
+import {
+    ApplicationCommand, ChatInputCommandInteraction, DiscordAPIError,
+    InteractionReplyOptions, User
+} from "discord.js";
 import { NoMemberFoundError, UserIsMemberError } from "./errors";
+import { getAdminLogsChannel } from "./channels";
 
 // ----- ERROR CODES -----
 
 export const MISSING_PERMISSIONS: number = 50013;
+export const UNKNOWN_MEMBER: number = 10007;
 export const UNKNOWN_BAN: number = 10026;
 export const MESSAGES_TOO_OLD_FOR_BULK_DELETION: number = 50034;
 export const INT_OVER_100: number = 50035;
@@ -37,8 +42,9 @@ export const INT_OVER_100: number = 50035;
 export type ErrorHandler = { (ctx: ChatInputCommandInteraction, err: Error): Promise<void> };
 
 export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInteraction, err: Error): Promise<void> => {
-    // TODO: Implement default error handler
     console.log(err);
+
+    // ----- COMMAND REPLY -----
 
     const reply: InteractionReplyOptions = {};
 
@@ -74,4 +80,23 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
     } else {
         await ctx.reply(reply);
     }
+
+    // ----- !COMMAND REPLY -----
+
+    // ----- ERROR LOG -----
+
+    const user: User = ctx.user;
+    const command: ApplicationCommand = ctx.command;
+
+    const report: string = "```\n" +
+                           "Command Error\n\n" +
+                           `Server: ${ctx.guild.name}\n` +
+                           `User: ${user.id} (${user.username})\n` +
+                           `Command: ${command.name}\n` +
+                           `Options: ${command.options.toString()}\n\n` +
+                           // Error name, and error code if it's a Discord API error
+                           `${err.name}${err instanceof DiscordAPIError ? `: ${err.code} (${err.message})` : ""}\n` +
+                           "```";
+    
+    await getAdminLogsChannel().send(report);
 };
