@@ -55,7 +55,7 @@ export const command: Subcommand = {
 
         await ctx.deferReply();
 
-        // Get the server documetn from the database
+        // Get the server document from the database
         const server: Server = await Server.get(ctx.guildId);
         
         server.logs = channel?.id;
