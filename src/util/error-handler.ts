@@ -27,6 +27,7 @@ import {
     InteractionReplyOptions, User
 } from "discord.js";
 import { NoMemberFoundError, UserIsMemberError } from "./errors";
+import { getAdminLogsChannel } from "./channels";
 
 // ----- ERROR CODES -----
 
@@ -97,4 +98,6 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
                            // Error name, and error code if it's a Discord API error
                            `${err.name}${err instanceof DiscordAPIError ? `: ${err.code} (${err.message})` : ""}\n` +
                            "```";
+    
+    await getAdminLogsChannel().send(report);
 };
