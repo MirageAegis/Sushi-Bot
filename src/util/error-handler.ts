@@ -85,7 +85,6 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
 
     // ----- ERROR LOG -----
 
-    const server: Guild = ctx.guild;
     const user: User = ctx.user;
     const command: ApplicationCommand = ctx.command;
 
