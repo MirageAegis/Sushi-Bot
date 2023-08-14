@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-present Mirage Aegis
+ * Copyright (c) 2022-present Mirage Aegis
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,19 +29,20 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../../util/command-template.js";
 import { defaultErrorHandler } from "../../../util/error-handler.js";
-import { refreshServers } from "../../../util/refresh.js";
+import { refreshBlacklist, refreshServers } from "../../../util/refresh.js";
 
 /*
  * A command for the administrators of Sushi Bot to use for
- * reloading the bot's joined servers
+ * reloading the blacklist and the servers that the bot is in
  */
-const name: string = "reserver";
+
+const name: string = "reload";
 
 export const command: Subcommand = {
     // Command headers
     data: new SlashCommandSubcommandBuilder()
         .setName(name)
-        .setDescription("Reloads the bot's servers on demand"),
+        .setDescription("Reloads the blacklist and the bot's servers on demand"),
 
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
@@ -59,7 +60,7 @@ export const command: Subcommand = {
             .addComponents(yes, no);
 
         const prompt: InteractionResponse = await ctx.reply({
-            content: "Reload servers? This may take a while",
+            content: "Soft reload me? This may take a while",
             components: [row]
         });
 
@@ -77,9 +78,9 @@ export const command: Subcommand = {
                 components: [row]
             });
 
-            // If the user selected no, abort blacklisting
+            // If the user selected no, abort reload
             if (confirmation.customId === "no") {
-                await ctx.followUp("Blacklisting denied, aborting opertation");
+                await ctx.followUp("Reloading denied, aborting opertation");
                 return;
             }
         } catch (e) {
@@ -94,10 +95,10 @@ export const command: Subcommand = {
 
         // Proceed if the user pressed yes
         const report: Message = await ctx.followUp(
-            `Commencing server reload...\n` +
-            `Actions will be logged in <#${process.env.LOGS_CHANNEL_ID}>`
+            `Commencing bot reload...\nActions will be logged in <#${process.env.LOGS_CHANNEL_ID}>`
         );
 
+        await refreshBlacklist(ctx.client);
         await refreshServers(ctx.client);
 
         await report.edit("Reload complete");
@@ -108,9 +109,12 @@ export const command: Subcommand = {
 
     // Help command embed
     help: new EmbedBuilder()
-        .setTitle("Reserver")
+        .setTitle("Reload")
         .setDescription(
-            "An administrative command that reloads the servers Sushi Bot is in, leaving every server that isn't eligible")
+            "An administrative command that reloads the bot's blacklist and servers. " +
+            "This bans everyone in the blacklist from all of Sushi Bot's servers, " +
+            "and leaves all ineligible server."
+        )
         .addFields(
             { name: "Format", value: `\`/admin ${name}\`` }
         )
