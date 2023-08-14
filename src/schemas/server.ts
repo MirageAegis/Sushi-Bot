@@ -135,8 +135,10 @@ export class Server {
      * Deletes the server configurations from the database.
      */
     public async delete(): Promise<void> {
+        const [, timeout]: [Server, NodeJS.Timeout] = Server.cache.get(this.data._id);
         // Clear the server data from the cache
-        clearTimeout(Server.cache.get(this.data._id)[1]);
+        clearTimeout(timeout);
+        Server.cache.delete(this.data._id);
         // Delete from the database
         await Server.model.findByIdAndDelete(this.data._id);
     }
