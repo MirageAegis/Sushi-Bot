@@ -169,7 +169,6 @@ export const genMemberUpdateEmbed = (before: GuildMember, after: GuildMember): E
         embed.addFields(
             { name: "Old nickname", value: oldNick ?? before.displayName, inline: false },
             { name: "New nickname", value: newPfp ?? after.displayName, inline: false },
-            { name: "_ _", value: "_ _", inline: true } // Empty column
         );
     }
 
