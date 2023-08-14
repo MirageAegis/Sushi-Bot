@@ -23,7 +23,7 @@
  */
 
 import {
-    ApplicationCommand, ChatInputCommandInteraction, DiscordAPIError, Guild,
+    ApplicationCommand, ChatInputCommandInteraction, DiscordAPIError,
     InteractionReplyOptions, User
 } from "discord.js";
 import { NoMemberFoundError, UserIsMemberError } from "./errors";
