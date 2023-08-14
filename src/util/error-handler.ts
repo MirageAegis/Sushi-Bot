@@ -22,7 +22,10 @@
  * SOFTWARE.
  */
 
-import { ChatInputCommandInteraction, DiscordAPIError, InteractionReplyOptions } from "discord.js";
+import {
+    ApplicationCommand, ChatInputCommandInteraction, DiscordAPIError, Guild,
+    InteractionReplyOptions, User
+} from "discord.js";
 import { NoMemberFoundError, UserIsMemberError } from "./errors";
 
 // ----- ERROR CODES -----
@@ -38,8 +41,9 @@ export const INT_OVER_100: number = 50035;
 export type ErrorHandler = { (ctx: ChatInputCommandInteraction, err: Error): Promise<void> };
 
 export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInteraction, err: Error): Promise<void> => {
-    // TODO: Log to error log channel
     console.log(err);
+
+    // ----- COMMAND REPLY -----
 
     const reply: InteractionReplyOptions = {};
 
@@ -75,4 +79,22 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
     } else {
         await ctx.reply(reply);
     }
+
+    // ----- !COMMAND REPLY -----
+
+    // ----- ERROR LOG -----
+
+    const server: Guild = ctx.guild;
+    const user: User = ctx.user;
+    const command: ApplicationCommand = ctx.command;
+
+    const report: string = "```\n" +
+                           "Command Error\n\n" +
+                           `Server: ${ctx.guild.name}\n` +
+                           `User: ${user.id} (${user.username})\n` +
+                           `Command: ${command.name}\n` +
+                           `Options: ${command.options.toString()}\n\n` +
+                           // Error name, and error code if it's a Discord API error
+                           `${err.name}${err instanceof DiscordAPIError ? `: ${err.code} (${err.message})` : ""}\n` +
+                           "```";
 };
