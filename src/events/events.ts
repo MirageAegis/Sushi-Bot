@@ -23,8 +23,8 @@
  */
 
 import {
-    Client, Collection, EmbedBuilder, Guild, GuildBan, GuildMember, Message,
-    TextChannel, User
+    Activity, ActivityType, Client, Collection, EmbedBuilder, Guild, GuildBan,
+    GuildMember, Message, Presence, TextChannel, User
 } from "discord.js";
 import { leaveIneligibleServer } from "../util/refresh";
 import { getAdminLogsChannel } from "../util/channels";
@@ -34,6 +34,7 @@ import {
     genMemberUpdateEmbed, genMessageDeleteEmbed, genMessageEditEmbed, genUserUpdateEmbed
 } from "./logs";
 import { Blacklist } from "../schemas/blacklist";
+import { formatGoLivePost } from "./shoutout";
 
 /*
  * This module has event listeners for the bot
@@ -335,6 +336,108 @@ export const onMessageDelete = async (client: Client, message: Message): Promise
         // Sushi Bot had its permissions revoked
         server.logs = null;
         await server.save();
+    }
+};
+
+/**
+ * Broadcasts auto go-live posts and auto shout outs to sevrers subscribed to them.
+ * 
+ * @param client the Discord bot
+ * @param before the presence before update
+ * @param after the presence after update
+ */
+export const onPresenceUpdate = async (client: Client, before: Presence, after: Presence): Promise<void> => {
+    if (
+        !before || !after ||
+        before.status === "offline" ||
+        after.status === "offline"
+    ) {
+        return;
+    }
+
+    const guild: Guild = after.guild;
+    const server: Server = await Server.get(guild.id);
+    const member: GuildMember = after.member;
+    const oldStreams: Activity[] = [];
+    let streams: Activity[] = [];
+
+    // Extract Twitch stream activites
+    for (const activity of before.activities) {
+        if (
+            activity.type === ActivityType.Streaming &&
+            activity.name === "Twitch"
+        ) {
+            oldStreams.push(activity);
+            break;
+        }
+    }
+
+    for (const activity of after.activities) {
+        if (
+            activity.type === ActivityType.Streaming &&
+            activity.name === "Twitch"
+        ) {
+            streams.push(activity);
+            break;
+        }
+    }
+
+    // Skip if no stream was found
+    if (!streams.length) {
+        return;
+    }
+    
+    // Check if the stream link has been updated
+    if (oldStreams.length) {
+        const oldUrls: string[] = oldStreams.map(o => o.url);
+        streams = streams.filter(s => !oldUrls.includes(s.url));
+    }
+
+    // Auto go-live for server owners
+    // Auto shout out for non server owners
+    if (member.id === guild.ownerId) {
+        // Skip if no auto go-live configured
+        if (!server.goLive) {
+            return;
+        }
+
+        const channel: TextChannel = <TextChannel> client.channels.cache.get(server.goLive.channel);
+
+        for (const stream of streams) {
+            try {
+                await channel.send(formatGoLivePost(stream, server.goLive.message));
+            } catch (e) {
+                // Remove auto go-live configuration if we fail to send
+                server.goLive = null;
+                await server.save();
+                throw e;
+            }
+        }
+    } else {
+        // Skip if no auto shout out configured
+        if (!server.shoutout) {
+            return;
+        }
+
+        const hasRole: boolean = after.member.roles.cache.get(server.shoutout.role) ? true : false;
+
+        // Skip if the member doesn't have the auto shout out role
+        if (!hasRole) {
+            return;
+        }
+
+        const channel: TextChannel = <TextChannel> client.channels.cache.get(server.shoutout.channel);
+
+        for (const stream of streams) {
+            try {
+                await channel.send(formatGoLivePost(stream, server.goLive.message));
+            } catch (e) {
+                // Remove auto shout out configuration if we fail to send
+                server.shoutout = null;
+                await server.save();
+                throw e;
+            }
+        }
     }
 };
 
