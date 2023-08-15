@@ -54,6 +54,7 @@ const client = new Bot({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildPresences
     ],
     presence: {
         status: "online",
