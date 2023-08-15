@@ -27,7 +27,40 @@ import mongoose, { Schema, Document, InferSchemaType } from "mongoose";
 const serverSchema: Schema = new Schema({
     _id: String,
     logs: String,
+    shoutout: {
+        channel: String,
+        role: String,
+        message: String
+    },
+    goLive: {
+        channel: String,
+        message: String
+    }
 });
+
+/**
+ * Auto shout out configuration struct.
+ * 
+ * @param channel the channel ID of the auto shout out channel
+ * @param role the role ID of the auto shout out role
+ * @param message the auto shout out message
+ */
+export type Shoutout = {
+    readonly channel?: string;
+    readonly role?: string;
+    readonly message?: string
+};
+
+/**
+ * Auto go-live post configuration struct.
+ * 
+ * @param channel the channel ID of the auto go-live post channel
+ * @param message the auto go-live message
+ */
+export type GoLive = {
+    readonly channel?: string;
+    readonly message?: string;
+};
 
 type ServerT = InferSchemaType<typeof serverSchema>;
 
@@ -152,5 +185,29 @@ export class Server {
 
     public set logs(id: string) {
         (<ServerT> this.data).logs = id;
+    }
+
+    /**
+     * The auto shout out data
+     */
+    public get shoutout(): Shoutout {
+        const shoutout: Shoutout = (<ServerT> this.data).shoutout;
+        return shoutout.channel && shoutout.role ? shoutout : null;
+    }
+
+    public set shoutout(data: Shoutout) {
+        (<ServerT> this.data).shoutout = data;
+    }
+
+    /**
+     * The auto go-live post data
+     */
+    public get goLive(): GoLive {
+        const goLive: GoLive = (<ServerT> this.data).goLive;
+        return goLive.channel ? goLive : null;
+    }
+
+    public set goLive(data: GoLive) {
+        (<ServerT> this.data).goLive = data;
     }
 }
