@@ -74,9 +74,10 @@ export const command: Subcommand = {
     help: new EmbedBuilder()
         .setTitle("Logs")
         .setDescription(
-            "A server configutation command that sets the logging channel for a server")
+            "A server configutation command that sets the logging channel for a server"
+        )
         .addFields(
-            { name: "Format", value: `\`/config ${name} [logs]\`` },
-            { name: "[logs]", value: "Optional parameter. The channel to set as logging channel. Omit to remove the logs channel" }
+            { name: "Format", value: `\`/config ${name} [channel]\`` },
+            { name: "[channel]", value: "Optional parameter. The channel to set as logging channel. Omit to remove the logs channel" }
         )
 };

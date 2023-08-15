@@ -199,7 +199,8 @@ export const command: Subcommand = {
         .setTitle("Blacklist")
         .setDescription(
             "An administrative command that adds a user to Sushi Bot's global blacklist and bans them from all " +
-            "servers that Sushi Bot is in")
+            "servers that Sushi Bot is in"
+        )
         .addFields(
             { name: "Format", value: `\`/admin ${name} <user> <reason>\`` },
             { name: "<user>", value: "Required parameter. The user to blacklist from Sushi Bot's servers" },
