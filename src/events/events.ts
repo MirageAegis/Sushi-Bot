@@ -430,7 +430,7 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
 
         for (const stream of streams) {
             try {
-                await channel.send(formatGoLivePost(stream, server.goLive.message));
+                await channel.send(formatGoLivePost(stream, server.shoutout.message));
             } catch (e) {
                 // Remove auto shout out configuration if we fail to send
                 server.shoutout = null;
