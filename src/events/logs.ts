@@ -100,7 +100,8 @@ export const genMemberBanEmbed = (ban: GuildBan): EmbedBuilder => {
         .addFields(
             { name: "ID", value: ban.user.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
-            { name: "Bot user", value: `${ban.user.bot}`, inline: true }
+            { name: "Bot user", value: `${ban.user.bot}`, inline: true },
+            { name: "Reason", value: `${ban.reason ?? "N/A"}`, inline: true }
         );
 
     return embed;
@@ -124,7 +125,8 @@ export const genMemberUnbanEmbed = (ban: GuildBan): EmbedBuilder => {
         .addFields(
             { name: "ID", value: ban.user.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
-            { name: "Bot user", value: `${ban.user.bot}`, inline: true }
+            { name: "Bot user", value: `${ban.user.bot}`, inline: true },
+            { name: "Reason", value: `${ban.reason ?? "N/A"}`, inline: true }
         );
 
     return embed;
