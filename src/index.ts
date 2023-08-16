@@ -24,7 +24,9 @@
 
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { Client, ClientOptions, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
+import {
+    ActivityType, Client, ClientOptions, Collection, Events, GatewayIntentBits, Interaction
+} from "discord.js";
 import { Command } from "./util/command-template.js";
 import { init, loadListeners } from "./util/init.js";
 
@@ -51,6 +53,7 @@ class Bot extends Client {
 const client = new Bot({
     intents: [
         GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildModeration,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
@@ -59,8 +62,8 @@ const client = new Bot({
     presence: {
         status: "online",
         activities: [{
-            name: "The World of sushis!",
-            type: 0  // Playing
+            name: "The World of Sushis!",
+            type: ActivityType.Playing
         }]
     }
 });
