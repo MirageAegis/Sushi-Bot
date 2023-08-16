@@ -23,7 +23,7 @@
  */
 
 import { EmbedBuilder, Guild, GuildMember, User } from "discord.js";
-import { GREEN, RED, YELLOW } from "./colours";
+import { BLUE, RED, YELLOW } from "./colours";
 
 export enum Action {
     KICK,
@@ -58,7 +58,7 @@ export const genEmbed = (user: User | GuildMember, server: Guild, action: Action
             break;
         case Action.UNBAN:
             embed.setAuthor({ name: "User unbanned", iconURL: server.iconURL() })
-                .setColor(GREEN);
+                .setColor(BLUE);
             break;
     }
 
