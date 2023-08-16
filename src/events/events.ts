@@ -487,7 +487,9 @@ export const onError = async (client: Client, error: Error): Promise<void> => {
 
     const report: string = "```\n" +
                            "Generic Error\n\n" +
-                           `${error}\n` +
+                           `${error}\n\n` +
+                           "Details:\n" +
+                           `${error.stack}\n` +
                            "```";
     
     await logs.send(report);
