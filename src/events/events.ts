@@ -101,7 +101,7 @@ export const onMemberLeave = async (client: Client, member: GuildMember): Promis
 
     try {
         // Log to the logs channel
-        await logs.send({ embeds: [genMemberLeaveEmbed(member)] });
+        await logs.send({ embeds: [await genMemberLeaveEmbed(member)] });
     } catch {
         // Remove configurations if logging failed.
         // Most likely causes are that the channel was deleted or that
@@ -131,7 +131,7 @@ export const onMemberBan = async (client: Client, ban: GuildBan): Promise<void> 
 
     try {
         // Log to the logs channel
-        await logs.send({ embeds: [genMemberBanEmbed(ban)] });
+        await logs.send({ embeds: [await genMemberBanEmbed(ban)] });
     } catch {
         // Remove configurations if logging failed.
         // Most likely causes are that the channel was deleted or that
@@ -161,7 +161,7 @@ export const onMemberUnban = async (client: Client, ban: GuildBan): Promise<void
 
     try {
         // Log to the logs channel
-        await logs.send({ embeds: [genMemberUnbanEmbed(ban)] });
+        await logs.send({ embeds: [await genMemberUnbanEmbed(ban)] });
     } catch {
         // Remove configurations if logging failed.
         // Most likely causes are that the channel was deleted or that
