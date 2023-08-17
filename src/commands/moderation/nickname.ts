@@ -66,7 +66,7 @@ export const command: Command = {
 
         const oldNick: string = member.displayName;
         const newNick: string = ctx.options.getString("new_nickname") ?? null;
-        const reason: string = ctx.options.getString("reason") ?? null;
+        const reason: string = `${ctx.user}: ${ctx.options.getString("reason") ?? "No reason"}`;
 
         await member.setNickname(newNick, reason);
 

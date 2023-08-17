@@ -61,7 +61,7 @@ export const command: Command = {
         // Default values for parameters
 
         const member: GuildMember = ctx.options.getMember("member") as GuildMember ?? null;
-        const reason: string = ctx.options.getString("reason") ?? null;
+        const reason: string = `${ctx.user}: ${ctx.options.getString("reason") ?? "No reason"}`;
         const verbose: boolean = ctx.options.getBoolean("verbose") ?? false;
 
         // Check if the user is a member
