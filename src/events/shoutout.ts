@@ -59,6 +59,12 @@ export const TITLE: string = "{title}";
 export const GAME: string = "{game}";
 
 /**
+ * The string that gets replaced with a new line character
+ * in the formatted string.
+ */
+export const NEW_LINE: string = "{nl}";
+
+/**
  * Default go-live and shout out stringused when none is in the configurations.
  */
 const DEFAULT_POST: string = `${DISCORD_NAME} is live now! Go watch the stream at ${LINK}`;
@@ -96,5 +102,6 @@ export const formatGoLivePost = (activity: Activity, template: string): string |
         .replace(CHANNEL, channel)
         .replace(LINK, link)
         .replace(TITLE, title)
-        .replace(GAME, game);
+        .replace(GAME, game)
+        .replace(NEW_LINE, "\n");
 };

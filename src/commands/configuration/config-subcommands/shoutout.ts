@@ -29,7 +29,7 @@ import {
 import { Subcommand } from "../../../util/command-template.js";
 import { defaultErrorHandler } from "../../../util/error-handler.js";
 import { Server } from "../../../schemas/server.js";
-import { DISCORD_NAME, CHANNEL, LINK, TITLE, GAME } from "../../../events/shoutout.js";
+import { DISCORD_NAME, CHANNEL, LINK, TITLE, GAME, NEW_LINE } from "../../../events/shoutout.js";
 
 /*
  * A server configuration command for setting an auto shout out role,
@@ -108,7 +108,8 @@ export const command: Subcommand = {
                        `- \`${CHANNEL}\` - Replaced with Twitch username\n` +
                        `- \`${LINK}\` - Replaced with Twitch link\n` +
                        `- \`${TITLE}\` - Replaced with Stream title\n` +
-                       `- \`${GAME}\` - Replaced with Stream game`
+                       `- \`${GAME}\` - Replaced with Stream game` +
+                       `- \`${NEW_LINE}\` - Replaced with a new line`
             }
         )
 };
