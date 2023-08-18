@@ -110,7 +110,7 @@ export const genMemberLeaveEmbed = async (member: GuildMember): Promise<EmbedBui
         action = "Member kicked";
         embed.addFields(
             { name: "Moderator", value: `${executor}`, inline: false },
-            { name: "Reason", value: reason, inline: false }
+            { name: "Reason", value: `${reason ?? "N/A"}`, inline: false }
         );
     } else {
         //otherwise they probably left
