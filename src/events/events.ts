@@ -41,6 +41,35 @@ import { formatGoLivePost } from "./shoutout";
  */
 
 /**
+ * Logs an embed to a log channel if possible. Does nothing if the
+ * server doesn't have logs configured. Deletes configuration if logs isn't a channel.
+ * 
+ * @param client the Discord bot
+ * @param server the server document from the database
+ * @param embed the embed to log
+ */
+const logTo = async (client: Client, server: Server, embed: EmbedBuilder): Promise<void> => {
+    const logsID: string = server.logs;
+
+    // Skip if the server isn't subscribed to logs
+    if (!logsID) {
+        return;
+    }
+
+    // Logs is guaranteed to be a logs channel due to the constraints
+    // of the /config logs command
+    const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
+
+    if (!logs) {
+        // Remove configurations if the logs do not exist
+        server.logs = null;
+        await server.save();
+    }
+
+    await logs.send({ embeds: [embed] });
+};
+
+/**
  * Logs member join events to servers subscribed to logs.
  * 
  * @param client the Discord bot
@@ -49,25 +78,8 @@ import { formatGoLivePost } from "./shoutout";
 export const onMemberJoin = async (client: Client, member: GuildMember): Promise<void> => {
     // The server and logs channel ID of the server that the member joined
     const server: Server = await Server.get(member.guild.id);
-    const logsID: string = server.logs;
 
-    // Skip if the server isn't subscribed to logs
-    if (!logsID) {
-        return;
-    }
-
-    const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
-
-    try {
-        // Log to the logs channel
-        await logs.send({ embeds: [genMemberJoinEmbed(member)] });
-    } catch {
-        // Remove configurations if logging failed.
-        // Most likely causes are that the channel was deleted or that
-        // Sushi Bot had its permissions revoked
-        server.logs = null;
-        await server.save();
-    }
+    await logTo(client, server, genMemberJoinEmbed(member));
 
     // Check if the new member is blacklisted
     const bl: Blacklist = await Blacklist.get();
@@ -90,25 +102,8 @@ export const onMemberJoin = async (client: Client, member: GuildMember): Promise
 export const onMemberLeave = async (client: Client, member: GuildMember): Promise<void> => {
     // The server and logs channel ID of the server that the member left
     const server: Server = await Server.get(member.guild.id);
-    const logsID: string = server.logs;
 
-    // Skip if the server isn't subscribed to logs
-    if (!logsID) {
-        return;
-    }
-
-    const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
-
-    try {
-        // Log to the logs channel
-        await logs.send({ embeds: [await genMemberLeaveEmbed(member)] });
-    } catch {
-        // Remove configurations if logging failed.
-        // Most likely causes are that the channel was deleted or that
-        // Sushi Bot had its permissions revoked
-        server.logs = null;
-        await server.save();
-    }
+    await logTo(client, server, await genMemberLeaveEmbed(member));
 };
 
 /**
@@ -120,25 +115,8 @@ export const onMemberLeave = async (client: Client, member: GuildMember): Promis
 export const onMemberBan = async (client: Client, ban: GuildBan): Promise<void> => {
     // The server and logs channel ID of the server that the member was banned from
     const server: Server = await Server.get(ban.guild.id);
-    const logsID: string = server.logs;
 
-    // Skip if the server isn't subscribed to logs
-    if (!logsID) {
-        return;
-    }
-
-    const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
-
-    try {
-        // Log to the logs channel
-        await logs.send({ embeds: [await genMemberBanEmbed(ban)] });
-    } catch {
-        // Remove configurations if logging failed.
-        // Most likely causes are that the channel was deleted or that
-        // Sushi Bot had its permissions revoked
-        server.logs = null;
-        await server.save();
-    }
+    await logTo(client, server, await genMemberBanEmbed(ban));
 };
 
 /**
@@ -150,25 +128,8 @@ export const onMemberBan = async (client: Client, ban: GuildBan): Promise<void> 
 export const onMemberUnban = async (client: Client, ban: GuildBan): Promise<void> => {
     // The server and logs channel ID of the server that the member was unbanned from
     const server: Server = await Server.get(ban.guild.id);
-    const logsID: string = server.logs;
 
-    // Skip if the server isn't subscribed to logs
-    if (!logsID) {
-        return;
-    }
-
-    const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
-
-    try {
-        // Log to the logs channel
-        await logs.send({ embeds: [await genMemberUnbanEmbed(ban)] });
-    } catch {
-        // Remove configurations if logging failed.
-        // Most likely causes are that the channel was deleted or that
-        // Sushi Bot had its permissions revoked
-        server.logs = null;
-        await server.save();
-    }
+    await logTo(client, server, await genMemberUnbanEmbed(ban));
 };
 
 /**
@@ -181,14 +142,6 @@ export const onMemberUnban = async (client: Client, ban: GuildBan): Promise<void
 export const onMemberUpdate = async (client: Client, before: GuildMember, after: GuildMember): Promise<void> => {
     // The server and logs channel ID of the server that the member updated their profile in
     const server: Server = await Server.get(before.guild.id);
-    const logsID: string = server.logs;
-
-    // Skip if the server isn't subscribed to logs
-    if (!logsID) {
-        return;
-    }
-
-    const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
     const embed: EmbedBuilder = genMemberUpdateEmbed(before, after);
 
     // If embed is null, the changes aren't significant to Sushi Bot
@@ -196,16 +149,7 @@ export const onMemberUpdate = async (client: Client, before: GuildMember, after:
         return;
     }
 
-    try {
-        // Log to the logs channel
-        await logs.send({ embeds: [embed] });
-    } catch {
-        // Remove configurations if logging failed.
-        // Most likely causes are that the channel was deleted or that
-        // Sushi Bot had its permissions revoked
-        server.logs = null;
-        await server.save();
-    }
+    await logTo(client, server, embed);
 };
 
 /**
@@ -238,30 +182,13 @@ export const onUserUpdate = async (client: Client, before: User, after: User): P
 
         // The server and logs channel ID of the mutual server
         const server: Server = await Server.get(guild.id);
-        const logsID: string = server.logs;
 
-        // Skip if the server isn't subscribed to logs
-        if (!logsID) {
-            continue;
-        }
+        embed.setAuthor({
+            name: "Profile updated",
+            iconURL: guild.iconURL()
+        });
 
-        const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
-
-        try {
-            // Log to the logs channel
-            await logs.send({ embeds: [
-                embed.setAuthor({
-                    name: "Profile updated",
-                    iconURL: guild.iconURL()
-                })
-            ]});
-        } catch {
-            // Remove configurations if logging failed.
-            // Most likely causes are that the channel was deleted or that
-            // Sushi Bot had its permissions revoked
-            server.logs = null;
-            await server.save();
-        }
+        await logTo(client, server, embed);
     }
 };
 
@@ -275,14 +202,6 @@ export const onUserUpdate = async (client: Client, before: User, after: User): P
 export const onMessageEdit = async (client: Client, before: Message, after: Message): Promise<void> => {
     // The server and logs channel ID of the server that had a message edited
     const server: Server = await Server.get(before.guild.id);
-    const logsID: string = server.logs;
-
-    // Skip if the server isn't subscribed to logs
-    if (!logsID) {
-        return;
-    }
-
-    const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
     const embed: EmbedBuilder = genMessageEditEmbed(before, after);
 
     // If embed is null, the changes aren't significant to Sushi Bot
@@ -290,16 +209,7 @@ export const onMessageEdit = async (client: Client, before: Message, after: Mess
         return;
     }
 
-    try {
-        // Log to the logs channel
-        await logs.send({ embeds: [embed] });
-    } catch {
-        // Remove configurations if logging failed.
-        // Most likely causes are that the channel was deleted or that
-        // Sushi Bot had its permissions revoked
-        server.logs = null;
-        await server.save();
-    }
+    await logTo(client, server, embed);
 };
 
 /**
@@ -311,13 +221,6 @@ export const onMessageEdit = async (client: Client, before: Message, after: Mess
 export const onMessageDelete = async (client: Client, message: Message): Promise<void> => {
     // The server and logs channel ID of the server that had a message deleted
     const server: Server = await Server.get(message.guild.id);
-    const logsID: string = server.logs;
-
-    // Skip if the server isn't subscribed to logs
-    if (!logsID) {
-        return;
-    }
-
     const embed: EmbedBuilder = genMessageDeleteEmbed(message);
 
     // If embed is null, the message wasn't significant to Sushi Bot
@@ -325,18 +228,7 @@ export const onMessageDelete = async (client: Client, message: Message): Promise
         return;
     }
 
-    const logs: TextChannel = <TextChannel> client.channels.cache.get(logsID);
-
-    try {
-        // Log to the logs channel
-        await logs.send({ embeds: [embed] });
-    } catch {
-        // Remove configurations if logging failed.
-        // Most likely causes are that the channel was deleted or that
-        // Sushi Bot had its permissions revoked
-        server.logs = null;
-        await server.save();
-    }
+    await logTo(client, server, embed);
 };
 
 /**
