@@ -33,36 +33,42 @@ import { Activity } from "discord.js";
  * in the formatted string.
  */
 export const DISCORD_NAME: string = "{name}";
+const DISCORD_NAME_RE: RegExp = /{name}/g;
 
 /**
  * The string that gets replaced with the streamer's Twitch username 
  * in the formatted string.
  */
 export const CHANNEL: string = "{channel}";
+const CHANNEL_RE: RegExp = /{channel}/g;
 
 /**
  * The string that gets replaced with the streamer's Twitch link
  * in the formatted string.
  */
 export const LINK: string = "{link}";
+const LINK_RE: RegExp = /{link}/g;
 
 /**
  * The string that gets replaced with the streamer's current title
  * in the formatted string.
  */
 export const TITLE: string = "{title}";
+const TITLE_RE: RegExp = /{title}/g;
 
 /**
  * The string that gets replaced with the streamer's current game
  * in the formatted string.
  */
 export const GAME: string = "{game}";
+const GAME_RE: RegExp = /{game}/g;
 
 /**
  * The string that gets replaced with a new line character
  * in the formatted string.
  */
 export const NEW_LINE: string = "{nl}";
+const NEW_LINE_RE: RegExp = /{nl}/g;
 
 /**
  * Default go-live and shout out stringused when none is in the configurations.
@@ -98,10 +104,10 @@ export const formatGoLivePost = (activity: Activity, template: string): string |
     const title: string = activity.details;
     const game: string = activity.state;
 
-    return template.replace(DISCORD_NAME, displayName)
-        .replace(CHANNEL, channel)
-        .replace(LINK, link)
-        .replace(TITLE, title)
-        .replace(GAME, game)
-        .replace(NEW_LINE, "\n");
+    return template.replace(DISCORD_NAME_RE, displayName)
+        .replace(CHANNEL_RE, channel)
+        .replace(LINK_RE, link)
+        .replace(TITLE_RE, title)
+        .replace(GAME_RE, game)
+        .replace(NEW_LINE_RE, "\n");
 };
