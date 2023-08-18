@@ -23,7 +23,7 @@
  */
 
 import {
-    Attachment, AuditLogEvent, Collection, EmbedBuilder, GuildAuditLogs, GuildBan,
+    Attachment, AuditLogEvent, Collection, EmbedBuilder, GuildAuditLogs, GuildAuditLogsEntry, GuildBan,
     GuildMember, Message, User
 } from "discord.js";
 import { BLUE, GREEN, ORANGE, PURPLE, RED, TEAL, YELLOW } from "../util/colours";
@@ -63,7 +63,7 @@ export const genMemberJoinEmbed = (member: GuildMember): EmbedBuilder => {
 /**
  * The amount of milliseconds back to check when fetching from the audit log.
  */
-const TIME_CHECK: number = 500;
+const TIME_CHECK: number = 5000;
 
 /**
  * Generates an embed for whenever a member leaver a server.
@@ -81,12 +81,7 @@ export const genMemberLeaveEmbed = async (member: GuildMember): Promise<EmbedBui
     });
 
     // The data from the kick action
-    const {
-        reason,
-        target,
-        createdAt,
-        executor,
-    } = logEntry.entries.first();
+    const kickAction: GuildAuditLogsEntry<AuditLogEvent.MemberKick> = logEntry.entries.first();
 
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(member.user.username)
@@ -104,13 +99,14 @@ export const genMemberLeaveEmbed = async (member: GuildMember): Promise<EmbedBui
     // and was within short time, consider it a kick
     let action: string;
     if (
-        target.id === member.id &&
-        now - TIME_CHECK < createdAt.getTime()
+        kickAction &&
+        kickAction.target.id === member.id &&
+        now - TIME_CHECK < kickAction.createdAt.getTime()
     ) {
         action = "Member kicked";
         embed.addFields(
-            { name: "Moderator", value: `${executor}`, inline: false },
-            { name: "Reason", value: `${reason ?? "N/A"}`, inline: false }
+            { name: "Moderator", value: `${kickAction.executor}`, inline: false },
+            { name: "Reason", value: `${kickAction.reason ?? "N/A"}`, inline: false }
         );
     } else {
         //otherwise they probably left
@@ -139,10 +135,7 @@ export const genMemberBanEmbed = async (ban: GuildBan): Promise<EmbedBuilder> =>
     });
 
     // The most recent ban data
-    const {
-        reason,
-        executor,
-    } = logEntry.entries.first();
+    const banAction: GuildAuditLogsEntry = logEntry.entries.first();
 
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(ban.user.username)
@@ -156,8 +149,8 @@ export const genMemberBanEmbed = async (ban: GuildBan): Promise<EmbedBuilder> =>
             { name: "ID", value: ban.user.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
             { name: "Bot user", value: `${ban.user.bot}`, inline: true },
-            { name: "Moderator", value: `${executor}`, inline: false },
-            { name: "Reason", value: `${reason ?? "N/A"}`, inline: false }
+            { name: "Moderator", value: `${banAction?.executor ?? "N/A"}`, inline: false },
+            { name: "Reason", value: `${banAction?.reason ?? "N/A"}`, inline: false }
         );
 
     return embed;
@@ -177,10 +170,7 @@ export const genMemberUnbanEmbed = async (ban: GuildBan): Promise<EmbedBuilder> 
     });
 
     // The most recent unban data
-    const {
-        reason,
-        executor,
-    } = logEntry.entries.first();
+    const unbanAction: GuildAuditLogsEntry = logEntry.entries.first();
 
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(ban.user.username)
@@ -194,8 +184,8 @@ export const genMemberUnbanEmbed = async (ban: GuildBan): Promise<EmbedBuilder> 
             { name: "ID", value: ban.user.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
             { name: "Bot user", value: `${ban.user.bot}`, inline: true },
-            { name: "Moderator", value: `${executor}`, inline: false },
-            { name: "Reason", value: `${reason ?? "N/A"}`, inline: false }
+            { name: "Moderator", value: `${unbanAction?.executor}`, inline: false },
+            { name: "Reason", value: `${unbanAction?.reason ?? "N/A"}`, inline: false }
         );
 
     return embed;
