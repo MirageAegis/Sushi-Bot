@@ -29,22 +29,27 @@ import {
 import { Subcommand } from "../../../util/command-template.js";
 import { defaultErrorHandler } from "../../../util/error-handler.js";
 import { Server } from "../../../schemas/server.js";
+import { DISCORD_NAME, CHANNEL, LINK, TITLE, GAME, NEW_LINE } from "../../../events/shoutout.js";
 
 /*
- * A server configuration command for setting a logging channel
+ * A server configuration command for setting a go-live channel and message
  */
 
-const name: string = "logs";
+const name: string = "golive";
 
 export const command: Subcommand = {
     // Command headers
     data: new SlashCommandSubcommandBuilder()
         .setName(name)
-        .setDescription("Sets or unsets a channel for logging")
+        .setDescription("Sets or unsets a channel and message for auto go-live posts")
         .addChannelOption(o => 
             o.setName("channel")
-                .setDescription("The channel to use as a logs channel")
+                .setDescription("The channel to use as a go-live post channel. Omit to remove configuration")
                 .addChannelTypes(ChannelType.GuildText)
+        )
+        .addStringOption(o =>
+            o.setName("message")
+                .setDescription("The message to shout out with. Omit to use the default message")
         ),
 
     // Command execution
@@ -52,32 +57,51 @@ export const command: Subcommand = {
         // Default values for parameters
 
         const channel: TextChannel = ctx.options.getChannel("channel") ?? null;
+        const message: string = ctx.options.getString("message") ?? null;
 
         await ctx.deferReply();
 
         // Get the server document from the database
         const server: Server = await Server.get(ctx.guildId);
+
+        // Remove configurations if channel was omitted
+        if (!channel) {
+            server.goLive = null;
+            await server.save();
+            await ctx.followUp("Set to not auto go-live post");
+            return;
+        }
         
-        server.logs = channel?.id;
+        server.goLive = {
+            channel: channel.id,
+            message: message
+        };
         await server.save();
 
-        if (channel) {
-            await ctx.followUp(`Set to output logs in ${channel}`);
-        } else {
-            await ctx.followUp("Set to not output any logs");
-        }
+        await ctx.followUp(`Set to auto go-live post in ${channel}`);
     },
     // Error handler
     error: defaultErrorHandler,
 
     // Help command embed
     help: new EmbedBuilder()
-        .setTitle("Logs")
+        .setTitle("Golive")
         .setDescription(
-            "A server configutation command that sets the logging channel for a server"
+            "A server configutation command that sets the go-live channel and message for a server"
         )
         .addFields(
-            { name: "Format", value: `\`/config ${name} [channel]\`` },
-            { name: "[channel]", value: "Optional parameter. The channel to set as logging channel. Omit to remove the logs channel" }
+            { name: "Format", value: `\`/config ${name} [channel] [message]\`` },
+            { name: "[channel]", value: "Optional parameter. The channel to set as auto go-live post channel. Omit to remove auto shout outs" },
+            {
+                name: "[message]",
+                value: "Optional parameter. The auto go-live message. Omit to use the default message\n" +
+                       "Variables:\n" +
+                       `- \`${DISCORD_NAME}\` - Replaced with Discord display name\n` +
+                       `- \`${CHANNEL}\` - Replaced with Twitch username\n` +
+                       `- \`${LINK}\` - Replaced with Twitch link\n` +
+                       `- \`${TITLE}\` - Replaced with Stream title\n` +
+                       `- \`${GAME}\` - Replaced with Stream game\n` +
+                       `- \`${NEW_LINE}\` - Replaced with a new line`
+            }
         )
 };

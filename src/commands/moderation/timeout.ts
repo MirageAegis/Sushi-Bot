@@ -100,7 +100,7 @@ export const command: Command = {
         const hours: number = ctx.options.getInteger("hours") ?? 0;
         const minutes: number = ctx.options.getInteger("minutes") ?? 0;
         const seconds: number = ctx.options.getInteger("seconds") ?? 0;
-        const reason: string = ctx.options.getString("reason") ?? null;
+        const reason: string = `${ctx.user}: ${ctx.options.getString("reason") ?? "No reason"}`;
 
         const duration: number = days * daysToMillis +
                                  hours * hoursToMillis +

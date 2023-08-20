@@ -66,7 +66,7 @@ export const command: Command = {
         // Default values for parameters
 
         const user: User = ctx.options.getUser("user") ?? null;
-        const reason: string = ctx.options.getString("reason") ?? null;
+        const reason: string = `${ctx.user}: ${ctx.options.getString("reason") ?? "No reason"}`;
         const verbose: boolean = ctx.options.getBoolean("verbose") ?? false;
 
         await ctx.guild.bans.remove(user, reason);

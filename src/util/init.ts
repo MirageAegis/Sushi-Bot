@@ -23,7 +23,7 @@
  */
 
 import {
-    Channel, Client, Events, Guild, GuildBan, GuildMember, Message, User
+    Channel, Client, Events, Guild, GuildBan, GuildMember, Message, Presence, User
 } from "discord.js";
 import mongoose from "mongoose";
 import { getAdminLogsChannel, getAdminServer, getUserReportsChannel } from "./channels";
@@ -32,7 +32,7 @@ import { Blacklist } from "../schemas/blacklist";
 import {
     onError,
     onMemberBan, onMemberJoin, onMemberLeave, onMemberUnban, onMemberUpdate,
-    onMessageDelete, onMessageEdit, onServerJoin, onUserUpdate
+    onMessageDelete, onMessageEdit, onPresenceUpdate, onServerJoin, onUserUpdate
 } from "../events/events";
 
 /**
@@ -121,5 +121,9 @@ export const loadListeners = (client: Client): void => {
 
     client.on(Events.Error, async (error: Error): Promise<void> => {
         await onError(client, error);
+    });
+
+    client.on(Events.PresenceUpdate, async (before: Presence, after: Presence): Promise<void> => {
+        await onPresenceUpdate(client, before, after);
     });
 };

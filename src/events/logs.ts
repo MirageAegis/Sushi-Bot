@@ -22,7 +22,10 @@
  * SOFTWARE.
  */
 
-import { Attachment, Collection, EmbedBuilder, GuildBan, GuildMember, Message, User } from "discord.js";
+import {
+    Attachment, AuditLogEvent, Collection, EmbedBuilder, GuildAuditLogs, GuildAuditLogsEntry, GuildBan,
+    GuildMember, Message, User
+} from "discord.js";
 import { BLUE, GREEN, ORANGE, PURPLE, RED, TEAL, YELLOW } from "../util/colours";
 
 /*
@@ -58,19 +61,31 @@ export const genMemberJoinEmbed = (member: GuildMember): EmbedBuilder => {
 };
 
 /**
+ * The amount of milliseconds back to check when fetching from the audit log.
+ */
+const TIME_CHECK: number = 5000;
+
+/**
  * Generates an embed for whenever a member leaver a server.
  * 
  * @param member the member who left
  * @returns an embed to be logged
  */
-export const genMemberLeaveEmbed = (member: GuildMember): EmbedBuilder => {
+export const genMemberLeaveEmbed = async (member: GuildMember): Promise<EmbedBuilder> => {
+    const now: number = Date.now();
+
+    // Check the latest kick, which should be this one if the member was kicked
+    const logEntry: GuildAuditLogs<AuditLogEvent.MemberKick> = await member.guild.fetchAuditLogs({
+        limit: 1,
+        type: AuditLogEvent.MemberKick,
+    });
+
+    // The data from the kick action
+    const kickAction: GuildAuditLogsEntry<AuditLogEvent.MemberKick> = logEntry.entries.first();
+
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(member.user.username)
         .setColor(YELLOW)
-        .setAuthor({
-            name: "Member left",
-            iconURL: member.guild.iconURL()
-        })
         .setThumbnail(member.displayAvatarURL())
         .addFields(
             { name: "ID", value: member.id, inline: true },
@@ -78,6 +93,30 @@ export const genMemberLeaveEmbed = (member: GuildMember): EmbedBuilder => {
             { name: "Joined", value: `<t:${Math.floor(member.joinedTimestamp / millisToSecs)}>`, inline: true },
             { name: "Bot user", value: `${member.user.bot}`, inline: true }
         );
+
+    // Check whether the member left or was kicked
+    // If the most recent kick was on the user who left
+    // and was within short time, consider it a kick
+    let action: string;
+    if (
+        kickAction &&
+        kickAction.target.id === member.id &&
+        now - TIME_CHECK < kickAction.createdAt.getTime()
+    ) {
+        action = "Member kicked";
+        embed.addFields(
+            { name: "Moderator", value: `${kickAction.executor}`, inline: false },
+            { name: "Reason", value: `${kickAction.reason ?? "N/A"}`, inline: false }
+        );
+    } else {
+        //otherwise they probably left
+        action = "Member left";
+    }
+
+    embed.setAuthor({
+        name: action,
+        iconURL: member.guild.iconURL()
+    });
 
     return embed;
 };
@@ -88,19 +127,30 @@ export const genMemberLeaveEmbed = (member: GuildMember): EmbedBuilder => {
  * @param ban the ban created
  * @returns an embed to be logged
  */
-export const genMemberBanEmbed = (ban: GuildBan): EmbedBuilder => {
+export const genMemberBanEmbed = async (ban: GuildBan): Promise<EmbedBuilder> => {
+    // Get the ban data from the audit log
+    const logEntry: GuildAuditLogs<AuditLogEvent.MemberBanAdd> = await ban.guild.fetchAuditLogs({
+        limit: 1,
+        type: AuditLogEvent.MemberBanAdd,
+    });
+
+    // The most recent ban data
+    const banAction: GuildAuditLogsEntry = logEntry.entries.first();
+
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(ban.user.username)
         .setColor(RED)
         .setAuthor({
-            name: "Member banned",
+            name: "User banned",
             iconURL: ban.guild.iconURL()
         })
         .setThumbnail(ban.user.displayAvatarURL())
         .addFields(
             { name: "ID", value: ban.user.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
-            { name: "Bot user", value: `${ban.user.bot}`, inline: true }
+            { name: "Bot user", value: `${ban.user.bot}`, inline: true },
+            { name: "Moderator", value: `${banAction?.executor ?? "N/A"}`, inline: false },
+            { name: "Reason", value: `${banAction?.reason ?? "N/A"}`, inline: false }
         );
 
     return embed;
@@ -112,19 +162,30 @@ export const genMemberBanEmbed = (ban: GuildBan): EmbedBuilder => {
  * @param ban the ban removed
  * @returns an embed to be logged
  */
-export const genMemberUnbanEmbed = (ban: GuildBan): EmbedBuilder => {
+export const genMemberUnbanEmbed = async (ban: GuildBan): Promise<EmbedBuilder> => {
+    // Get the unban data from the audit log
+    const logEntry: GuildAuditLogs<AuditLogEvent.MemberBanRemove> = await ban.guild.fetchAuditLogs({
+        limit: 1,
+        type: AuditLogEvent.MemberBanRemove,
+    });
+
+    // The most recent unban data
+    const unbanAction: GuildAuditLogsEntry = logEntry.entries.first();
+
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(ban.user.username)
         .setColor(BLUE)
         .setAuthor({
-            name: "Member banned",
+            name: "User unbanned",
             iconURL: ban.guild.iconURL()
         })
         .setThumbnail(ban.user.displayAvatarURL())
         .addFields(
             { name: "ID", value: ban.user.id, inline: true },
             { name: "Created", value: `<t:${Math.floor(ban.user.createdTimestamp / millisToSecs)}>`, inline: true },
-            { name: "Bot user", value: `${ban.user.bot}`, inline: true }
+            { name: "Bot user", value: `${ban.user.bot}`, inline: true },
+            { name: "Moderator", value: `${unbanAction?.executor}`, inline: false },
+            { name: "Reason", value: `${unbanAction?.reason ?? "N/A"}`, inline: false }
         );
 
     return embed;

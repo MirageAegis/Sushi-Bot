@@ -63,7 +63,7 @@ export const command: Command = {
 
         const member: GuildMember = <GuildMember> ctx.options.getMember("user") ?? null;
         const user: User = ctx.options.getUser("user"); // Never null
-        const reason: string = ctx.options.getString("reason") ?? null;
+        const reason: string = `${ctx.user}: ${ctx.options.getString("reason") ?? "No reason"}`;
         const verbose: boolean = ctx.options.getBoolean("verbose") ?? false;
 
         await ctx.guild.bans.create(
