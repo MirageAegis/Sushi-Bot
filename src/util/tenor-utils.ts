@@ -195,23 +195,20 @@ export class TenorSingleton {
             limit: DEFAULT_RESPONSE_LIMIT,
         };
         /*eslint-enable*/
-        let axiosResponse: TenorResponse;
-        this.client.get<TenorResponse>("/search", {
-            params: requestParams,
-        }).then(
-            (response) => { axiosResponse = response.data; },
-            () => { throw new TenorError; }
-        );
-        const gifObjects: TenorResponseObject[] = axiosResponse.results;
+        try {
+            const gifObjects: TenorResponseObject[] = (await this.client.get<TenorResponse>("/search")).data.results;
 
-        // Populate the Gif array with the data from the response
-        for (let i = 0; i < DEFAULT_RESPONSE_LIMIT; i++) {
-            // get a GIF's URL from response
-            const gifURL = gifObjects[i].media_formats.gif.url;
-            gifArray[i] = gifURL;
+            // Populate the Gif array with the data from the response
+            for (let i = 0; i < DEFAULT_RESPONSE_LIMIT; i++) {
+                // get a GIF's URL from response
+                const gifURL = gifObjects[i].media_formats.gif.url;
+                gifArray[i] = gifURL;
+            }
+            TenorSingleton.cache.set(topic, gifArray);
+            return (gifArray[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)]);
+        } catch {
+            throw new TenorError;
         }
-        TenorSingleton.cache.set(topic, gifArray);
-        return (gifArray[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)]);
     }
 }
 
