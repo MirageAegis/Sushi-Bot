@@ -22,14 +22,17 @@
  * SOFTWARE.
  */
 
-import mongoose, { InferSchemaType, Schema, Document } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 const blacklistSchema: Schema = new Schema({
     _id: Number,
     users: { type: Map, of: String }
 });
 
-type BlacklistT = InferSchemaType<typeof blacklistSchema>;
+interface BlacklistI extends Document<number> {
+    _id: number;
+    users?: Map<string, string>;
+}
 
 /**
  * Wrapper class for the blacklist.
@@ -49,12 +52,12 @@ export class Blacklist {
     /**
      * The instance data from the database
      */
-    private data: Document;
+    private data: BlacklistI;
 
     /**
      * Instantiates a singleton with data
      */
-    private constructor(data: Document) {
+    private constructor(data: BlacklistI) {
         this.data = data;
     }
 
@@ -68,7 +71,7 @@ export class Blacklist {
             return Blacklist.instance;
         }
 
-        const data: Document = await Blacklist.model.findById(process.env.BLACKLIST_ID);
+        const data: BlacklistI = await Blacklist.model.findById(process.env.BLACKLIST_ID);
 
         if (data) {
             // If theres a blacklist in the database, use it
@@ -76,10 +79,10 @@ export class Blacklist {
         } else {
             // Otherwise create one
             return new Blacklist(
-                new Blacklist.model({
+                <BlacklistI> (await new Blacklist.model({
                     _id: process.env.BLACKLIST_ID,
                     users: new Map<string, string>()
-                })
+                }).save())
             );
         }
     }
@@ -91,7 +94,7 @@ export class Blacklist {
      * @param reason the reason the user is being blacklisted
      */
     public async add(id: string, reason: string): Promise<void> {
-        (<BlacklistT> this.data).users.set(id, reason);
+        this.data.users.set(id, reason);
         await this.data.save();
     }
 
@@ -101,6 +104,6 @@ export class Blacklist {
      * @returns the map of blacklisted users with
      */
     public get users(): ReadonlyMap<string, string> {
-        return <ReadonlyMap<string, string>> (<BlacklistT> this.data).users;
+        return <ReadonlyMap<string, string>> this.data.users;
     }
 }
