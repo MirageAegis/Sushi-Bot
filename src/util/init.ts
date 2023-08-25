@@ -30,10 +30,10 @@ import { getAdminLogsChannel, getAdminServer, getUserReportsChannel } from "./ch
 import { refreshBlacklist, refreshServers } from "./refresh";
 import { Blacklist } from "../schemas/blacklist";
 import {
-    onError,
-    onMemberBan, onMemberJoin, onMemberLeave, onMemberUnban, onMemberUpdate,
+    onError, onMemberBan, onMemberJoin, onMemberLeave, onMemberUnban, onMemberUpdate,
     onMessageDelete, onMessageEdit, onPresenceUpdate, onServerJoin, onUserUpdate
 } from "../events/events";
+import { initRefreshReactionRolesInterval } from "../events/reactionroles";
 
 /**
  * This module has an initialisation routine for the bot
@@ -80,6 +80,10 @@ export const init = async (client: Client): Promise<void> => {
     console.log("Refreshing blacklist...");
     await refreshBlacklist(client);
     console.log("Blacklist refreshed");
+
+    console.log("Refreshing reaction roles and setting up periodical refreshes...");
+    await initRefreshReactionRolesInterval(client);
+    console.log("Reaction roles refresher set up");
 };
 
 export const loadListeners = (client: Client): void => {
