@@ -48,6 +48,10 @@ const SELECT_MENU_TIMEOUT: number = 60_000;
 const PARAGRAPH_TIMEOUT: number = 300_000;
 const REACTION_TIMEOUT: number = 60_000;
 
+const BUTTONS_PER_ROW: number = 5;
+const MIN_RR: number = 1;
+const MAX_RR: number = 15;
+
 const name: string = "reactionroles";
 
 export const command: Subcommand = {
@@ -103,7 +107,7 @@ export const command: Subcommand = {
         // Wait for the style selection
         let styleSelection: StringSelectMenuInteraction;
         try {
-            // Times out after 30 seconds
+            // Times out after 1 minute
             styleSelection = await prompt.awaitMessageComponent<ComponentType.StringSelect>({
                 filter: menuCheck,
                 time: SELECT_MENU_TIMEOUT
@@ -168,7 +172,7 @@ export const command: Subcommand = {
         // Wait for the style selection
         let typeSelection: StringSelectMenuInteraction;
         try {
-            // Times out after 30 seconds
+            // Times out after 1 minute
             typeSelection = await prompt.awaitMessageComponent<ComponentType.StringSelect>({
                 filter: menuCheck,
                 time: SELECT_MENU_TIMEOUT
@@ -208,13 +212,13 @@ export const command: Subcommand = {
             await prompt.edit({
                 content: "A plain message, eh? Sure thing!\n" +
                          "What would you want the message to say?\n" +
-                         "(Send a message with what you'd like the reaction role message to say, times out after 3 minutes)",
+                         "(Send a message with what you'd like the reaction role message to say, times out after 5 minutes)",
                 components: [] // Remove the action row
             });
 
             // Get the content from the message that the user sends
             try {
-                // Times out after 3 minutes
+                // Times out after 5 minutes
                 const message: Message = (await ctx.channel.awaitMessages({
                     filter: messageCheck,
                     max: 1,
@@ -372,7 +376,7 @@ export const command: Subcommand = {
             // Wait for the style selection
             let embedColourSelection: StringSelectMenuInteraction;
             try {
-                // Times out after 30 seconds
+                // Times out after 1 minute
                 embedColourSelection = await prompt.awaitMessageComponent<ComponentType.StringSelect>({
                     filter: menuCheck,
                     time: SELECT_MENU_TIMEOUT
@@ -406,7 +410,7 @@ export const command: Subcommand = {
 
         // Max amount of reaction roles
         // 1 if it's for confirmations, otherwise 15
-        const maxReactionRoles: number = style === "confirm" ? 1 : 15;
+        const maxReactionRoles: number = style === "confirm" ? MIN_RR : MAX_RR;
 
         const reactionRoles: [Emoji, Role][] = [];
 
@@ -446,9 +450,10 @@ export const command: Subcommand = {
 
         await prompt.edit({
             content: "Alright, next up is selecting emojis and roles!\n" +
-                     `You can have up to ${maxReactionRoles} reaction role${maxReactionRoles === 1 ? "" : "s"}\n` +
+                     `You can have up to ${maxReactionRoles} reaction role${maxReactionRoles === MIN_RR ? "" : "s"}\n` +
                      `Here's a preview of the message:\n${content ?? ""}`,
-            embeds: embed ? [embed] : null
+            embeds: embed ? [embed] : null,
+            components: []
         });
 
         const emojiPrompt: Message = await ctx.followUp({
@@ -469,10 +474,8 @@ export const command: Subcommand = {
 
             emoji = reaction.emoji;
 
-            // Clean up the message if possible
-            if (emojiPrompt.deletable) {
-                await emojiPrompt.delete();
-            }
+            // Clean up the message
+            await emojiPrompt.delete();
         } catch {
             // If the interaction timed out, abort as well
             await ctx.followUp({
@@ -504,7 +507,7 @@ export const command: Subcommand = {
         // Wait for the style selection
         let role: Role;
         try {
-            // Times out after 30 seconds
+            // Times out after 1 minute
             const roleSelection = await prompt.awaitMessageComponent<ComponentType.RoleSelect>({
                 filter: roleCheck,
                 time: SELECT_MENU_TIMEOUT
@@ -566,6 +569,10 @@ export const command: Subcommand = {
                          `Here are the reaction roles you've added so far:\n${reactionRolesPreview}` +
                          `Here's the preview of the message:\n${content ?? ""}`,
                 embeds: embed ? [embed] : null,
+            });
+
+            const continuePrompt: Message = await ctx.followUp({
+                content: "Do you want to keep adding reaction roles?",
                 components: [row]
             });
 
@@ -573,14 +580,10 @@ export const command: Subcommand = {
             row.components.forEach(c => c.setDisabled(true));
 
             try {
-                const confirmation: MessageComponentInteraction = await prompt.awaitMessageComponent({
+                // Times out after 1 minute
+                const confirmation: MessageComponentInteraction = await continuePrompt.awaitMessageComponent({
                     filter: buttonCheck,
                     time: SELECT_MENU_TIMEOUT
-                });
-
-                // End the interaction as soon as a button is pressed
-                await confirmation.update({
-                    components: [row]
                 });
 
                 // If the user selected no, stop adding reaction roles
@@ -589,12 +592,15 @@ export const command: Subcommand = {
                 }
             } catch (e) {
                 // End the interaction upon timeout
-                await prompt.edit({
+                await continuePrompt.edit({
                     components: [row]
                 });
                 // If the interaction timed out, abort as well
                 await ctx.followUp("Interaction timed out, ending reaction role creation");
                 return;
+            } finally {
+                // Clean up the message
+                await continuePrompt.delete();
             }
 
             await prompt.edit({
@@ -658,7 +664,7 @@ export const command: Subcommand = {
             // Wait for the style selection
             let role: Role;
             try {
-                // Times out after 30 seconds
+                // Times out after 1 minute
                 const roleSelection = await prompt.awaitMessageComponent<ComponentType.RoleSelect>({
                     filter: roleCheck,
                     time: SELECT_MENU_TIMEOUT
@@ -727,9 +733,10 @@ export const command: Subcommand = {
         finalConfirmationRow.components.forEach(c => c.setDisabled(true));
 
         try {
+            // Times out after 5 minutes
             const confirmation: MessageComponentInteraction = await prompt.awaitMessageComponent({
                 filter: buttonCheck,
-                time: SELECT_MENU_TIMEOUT
+                time: PARAGRAPH_TIMEOUT
             });
 
             // Delete the final prompt
@@ -762,9 +769,43 @@ export const command: Subcommand = {
 
         // ----- STEP SIX: SEND THE REACTION ROLE MESSAGE -----
 
+        const rowCount: number = Math.ceil(reactionRoles.length / BUTTONS_PER_ROW);
+
+        const reactionRows: ActionRowBuilder<ButtonBuilder>[] = [];
+
+        // Create the action rows for the reaction roles' message
+        for (let i = 0; i < rowCount; i++) {
+            // The buttons for this action row
+            const buttons: ButtonBuilder[] = [];
+
+            // Create up to five buttons or until we reach the last
+            // reaction role
+            for (
+                let j = 0;
+                j < BUTTONS_PER_ROW && 
+                i * BUTTONS_PER_ROW + j < reactionRoles.length;
+                j++
+            ) {
+                const [emoji, ] = reactionRoles[i * BUTTONS_PER_ROW + j];
+                
+                const button: ButtonBuilder = new ButtonBuilder()
+                    .setCustomId(emoji.id ?? emoji.name)
+                    .setEmoji(emoji.id ?? emoji.name)
+                    .setStyle(ButtonStyle.Secondary);
+                buttons.push(button);
+            }
+
+            // Add the buttons
+            reactionRows.push(
+                new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(...buttons)
+            );
+        }
+
         const reactionRoleMessage: Message = await ctx.channel.send({
             content: content,
-            embeds: embed ? [embed] : null
+            embeds: embed ? [embed] : null,
+            components: reactionRows
         });
 
         // ----- STEP SIX: SEND THE REACTION ROLE MESSAGE -----
@@ -782,6 +823,7 @@ export const command: Subcommand = {
         // Set the reaction role data
         const server: Server = await Server.get(ctx.guildId);
         server.setReactionRoles(
+            reactionRoleMessage.channelId,
             reactionRoleMessage.id,
             style,
             finalReactionRoles
@@ -789,15 +831,6 @@ export const command: Subcommand = {
         await server.save();
         
         // ----- !STEP SEVEN: SAVE TO DATABASE -----
-
-
-        // ----- STEP EIGHT: FINALISE THE REACTION ROLES -----
-
-        for await (const [emoji ,] of reactionRoles) {
-            await reactionRoleMessage.react(emoji.identifier);
-        }
-
-        // ----- STEP EIGHT: FINALISE THE REACTION ROLES -----
     },
 
     // Error handler
