@@ -22,16 +22,17 @@
  * SOFTWARE.
  */
 
-import mongoose, { Schema, Document } from "mongoose";
+import { Snowflake } from "discord.js";
+import { Schema, model, Model, HydratedDocument } from "mongoose";
 
 const blacklistSchema: Schema = new Schema({
     _id: Number,
     users: { type: Map, of: String }
 });
 
-interface BlacklistI extends Document<number> {
+interface BlacklistI {
     _id: number;
-    users?: Map<string, string>;
+    users?: Map<Snowflake, string>;
 }
 
 /**
@@ -42,7 +43,7 @@ export class Blacklist {
     /**
      * The corresponding Mongo model used for reading and writing to the database
      */
-    private static readonly model = mongoose.model("Blacklist", blacklistSchema);
+    private static readonly model: Model<BlacklistI> = model<BlacklistI>("Blacklist", blacklistSchema);
 
     /**
      * The singleton instance of the blacklist
@@ -52,12 +53,12 @@ export class Blacklist {
     /**
      * The instance data from the database
      */
-    private data: BlacklistI;
+    private data: HydratedDocument<BlacklistI>;
 
     /**
      * Instantiates a singleton with data
      */
-    private constructor(data: BlacklistI) {
+    private constructor(data: HydratedDocument<BlacklistI>) {
         this.data = data;
     }
 
@@ -71,7 +72,7 @@ export class Blacklist {
             return Blacklist.instance;
         }
 
-        const data: BlacklistI = await Blacklist.model.findById(process.env.BLACKLIST_ID);
+        const data: HydratedDocument<BlacklistI> = await Blacklist.model.findById(process.env.BLACKLIST_ID);
 
         if (data) {
             // If theres a blacklist in the database, use it
@@ -79,10 +80,10 @@ export class Blacklist {
         } else {
             // Otherwise create one
             return new Blacklist(
-                <BlacklistI> (await new Blacklist.model({
+                new Blacklist.model({
                     _id: process.env.BLACKLIST_ID,
                     users: new Map<string, string>()
-                }).save())
+                })
             );
         }
     }
@@ -93,7 +94,7 @@ export class Blacklist {
      * @param id the id of the user being blacklisted
      * @param reason the reason the user is being blacklisted
      */
-    public async add(id: string, reason: string): Promise<void> {
+    public async add(id: Snowflake, reason: string): Promise<void> {
         this.data.users.set(id, reason);
         await this.data.save();
     }
@@ -103,7 +104,7 @@ export class Blacklist {
      * 
      * @returns the map of blacklisted users with
      */
-    public get users(): ReadonlyMap<string, string> {
-        return <ReadonlyMap<string, string>> this.data.users;
+    public get users(): ReadonlyMap<Snowflake, string> {
+        return <ReadonlyMap<Snowflake, string>> this.data.users;
     }
 }
