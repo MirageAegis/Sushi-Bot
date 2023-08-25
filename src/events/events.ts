@@ -69,6 +69,9 @@ const logTo = async (client: Client, server: Server, embed: EmbedBuilder): Promi
     await logs.send({ embeds: [embed] });
 };
 
+
+// ----- USER RELATED -----
+
 /**
  * Logs member join events to servers subscribed to logs.
  * 
@@ -192,6 +195,11 @@ export const onUserUpdate = async (client: Client, before: User, after: User): P
     }
 };
 
+// ----- !USER RELATED -----
+
+
+// ----- MESSAGE RELATED -----
+
 /**
  * Logs message edit events to servers subscribed to logs.
  * 
@@ -230,6 +238,11 @@ export const onMessageDelete = async (client: Client, message: Message): Promise
 
     await logTo(client, server, embed);
 };
+
+// ----- MESSAGE RELATED -----
+
+
+// ----- PRESENCE RELATED -----
 
 /**
  * Broadcasts auto go-live posts and auto shout outs to sevrers subscribed to them.
@@ -333,6 +346,11 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
     }
 };
 
+// ----- !PRESENCE RELATED -----
+
+
+// ----- SERVER RELATED -----
+
 /**
  * Triggered when the bot joins a Discord server.
  * It leaves the server if the owner is ineligible to have the bot.
@@ -366,6 +384,9 @@ export const onServerJoin = async (client: Client, server: Guild): Promise<void>
 export const onServerLeave = async (client: Client, server: Guild): Promise<void> => {
     await (await Server.get(server.id)).delete();
 };
+
+// ----- SERVER RELATED -----
+
 
 /**
  * Triggered when a non-command error occurs.
