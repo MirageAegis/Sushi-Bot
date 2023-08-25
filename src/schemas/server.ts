@@ -23,7 +23,7 @@
  */
 
 import { Snowflake } from "discord.js";
-import mongoose, { Schema, Document } from "mongoose";
+import { Schema, HydratedDocument, Model, model } from "mongoose";
 
 const serverSchema: Schema = new Schema({
     _id: String,
@@ -40,6 +40,7 @@ const serverSchema: Schema = new Schema({
     reactionMessages: {
         type: Map,
         of: {
+            channel: String,
             mode: String,
             reactionRoles: {
                 type: Map,
@@ -94,19 +95,20 @@ export const CONFIRM_RR: ReactionRoleStyle = "confirm";
  * Represents reaction roles on a message where emogi IDs are
  * mapped to role IDs.
  */
-type ReactionRoles = {
-    mode: ReactionRoleStyle;
-    reactionRoles: Map<Snowflake, Snowflake>;
+export type ReactionRoles = {
+    readonly channel: Snowflake;
+    readonly mode: ReactionRoleStyle;
+    readonly reactionRoles: ReadonlyMap<Snowflake, Snowflake>;
 };
 
 /**
  * Represents a collection of messages with reaction roles where message
  * IDs are mapped to `ReactionRoles`.
  */
-type ReactionMessages = Map<Snowflake, ReactionRoles>;
+export type ReactionMessages = Map<Snowflake, ReactionRoles>;
 
-interface ServerI extends Document<string> {
-    _id: string;
+interface ServerI {
+    _id: Snowflake;
     logs?: Snowflake;
     shoutout?: Shoutout;
     goLive?: GoLive;
@@ -123,19 +125,19 @@ export class Server {
     /**
      * The corresponding Mongo model used for reading and writing to the database.
      */
-    private static readonly model = mongoose.model("Server", serverSchema);
+    private static readonly model: Model<ServerI> = model<ServerI>("Server", serverSchema);
 
     /**
      * The cached servers.
      * The servers are stored along with the ID for the timer responsible for
      * clearing the memory.
      */
-    private static cache: Map<string, [Server, NodeJS.Timeout]> = new Map();
+    private static cache: Map<Snowflake, [Server, NodeJS.Timeout]> = new Map();
 
     /**
      * The instance data from the database.
      */
-    declare private data: ServerI;
+    declare private data: HydratedDocument<ServerI>;
 
     /**
      * Creates a new document for a server.
@@ -149,23 +151,23 @@ export class Server {
      * 
      * @param data server data from database
      */
-    private constructor(data: ServerI);
+    private constructor(data: HydratedDocument<ServerI>);
 
     /**
      * Instantiates a server object that represents a server document.
      * 
      * @param arg the data passed
      */
-    private constructor(arg: Snowflake | ServerI) {
+    private constructor(arg: Snowflake | HydratedDocument<ServerI>) {
         if (typeof arg === "string" || arg instanceof String) {
             // Create new server document if a Snowflake was passed
-            this.data = <ServerI> new Server.model({
+            this.data = new Server.model({
                 _id: <string> arg,
                 logs: null
             });
         } else {
             // Otherwise use the document from the database
-            this.data = <ServerI> arg;
+            this.data = <HydratedDocument<ServerI>> arg;
         }
     }
 
@@ -186,7 +188,7 @@ export class Server {
             server = s[0];
         } else {
             // Otherwise, fetch from the database
-            const data: ServerI = await Server.model.findById(id);
+            const data: HydratedDocument<ServerI> = await Server.model.findById(id);
             
             // If the database didn't have the server,
             // create a new document
@@ -261,6 +263,15 @@ export class Server {
     }
 
     /**
+     * All reaction roles of a server
+     * 
+     * @readonly
+     */
+    public get reactionRoles(): ReadonlyMap<Snowflake, ReactionRoles> {
+        return this.data.reactionMessages;
+    }
+
+    /**
      * Retrieve the reaction role ID associated with a certain message ID
      * and emoji ID. Returns null if there is no reaction role associated.
      * 
@@ -268,10 +279,9 @@ export class Server {
      * @param emoji the reaction role emoji ID
      * @returns the reaction role mode and role ID, or null if not a valid reaction role
      */
-    public getReactionRole(
+    public getReactionRoles(
         message: Snowflake,
-        emoji: Snowflake
-    ): [ReactionRoleStyle, Snowflake] {
+    ): ReactionRoles {
         // Get the reaction roles for the message
         const roles: ReactionRoles = this.data.reactionMessages
             ?.get(message);
@@ -282,24 +292,19 @@ export class Server {
         }
 
         // Get the reaction role connected to the emoji
-        const role: Snowflake = roles.reactionRoles.get(emoji);
-
-        // Return null if the emoji isn't tied to a reaction role
-        if (!role) {
-            return null;
-        }
-
-        return [roles.mode, role];
+        return roles;
     }
 
     /**
      * Sets reaction roles for a message. This cannot be changed later, only deleted.
      * 
+     * @param message the reaction role channel ID
      * @param message the reaction role message ID
      * @param mode the reaction role mode
      * @param reactionRoles the collection of reaction roles
      */
     public setReactionRoles(
+        channel: Snowflake,
         message: Snowflake,
         mode: ReactionRoleStyle,
         reactionRoles: Map<Snowflake, Snowflake>
@@ -315,6 +320,7 @@ export class Server {
 
         // Set a new reaction role message
         const roles: ReactionRoles = {
+            channel: channel,
             mode: mode,
             reactionRoles: reactionRoles
         };
