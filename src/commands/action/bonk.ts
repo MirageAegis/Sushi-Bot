@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022-present Zahatikoff
+ * Copyright (c) 2023-present Zahatikoff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import { TenorSingleton } from "../../util/tenor-utils.js";
 const name: string = "bonk";
 
 export const command: Command = {
-    data: <SlashCommandBuilder>new SlashCommandBuilder()
+    data: <SlashCommandBuilder> new SlashCommandBuilder()
         .setName(name)
         .setDescription("Bonk your friends ... or your enemies.\n ***the bonk*** *never* misses")
         .setDMPermission(false)
