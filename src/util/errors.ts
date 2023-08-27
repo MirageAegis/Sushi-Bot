@@ -65,3 +65,9 @@ export class NotTextChannelError extends Error {
         super("Expected a text channel but got another type");
     }
 }
+
+export class TenorError extends Error {
+    public constructor() {
+        super("Tenor is unavailable or the request is malformed");
+    }
+}
