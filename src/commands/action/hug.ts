@@ -62,6 +62,6 @@ export const command: Command = {
         .setDescription("A hug command to cheer someone up")
         .setFields(
             { name: "Format", value: `\`/${name} <target>\`` },
-            { name: "target", value: "Required parameter.The user you want to hug"}
+            { name: "target", value: "Required parameter. The user you want to hug"}
         )
 };

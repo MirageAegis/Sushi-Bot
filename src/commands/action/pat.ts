@@ -64,6 +64,6 @@ export const command: Command = {
         .setDescription("A command to headpat another user")
         .setFields(
             { name: "Format", value: `\`/${name} <target>\`` },
-            { name: "target", value: "Required parameter.The user you want to headpat" }
+            { name: "target", value: "Required parameter. The user you want to headpat" }
         )
 };

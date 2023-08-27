@@ -66,6 +66,6 @@ export const command: Command = {
         .setDescription("A lil silly command to bonk another user")
         .setFields(
             { name: "Format", value: `\`/${name} <target>\`` },
-            { name: "target", value: "Required parameter.The user you want to bonk" }
+            { name: "target", value: "Required parameter. The user you want to bonk" }
         )
 };
