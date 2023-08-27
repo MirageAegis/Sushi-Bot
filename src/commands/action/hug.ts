@@ -34,7 +34,7 @@ import { TenorSingleton } from "../../util/tenor-utils.js";
 const name: string = "hug";
 
 export const command: Command = {
-    data: <SlashCommandBuilder>new SlashCommandBuilder()
+    data: <SlashCommandBuilder> new SlashCommandBuilder()
         .setName(name)
         .setDescription("Give another user a **big** warm hug")
         .setDMPermission(false)
@@ -45,8 +45,8 @@ export const command: Command = {
         ),
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         const tenor: TenorSingleton = TenorSingleton.getInstance();
-        const hugger: User = <User>ctx.member.user;
-        const hugged: User = <User>ctx.options.getUser("target");
+        const hugger: User = <User> ctx.member.user;
+        const hugged: User = <User> ctx.options.getUser("target");
         const gif: string = await tenor.getGifs("anime+hug");
         const embed: EmbedBuilder = new EmbedBuilder()
             .setDescription(`<@${hugger.id}> hugs <@${hugged.id}>. So lovely!!`)

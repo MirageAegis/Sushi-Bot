@@ -46,8 +46,8 @@ export const command: Command = {
         ),
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         const tenor: TenorSingleton = TenorSingleton.getInstance();
-        const bonker: User = <User>ctx.member.user;
-        const bonked: User = <User>ctx.options.getUser("target");
+        const bonker: User = <User> ctx.member.user;
+        const bonked: User = <User> ctx.options.getUser("target");
         const gif: string = await tenor.getGifs("anime+bonk");
 
         const embed: EmbedBuilder = new EmbedBuilder()

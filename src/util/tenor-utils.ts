@@ -131,7 +131,7 @@ type tenorMediaObject = {
 //
 
 const DEFAULT_RESPONSE_LIMIT = 100;
-const TWELVE_HOURS = 43200000;
+const TWELVE_HOURS = 43_200_000;
 
 // Exported Singleton class that will later be used in the program.
 

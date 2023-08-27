@@ -35,7 +35,7 @@ import { TenorSingleton } from "../../util/tenor-utils.js";
 const name: string = "pat";
 
 export const command: Command = {
-    data: <SlashCommandBuilder>new SlashCommandBuilder()
+    data: <SlashCommandBuilder> new SlashCommandBuilder()
         .setName(name)
         .setDescription("Give another user a nice headpat")
         .setDMPermission(false)
@@ -46,8 +46,8 @@ export const command: Command = {
         ),
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         const tenor: TenorSingleton = TenorSingleton.getInstance();
-        const patter: User = <User>ctx.member.user;
-        const patted: User = <User>ctx.options.getUser("target");
+        const patter: User = <User> ctx.member.user;
+        const patted: User = <User> ctx.options.getUser("target");
         const gif: string = await tenor.getGifs("anime+hug");
 
         const embed: EmbedBuilder = new EmbedBuilder()
