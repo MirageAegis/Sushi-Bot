@@ -170,12 +170,11 @@ export class TenorSingleton {
         * Getting the gifs from the topic
         * If the cache is full -> get a random one from cache
         */
-        const gifArray: string[] = TenorSingleton.cache.get(topic);
+        const cachedGifs: string[] = TenorSingleton.cache.get(topic);
 
-        //TODO: why the fuck should i compare stuff with !== and not !=, how strict is that?
         // eslint-disable-next-line no-magic-numbers
-        if (gifArray.length !== 0) {
-            return (gifArray[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)]);
+        if (cachedGifs!==null && cachedGifs?.length !== 0) {
+            return (cachedGifs[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)]);
         }
 
         /*
@@ -183,7 +182,7 @@ export class TenorSingleton {
          * from Tenor
          */
 
-        /*eslint-disable*/
+        /*eslint-disable camelcase*/
         const requestParams: TenorRequestParameters = {
             q: topic,
             key: process.env.TENOR_KEY,
@@ -194,9 +193,10 @@ export class TenorSingleton {
             random: true,
             limit: DEFAULT_RESPONSE_LIMIT,
         };
-        /*eslint-enable*/
+        /*eslint-enable camelcase*/
         try {
-            const gifObjects: TenorResponseObject[] = (await this.client.get<TenorResponse>("/search")).data.results;
+            const gifObjects: TenorResponseObject[] = (await this.client.get<TenorResponse>("/search",{params:requestParams})).data.results;
+            const gifArray = new Array(DEFAULT_RESPONSE_LIMIT);
 
             // Populate the Gif array with the data from the response
             for (let i = 0; i < DEFAULT_RESPONSE_LIMIT; i++) {
