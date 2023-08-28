@@ -36,6 +36,7 @@ import {
     CONFIRM_RR, REGULAR_RR, ReactionRoleStyle, Server, UNIQUE_RR
 } from "../../../schemas/server.js";
 import {
+    AZURE,
     BLUE, GREEN, GREY, MAGENTA, ORANGE, PINK, PURPLE, RED, TEAL, YELLOW
 } from "../../../util/colours.js";
 
@@ -350,6 +351,9 @@ export const command: Subcommand = {
                     new StringSelectMenuOptionBuilder()
                         .setLabel("Green")
                         .setValue(`${GREEN}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel("Azure")
+                        .setValue(`${AZURE}`),
                     new StringSelectMenuOptionBuilder()
                         .setLabel("Teal")
                         .setValue(`${TEAL}`),
