@@ -32,8 +32,12 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../../util/command-template.js";
 import { defaultErrorHandler } from "../../../util/error-handler.js";
-import { CONFIRM_RR, REGULAR_RR, ReactionRoleStyle, Server, UNIQUE_RR } from "../../../schemas/server.js";
-import { BLUE, GREEN, MAGENTA, ORANGE, PURPLE, RED, TEAL, YELLOW } from "../../../util/colours.js";
+import {
+    CONFIRM_RR, REGULAR_RR, ReactionRoleStyle, Server, UNIQUE_RR
+} from "../../../schemas/server.js";
+import {
+    BLUE, GREEN, GREY, MAGENTA, ORANGE, PINK, PURPLE, RED, TEAL, YELLOW
+} from "../../../util/colours.js";
 
 /*
  * Reaction role setup command for creating reaction roles.
@@ -358,6 +362,12 @@ export const command: Subcommand = {
                     new StringSelectMenuOptionBuilder()
                         .setLabel("Magenta")
                         .setValue(`${MAGENTA}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel("Pink")
+                        .setValue(`${PINK}`),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel("Grey")
+                        .setValue(`${GREY}`),
                 );
 
             const colourRow: ActionRowBuilder<StringSelectMenuBuilder> = new ActionRowBuilder<StringSelectMenuBuilder>()
