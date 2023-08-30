@@ -31,7 +31,7 @@ import { defaultErrorHandler } from "../../../util/error-handler.js";
 import { Server } from "../../../schemas/server.js";
 
 /*
- * A server configuration command for setting a logging channel for message logs
+ * A server configuration command for setting a logging channel for profile logs
  */
 
 const name: string = "profilelogs";
