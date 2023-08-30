@@ -59,7 +59,7 @@ const serverSchema: Schema = new Schema({
  * 
  * @param members channel ID for member logs
  * @param messages channel ID for message logs
- * @param profile channel ID for profile logs
+ * @param profiles channel ID for profile logs
  */
 export type Logs = {
     members?: Snowflake;
