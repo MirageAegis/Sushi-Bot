@@ -27,7 +27,11 @@ import { Schema, HydratedDocument, Model, model } from "mongoose";
 
 const serverSchema: Schema = new Schema({
     _id: String,
-    logs: String,
+    logs: {
+        members: String,
+        messages: String,
+        profiles: String
+    },
     shoutout: {
         channel: String,
         role: String,
@@ -49,6 +53,19 @@ const serverSchema: Schema = new Schema({
         },
     }
 });
+
+/**
+ * Moderation logs configuration with three categories.
+ * 
+ * @param members channel ID for member logs
+ * @param messages channel ID for message logs
+ * @param profile channel ID for profile logs
+ */
+export type Logs = {
+    members?: Snowflake;
+    messages?: Snowflake;
+    profiles?: Snowflake;
+};
 
 /**
  * Auto shout out configuration struct.
@@ -109,7 +126,7 @@ export type ReactionMessages = Map<Snowflake, ReactionRoles>;
 
 interface ServerI {
     _id: Snowflake;
-    logs?: Snowflake;
+    logs?: Logs;
     shoutout?: Shoutout;
     goLive?: GoLive;
     reactionMessages?: ReactionMessages;
@@ -228,14 +245,63 @@ export class Server {
     }
 
     /**
-     * The ID of the logs channel
+     * The Logs configuration
      */
-    public get logs(): Snowflake {
+    public get logs(): Logs {
         return this.data.logs;
     }
 
     public set logs(id: Snowflake) {
-        this.data.logs = id;
+        this.data.logs = {
+            members: id,
+            messages: id,
+            profiles: id
+        };
+    }
+
+    /**
+     * The ID of the member logs channel
+     */
+    public get memberLogs(): Snowflake {
+        return this.data.logs?.members;
+    }
+
+    public set memberLogs(id: Snowflake) {
+        this.data.logs = {
+            members: id,
+            messages: this.data.logs.messages,
+            profiles: this.data.logs.profiles
+        };
+    }
+
+    /**
+     * The ID of the message logs channel
+     */
+    public get messageLogs(): Snowflake {
+        return this.data.logs?.messages;
+    }
+
+    public set messageLogs(id: Snowflake) {
+        this.data.logs = {
+            members: this.data.logs.members,
+            messages: id,
+            profiles: this.data.logs.profiles
+        };
+    }
+
+    /**
+     * The ID of the profile logs channel
+     */
+    public get profileLogs(): Snowflake {
+        return this.data.logs?.profiles;
+    }
+
+    public set profileLogs(id: Snowflake) {
+        this.data.logs = {
+            members: this.data.logs.members,
+            messages: this.data.logs.messages,
+            profiles: id
+        };
     }
 
     /**
