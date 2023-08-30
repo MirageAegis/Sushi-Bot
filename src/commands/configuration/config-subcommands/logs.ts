@@ -31,7 +31,7 @@ import { defaultErrorHandler } from "../../../util/error-handler.js";
 import { Server } from "../../../schemas/server.js";
 
 /*
- * A server configuration command for setting a logging channel
+ * A server configuration command for setting a logging channel for all logs
  */
 
 const name: string = "logs";
@@ -40,10 +40,10 @@ export const command: Subcommand = {
     // Command headers
     data: new SlashCommandSubcommandBuilder()
         .setName(name)
-        .setDescription("Sets or unsets a channel for logging")
+        .setDescription("Sets or unsets a channel for all logging")
         .addChannelOption(o => 
             o.setName("channel")
-                .setDescription("The channel to use as a logs channel")
+                .setDescription("The channel to use as a general logs channel")
                 .addChannelTypes(ChannelType.GuildText)
         ),
 
@@ -62,7 +62,7 @@ export const command: Subcommand = {
         await server.save();
 
         if (channel) {
-            await ctx.followUp(`Set to output logs in ${channel}`);
+            await ctx.followUp(`Set to output all logs in ${channel}`);
         } else {
             await ctx.followUp("Set to not output any logs");
         }
@@ -78,6 +78,6 @@ export const command: Subcommand = {
         )
         .addFields(
             { name: "Format", value: `\`/config ${name} [channel]\`` },
-            { name: "[channel]", value: "Optional parameter. The channel to set as logging channel. Omit to remove the logs channel" }
+            { name: "[channel]", value: "Optional parameter. The channel to set as a general logging channel. Omit to remove all logs channels" }
         )
 };
