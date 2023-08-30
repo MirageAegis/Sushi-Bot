@@ -173,7 +173,7 @@ export class TenorSingleton {
         const cachedGifs: string[] = TenorSingleton.cache.get(topic);
 
         // eslint-disable-next-line no-magic-numbers
-        if (cachedGifs!==null && cachedGifs?.length !== 0) {
+        if (cachedGifs?.length !== 0) {
             return (cachedGifs[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)]);
         }
 
