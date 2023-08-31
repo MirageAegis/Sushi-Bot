@@ -48,7 +48,7 @@ export const command: Command = {
         const tenor: TenorSingleton = TenorSingleton.getInstance();
         const patter: User = <User> ctx.member.user;
         const patted: User = <User> ctx.options.getUser("target");
-        const gif: string = await tenor.getGifs("anime+hug");
+        const gif: string = await tenor.getGifs("anime+headpat");
 
         const embed: EmbedBuilder = new EmbedBuilder()
             .setDescription(`<@${patter.id}> pats <@${patted.id}>. How cute!!`)
