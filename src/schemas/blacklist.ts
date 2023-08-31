@@ -37,33 +37,33 @@ interface BlacklistI {
 
 /**
  * Wrapper class for the blacklist.
- * It has functions and methods for all necessary operations on the blacklist
+ * It has functions and methods for all necessary operations on the blacklist.
  */
 export class Blacklist {
     /**
-     * The corresponding Mongo model used for reading and writing to the database
+     * The corresponding Mongo model used for reading and writing to the database.
      */
     private static readonly model: Model<BlacklistI> = model<BlacklistI>("Blacklist", blacklistSchema);
 
     /**
-     * The singleton instance of the blacklist
+     * The singleton instance of the blacklist.
      */
     private static instance: Blacklist = null;
 
     /**
-     * The instance data from the database
+     * The instance data from the database.
      */
     private data: HydratedDocument<BlacklistI>;
 
     /**
-     * Instantiates a singleton with data
+     * Instantiates a singleton with data.
      */
     private constructor(data: HydratedDocument<BlacklistI>) {
         this.data = data;
     }
 
     /**
-     * Gets the blacklist singleton
+     * Gets the blacklist singleton.
      * 
      * @returns the blacklist
      */
@@ -74,22 +74,25 @@ export class Blacklist {
 
         const data: HydratedDocument<BlacklistI> = await Blacklist.model.findById(process.env.BLACKLIST_ID);
 
+        let instance: Blacklist;
         if (data) {
             // If theres a blacklist in the database, use it
-            return new Blacklist(data);
+            instance = new Blacklist(data);
         } else {
             // Otherwise create one
-            return new Blacklist(
+            instance = new Blacklist(
                 new Blacklist.model({
                     _id: process.env.BLACKLIST_ID,
                     users: new Map<string, string>()
                 })
             );
         }
+
+        return this.instance = instance;
     }
 
     /**
-     * Adds a user to the blacklist and saves it
+     * Adds a user to the blacklist and saves it.
      * 
      * @param id the id of the user being blacklisted
      * @param reason the reason the user is being blacklisted
@@ -100,9 +103,10 @@ export class Blacklist {
     }
 
     /**
-     * Gets a readonly version of the map of blacklisted users
+     * Gets a readonly version of the map of blacklisted users.
      * 
-     * @returns the map of blacklisted users with
+     * @returns the map of blacklisted users with user IDs mapped to
+     * the reason they were blacklisted
      */
     public get users(): ReadonlyMap<Snowflake, string> {
         return <ReadonlyMap<Snowflake, string>> this.data.users;
