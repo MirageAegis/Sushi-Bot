@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-present Zahatikoff
+ * Copyright (c) 2023-present Zahatikoff, Mirage Aegis
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ import { TenorError } from "./errors";
 
 // Content safety filter level for the GIFs
 
-type filterType = "off" | "low" | "medium" | "high";
+type FilterType = "off" | "low" | "medium" | "high";
 
 /*
  * Aspect ratio settings for the GIFs
@@ -40,11 +40,11 @@ type filterType = "off" | "low" | "medium" | "high";
  * wide : 0.42<= x <= 2.36
  */
 
-type aspectRatio = "all" | "wide" | "standard";
+type AspectRatio = "all" | "wide" | "standard";
 
 // The content formats allowed by TENOR
 
-type contentFormat =
+type ContentFormat =
     | "preview"
     | "gif"
     | "mediumgif"
@@ -78,9 +78,9 @@ type TenorRequestParameters = {
     searchfilter?: string;
     country?: string;
     locale?: string;
-    contentfilter?: filterType;
-    media_filter?: contentFormat;
-    ar_range?: aspectRatio;
+    contentfilter?: FilterType;
+    media_filter?: ContentFormat;
+    ar_range?: AspectRatio;
     random?: boolean;
     limit?: number;
     pos?: string;
@@ -105,7 +105,7 @@ type TenorResponseObject = {
     created: number;
     hasaudio: boolean;
     id: string;
-    media_formats: Record<contentFormat, tenorMediaObject>;
+    media_formats: Record<ContentFormat, TenorMediaObject>;
     tags: string[];
     title: string;
     content_description: string;
@@ -121,7 +121,7 @@ type TenorResponseObject = {
  * used for embeds.
  */
 
-type tenorMediaObject = {
+type TenorMediaObject = {
     url: string;
     dims: number[];
     duration: number;
@@ -130,52 +130,53 @@ type tenorMediaObject = {
 
 //
 
-const DEFAULT_RESPONSE_LIMIT = 100;
-const TWELVE_HOURS = 43_200_000;
+const DEFAULT_RESPONSE_LIMIT: number = 50;
+const TWELVE_HOURS: number = 43_200_000;
 
 // Exported Singleton class that will later be used in the program.
 
 export class TenorSingleton {
     private static instance: TenorSingleton | null | undefined;
     private client: axios.AxiosInstance;
-    private static cache: Map<string, string[]>;
+    private readonly cache: Map<string, string[]>;
 
     private constructor() {
         this.client = axios.create({
             baseURL: "https://tenor.googleapis.com/v2",
         });
-        return this;
+        this.cache = new Map();
+
+        setInterval(() => {
+            this.cache.clear();
+        }, TWELVE_HOURS);
     }
 
     public static getInstance(): TenorSingleton {
         if (!this.instance) {
             this.instance = new TenorSingleton();
-            this.cache = new Map();
-            setInterval(() => {
-                this.cache.clear();
-            }, TWELVE_HOURS);
         }
+
         return this.instance;
     }
+
     /**
-     * This function gets GIFs from the Tenor API, caching them in the process.
-     * @param topic specifies the topic of the gif search
-     * @returns  
+     * Gets the URL of a gif. Queries the Tenor API and caches the
+     * URLs if none are found.
+     * 
+     * @param topic the topic of the gif search
+     * @returns a gif URL
      */
     public async getGifs(
         topic: string,
     ): Promise<string> {
-
         /*
         * Getting the gifs from the topic
         * If the cache is full -> get a random one from cache
         */
-        const gifArray: string[] = TenorSingleton.cache.get(topic);
+        const cachedGifs: string[] = this.cache.get(topic);
 
-        //TODO: why the fuck should i compare stuff with !== and not !=, how strict is that?
-        // eslint-disable-next-line no-magic-numbers
-        if (gifArray.length !== 0) {
-            return (gifArray[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)]);
+        if (cachedGifs?.length) {
+            return cachedGifs[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)];
         }
 
         /*
@@ -183,10 +184,10 @@ export class TenorSingleton {
          * from Tenor
          */
 
-        /*eslint-disable*/
+        /*eslint-disable camelcase*/
         const requestParams: TenorRequestParameters = {
             q: topic,
-            key: process.env.TENOR_KEY,
+            key: process.env.TENOR_API_KEY,
             client_key: "sushi-bot",
             contentfilter: "low",
             media_filter: "gif",
@@ -194,21 +195,22 @@ export class TenorSingleton {
             random: true,
             limit: DEFAULT_RESPONSE_LIMIT,
         };
-        /*eslint-enable*/
-        try {
-            const gifObjects: TenorResponseObject[] = (await this.client.get<TenorResponse>("/search")).data.results;
+        /*eslint-enable camelcase*/
 
-            // Populate the Gif array with the data from the response
-            for (let i = 0; i < DEFAULT_RESPONSE_LIMIT; i++) {
-                // get a GIF's URL from response
-                const gifURL = gifObjects[i].media_formats.gif.url;
-                gifArray[i] = gifURL;
-            }
-            TenorSingleton.cache.set(topic, gifArray);
-            return (gifArray[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)]);
+        let gifObjects: TenorResponseObject[];
+        try {
+            gifObjects = (await this.client.get<TenorResponse>("/search", {
+                params:requestParams
+            })).data.results;
         } catch {
-            throw new TenorError;
+            throw new TenorError();
         }
+
+        // All gif URLs from the gif objects
+        const gifUrls: string[] = gifObjects.map(g => g.media_formats.gif.url);
+
+        this.cache.set(topic, gifUrls);        
+        return gifUrls[Math.floor(Math.random() * DEFAULT_RESPONSE_LIMIT)];
     }
 }
 
