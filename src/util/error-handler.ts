@@ -23,7 +23,8 @@
  */
 
 import {
-    ApplicationCommand, ChatInputCommandInteraction, DiscordAPIError,
+    ApplicationCommand, ButtonInteraction, ChatInputCommandInteraction, DiscordAPIError,
+    Interaction,
     InteractionReplyOptions, User
 } from "discord.js";
 import { NoMemberFoundError, UserIsMemberError } from "./errors";
@@ -39,7 +40,7 @@ export const INT_OVER_100: number = 50035;
 
 // ----- !ERROR CODES -----
 
-export type ErrorHandler = { (ctx: ChatInputCommandInteraction, err: Error): Promise<void> };
+export type ErrorHandler = { (ctx: Interaction, err: Error): Promise<void> };
 
 export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInteraction, err: Error): Promise<void> => {
     console.log(err);
@@ -99,4 +100,56 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
                            "```";
     
     await getAdminLogsChannel().send(report);
+    
+    // ----- !ERROR LOG -----
+};
+
+export const reactionRolesErrorHandler: ErrorHandler = async (ctx: ButtonInteraction, err: Error): Promise<void> => {
+    console.log(err);
+    
+    // ----- BUTTON INTERACTION REPLY -----
+
+    const reply: InteractionReplyOptions = {};
+
+    switch (true) {
+        case err instanceof DiscordAPIError:
+            switch ((<DiscordAPIError> err).code) {
+                case MISSING_PERMISSIONS:
+                    reply.content = "I seem to be missing permissions for this action. Ask the server owner/administrators for help";
+                    break;
+                default:
+                    reply.content = "Oops! Something seems to have gone wrong...";
+                    break;
+            }
+            break;
+        default:       
+            reply.content = "Oops! Something seems to have gone wrong...";
+            break;
+    }
+
+    reply.ephemeral = true;
+    
+    if (ctx.replied || ctx.deferred) {
+        await ctx.followUp(reply);
+    } else {
+        await ctx.reply(reply);
+    }
+
+    // ----- !COMMAND REPLY -----
+
+    // ----- ERROR LOG -----
+
+    const user: User = ctx.user;
+
+    const report: string = "```\n" +
+                           "Reaction Roles Error\n\n" +
+                           `Server: ${ctx.guild.name}\n` +
+                           `User: ${user.id} (${user.username})\n\n` +
+                           // Error name, and error code if it's a Discord API error
+                           `${err.name}${err instanceof DiscordAPIError ? `: ${err.code} (${err.message})` : ""}\n` +
+                           "```";
+    
+    await getAdminLogsChannel().send(report);
+    
+    // ----- !ERROR LOG -----
 };

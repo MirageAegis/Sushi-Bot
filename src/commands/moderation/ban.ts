@@ -90,8 +90,8 @@ export const command: Command = {
         .setTitle("Ban")
         .setDescription("A moderation command for banning users from the server the command is executed in")
         .addFields(
-            { name: "Format", value: `\`/${name} <member> [reason] [verbose]\`` },
-            { name: "<member>", value: "Required parameter. The member to ban" },
+            { name: "Format", value: `\`/${name} <user> [reason] [verbose]\`` },
+            { name: "<user>", value: "Required parameter. The user to ban" },
             { name: "[reason]", value: "Optional parameter. The reason, if any, to ban the member"},
             { name: "[verbose]", value: "Optional parameter. If the ban should be shown to the others in the channel. Defaults to not showing" }
         )

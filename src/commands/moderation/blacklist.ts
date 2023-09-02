@@ -114,7 +114,8 @@ export const command: Command = {
             "**__DO NOT SPAM THIS COMMAND. FAILING TO COMPLY MAY RESULT IN HAVING ACCESS TO SUSHI BOT REVOKED__**"
         )
         .addFields(
-            { name: "Format", value: `\`/${name} <user>\`` },
-            { name: "<user>", value: "Required parameter. The user to report" }
+            { name: "Format", value: `\`/${name} <user> <reason>\`` },
+            { name: "<user>", value: "Required parameter. The user to report" },
+            { name: "<reason>", value: "Required parameter. The reason the specified user should be blacklisted" }
         )
 };

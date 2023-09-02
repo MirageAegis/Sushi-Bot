@@ -41,6 +41,26 @@ import { formatGoLivePost } from "./shoutout";
  */
 
 /**
+ * The logging categories.
+ */
+enum Category {
+    /**
+     * Logs regarding member join/leave/kick/ban/unban.
+     */
+    Members,
+
+    /**
+     * Logs regarding message edit/delete.
+     */
+    Messages,
+
+    /**
+     * Logs regarding members' server/global profiles.
+     */
+    Profiles
+}
+
+/**
  * Logs an embed to a log channel if possible. Does nothing if the
  * server doesn't have logs configured. Deletes configuration if logs isn't a channel.
  * 
@@ -48,8 +68,25 @@ import { formatGoLivePost } from "./shoutout";
  * @param server the server document from the database
  * @param embed the embed to log
  */
-const logTo = async (client: Client, server: Server, embed: EmbedBuilder): Promise<void> => {
-    const logsID: string = server.logs;
+const logTo = async (
+    client: Client,
+    server: Server,
+    category: Category,
+    embed: EmbedBuilder
+): Promise<void> => {
+    let logsID: string;
+
+    switch (category) {
+        case Category.Members:
+            logsID = server.logs?.members;
+            break;
+        case Category.Messages:
+            logsID = server.logs?.messages;
+            break;
+        case Category.Profiles:
+            logsID = server.logs?.profiles;
+            break;
+    }
 
     // Skip if the server isn't subscribed to logs
     if (!logsID) {
@@ -69,6 +106,9 @@ const logTo = async (client: Client, server: Server, embed: EmbedBuilder): Promi
     await logs.send({ embeds: [embed] });
 };
 
+
+// ----- MEMBER RELATED -----
+
 /**
  * Logs member join events to servers subscribed to logs.
  * 
@@ -79,7 +119,7 @@ export const onMemberJoin = async (client: Client, member: GuildMember): Promise
     // The server and logs channel ID of the server that the member joined
     const server: Server = await Server.get(member.guild.id);
 
-    await logTo(client, server, genMemberJoinEmbed(member));
+    await logTo(client, server, Category.Members, genMemberJoinEmbed(member));
 
     // Check if the new member is blacklisted
     const bl: Blacklist = await Blacklist.get();
@@ -103,7 +143,7 @@ export const onMemberLeave = async (client: Client, member: GuildMember): Promis
     // The server and logs channel ID of the server that the member left
     const server: Server = await Server.get(member.guild.id);
 
-    await logTo(client, server, await genMemberLeaveEmbed(member));
+    await logTo(client, server, Category.Members, await genMemberLeaveEmbed(member));
 };
 
 /**
@@ -116,7 +156,7 @@ export const onMemberBan = async (client: Client, ban: GuildBan): Promise<void> 
     // The server and logs channel ID of the server that the member was banned from
     const server: Server = await Server.get(ban.guild.id);
 
-    await logTo(client, server, await genMemberBanEmbed(ban));
+    await logTo(client, server, Category.Members, await genMemberBanEmbed(ban));
 };
 
 /**
@@ -129,8 +169,13 @@ export const onMemberUnban = async (client: Client, ban: GuildBan): Promise<void
     // The server and logs channel ID of the server that the member was unbanned from
     const server: Server = await Server.get(ban.guild.id);
 
-    await logTo(client, server, await genMemberUnbanEmbed(ban));
+    await logTo(client, server, Category.Members, await genMemberUnbanEmbed(ban));
 };
+
+// ----- !MEMBER RELATED -----
+
+
+// ----- PROFILE RELATED -----
 
 /**
  * Logs member server profile update events to servers subscribed to logs.
@@ -149,7 +194,7 @@ export const onMemberUpdate = async (client: Client, before: GuildMember, after:
         return;
     }
 
-    await logTo(client, server, embed);
+    await logTo(client, server, Category.Profiles, embed);
 };
 
 /**
@@ -188,9 +233,14 @@ export const onUserUpdate = async (client: Client, before: User, after: User): P
             iconURL: guild.iconURL()
         });
 
-        await logTo(client, server, embed);
+        await logTo(client, server, Category.Profiles, embed);
     }
 };
+
+// ----- !PROFILE RELATED -----
+
+
+// ----- MESSAGE RELATED -----
 
 /**
  * Logs message edit events to servers subscribed to logs.
@@ -209,7 +259,7 @@ export const onMessageEdit = async (client: Client, before: Message, after: Mess
         return;
     }
 
-    await logTo(client, server, embed);
+    await logTo(client, server, Category.Messages, embed);
 };
 
 /**
@@ -228,8 +278,13 @@ export const onMessageDelete = async (client: Client, message: Message): Promise
         return;
     }
 
-    await logTo(client, server, embed);
+    await logTo(client, server, Category.Messages, embed);
 };
+
+// ----- MESSAGE RELATED -----
+
+
+// ----- PRESENCE RELATED -----
 
 /**
  * Broadcasts auto go-live posts and auto shout outs to sevrers subscribed to them.
@@ -333,6 +388,11 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
     }
 };
 
+// ----- !PRESENCE RELATED -----
+
+
+// ----- SERVER RELATED -----
+
 /**
  * Triggered when the bot joins a Discord server.
  * It leaves the server if the owner is ineligible to have the bot.
@@ -366,6 +426,9 @@ export const onServerJoin = async (client: Client, server: Guild): Promise<void>
 export const onServerLeave = async (client: Client, server: Guild): Promise<void> => {
     await (await Server.get(server.id)).delete();
 };
+
+// ----- SERVER RELATED -----
+
 
 /**
  * Triggered when a non-command error occurs.

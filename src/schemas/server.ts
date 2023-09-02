@@ -22,11 +22,16 @@
  * SOFTWARE.
  */
 
-import mongoose, { Schema, Document, InferSchemaType } from "mongoose";
+import { Snowflake } from "discord.js";
+import { Schema, HydratedDocument, Model, model } from "mongoose";
 
 const serverSchema: Schema = new Schema({
     _id: String,
-    logs: String,
+    logs: {
+        members: String,
+        messages: String,
+        profiles: String
+    },
     shoutout: {
         channel: String,
         role: String,
@@ -35,8 +40,32 @@ const serverSchema: Schema = new Schema({
     goLive: {
         channel: String,
         message: String
+    },
+    reactionMessages: {
+        type: Map,
+        of: {
+            channel: String,
+            mode: String,
+            reactionRoles: {
+                type: Map,
+                of: String
+            }
+        },
     }
 });
+
+/**
+ * Moderation logs configuration with three categories.
+ * 
+ * @param members channel ID for member logs
+ * @param messages channel ID for message logs
+ * @param profiles channel ID for profile logs
+ */
+export type Logs = {
+    members?: Snowflake;
+    messages?: Snowflake;
+    profiles?: Snowflake;
+};
 
 /**
  * Auto shout out configuration struct.
@@ -46,9 +75,9 @@ const serverSchema: Schema = new Schema({
  * @param message the auto shout out message
  */
 export type Shoutout = {
-    readonly channel?: string;
-    readonly role?: string;
-    readonly message?: string
+    readonly channel?: Snowflake;
+    readonly role?: Snowflake;
+    readonly message?: Snowflake;
 };
 
 /**
@@ -58,11 +87,50 @@ export type Shoutout = {
  * @param message the auto go-live message
  */
 export type GoLive = {
-    readonly channel?: string;
-    readonly message?: string;
+    readonly channel?: Snowflake;
+    readonly message?: Snowflake;
 };
 
-type ServerT = InferSchemaType<typeof serverSchema>;
+/**
+ * The type of reaction roles.
+ * `regular` reaction roles lets users pick multiple roles and deselect
+ * roles.
+ * `unique` reaction roles only allow users to have one of the roles at
+ * a time.
+ * `confirm` roles gives the user a role upon reacting and is limited
+ * to one role per message.
+ */
+export type ReactionRoleStyle = "regular" |
+    "unique" |
+    "confirm";
+
+export const REGULAR_RR: ReactionRoleStyle = "regular";
+export const UNIQUE_RR: ReactionRoleStyle = "unique";
+export const CONFIRM_RR: ReactionRoleStyle = "confirm";
+
+/**
+ * Represents reaction roles on a message where emogi IDs are
+ * mapped to role IDs.
+ */
+export type ReactionRoles = {
+    readonly channel: Snowflake;
+    readonly mode: ReactionRoleStyle;
+    readonly reactionRoles: ReadonlyMap<Snowflake, Snowflake>;
+};
+
+/**
+ * Represents a collection of messages with reaction roles where message
+ * IDs are mapped to `ReactionRoles`.
+ */
+export type ReactionMessages = Map<Snowflake, ReactionRoles>;
+
+interface ServerI {
+    _id: Snowflake;
+    logs?: Logs;
+    shoutout?: Shoutout;
+    goLive?: GoLive;
+    reactionMessages?: ReactionMessages;
+}
 
 /**
  * The minimum time a server object stays in the cache.
@@ -74,49 +142,49 @@ export class Server {
     /**
      * The corresponding Mongo model used for reading and writing to the database.
      */
-    private static readonly model = mongoose.model("Server", serverSchema);
+    private static readonly model: Model<ServerI> = model<ServerI>("Server", serverSchema);
 
     /**
      * The cached servers.
      * The servers are stored along with the ID for the timer responsible for
      * clearing the memory.
      */
-    private static cache: Map<string, [Server, NodeJS.Timeout]> = new Map();
+    private static cache: Map<Snowflake, [Server, NodeJS.Timeout]> = new Map();
 
     /**
      * The instance data from the database.
      */
-    declare private data: Document;
+    declare private data: HydratedDocument<ServerI>;
 
     /**
      * Creates a new document for a server.
      * 
      * @param id server ID for the new document
      */
-    private constructor(id: string);
+    private constructor(id: Snowflake);
 
     /**
      * Inflates a server object using data from the database.
      * 
      * @param data server data from database
      */
-    private constructor(data: Document);
+    private constructor(data: HydratedDocument<ServerI>);
 
     /**
      * Instantiates a server object that represents a server document.
      * 
      * @param arg the data passed
      */
-    private constructor(arg: string | Document) {
+    private constructor(arg: Snowflake | HydratedDocument<ServerI>) {
         if (typeof arg === "string" || arg instanceof String) {
-            // Create new server document if a string was passed
+            // Create new server document if a Snowflake was passed
             this.data = new Server.model({
                 _id: <string> arg,
                 logs: null
             });
         } else {
             // Otherwise use the document from the database
-            this.data = <Document> arg;
+            this.data = <HydratedDocument<ServerI>> arg;
         }
     }
 
@@ -126,7 +194,7 @@ export class Server {
      * @param id the server ID
      * @returns the requested server document or null if none was found
      */
-    public static async get(id: string): Promise<Server> {
+    public static async get(id: Snowflake): Promise<Server> {
         // Try to get the server from the cache
         const s: [Server, NodeJS.Timeout] = Server.cache.get(id);
         let server: Server;
@@ -137,7 +205,7 @@ export class Server {
             server = s[0];
         } else {
             // Otherwise, fetch from the database
-            const data: Document = await Server.model.findById(id);
+            const data: HydratedDocument<ServerI> = await Server.model.findById(id);
             
             // If the database didn't have the server,
             // create a new document
@@ -177,37 +245,156 @@ export class Server {
     }
 
     /**
-     * The ID of the logs channel
+     * The Logs configuration
      */
-    public get logs(): string {
-        return (<ServerT> this.data).logs;
+    public get logs(): Logs {
+        return this.data.logs;
     }
 
-    public set logs(id: string) {
-        (<ServerT> this.data).logs = id;
+    public set logs(id: Snowflake) {
+        this.data.logs = {
+            members: id,
+            messages: id,
+            profiles: id
+        };
+    }
+
+    /**
+     * The ID of the member logs channel
+     */
+    public get memberLogs(): Snowflake {
+        return this.data.logs?.members;
+    }
+
+    public set memberLogs(id: Snowflake) {
+        this.data.logs = {
+            members: id,
+            messages: this.data.logs.messages,
+            profiles: this.data.logs.profiles
+        };
+    }
+
+    /**
+     * The ID of the message logs channel
+     */
+    public get messageLogs(): Snowflake {
+        return this.data.logs?.messages;
+    }
+
+    public set messageLogs(id: Snowflake) {
+        this.data.logs = {
+            members: this.data.logs.members,
+            messages: id,
+            profiles: this.data.logs.profiles
+        };
+    }
+
+    /**
+     * The ID of the profile logs channel
+     */
+    public get profileLogs(): Snowflake {
+        return this.data.logs?.profiles;
+    }
+
+    public set profileLogs(id: Snowflake) {
+        this.data.logs = {
+            members: this.data.logs.members,
+            messages: this.data.logs.messages,
+            profiles: id
+        };
     }
 
     /**
      * The auto shout out data
      */
     public get shoutout(): Shoutout {
-        const shoutout: Shoutout = (<ServerT> this.data).shoutout;
+        const shoutout: Shoutout = this.data.shoutout;
         return shoutout.channel && shoutout.role ? shoutout : null;
     }
 
     public set shoutout(data: Shoutout) {
-        (<ServerT> this.data).shoutout = data;
+        this.data.shoutout = data;
     }
 
     /**
      * The auto go-live post data
      */
     public get goLive(): GoLive {
-        const goLive: GoLive = (<ServerT> this.data).goLive;
+        const goLive: GoLive = this.data.goLive;
         return goLive.channel ? goLive : null;
     }
 
     public set goLive(data: GoLive) {
-        (<ServerT> this.data).goLive = data;
+        this.data.goLive = data;
+    }
+
+    /**
+     * All reaction roles of a server
+     * 
+     * @readonly
+     */
+    public get reactionRoles(): ReadonlyMap<Snowflake, ReactionRoles> {
+        return this.data.reactionMessages;
+    }
+
+    /**
+     * Retrieve the reaction role ID associated with a certain message ID
+     * and emoji ID. Returns null if there is no reaction role associated.
+     * 
+     * @param message the reaction role message ID
+     * @param emoji the reaction role emoji ID
+     * @returns the reaction role mode and role ID, or null if not a valid reaction role
+     */
+    public getReactionRoles(
+        message: Snowflake,
+    ): ReactionRoles {
+        // Get the reaction roles for the message
+        const roles: ReactionRoles = this.data.reactionMessages
+            ?.get(message);
+
+        // Return null if the message doesn't have reaction roles
+        if (!roles) {
+            return null;
+        }
+
+        // Get the reaction role connected to the emoji
+        return roles;
+    }
+
+    /**
+     * Sets reaction roles for a message. This cannot be changed later, only deleted.
+     * 
+     * @param message the reaction role channel ID
+     * @param message the reaction role message ID
+     * @param mode the reaction role mode
+     * @param reactionRoles the collection of reaction roles
+     */
+    public setReactionRoles(
+        channel: Snowflake,
+        message: Snowflake,
+        mode: ReactionRoleStyle,
+        reactionRoles: Map<Snowflake, Snowflake>
+    ): void {
+        // Get the collection of reaction role messages
+        let messages: ReactionMessages = this.data.reactionMessages;
+
+        // Create a new collection if none was found
+        if (!messages) {
+            this.data.reactionMessages = new Map<Snowflake, ReactionRoles>();
+            messages = this.data.reactionMessages;
+        }
+
+        // Set a new reaction role message
+        const roles: ReactionRoles = {
+            channel: channel,
+            mode: mode,
+            reactionRoles: reactionRoles
+        };
+
+        messages.set(message, roles);
+    }
+
+    public deleteReactionRoles(message: Snowflake): void {
+        this.data.reactionMessages.delete(message);
     }
 }

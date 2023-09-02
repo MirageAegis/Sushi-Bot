@@ -29,6 +29,8 @@ import {
 } from "discord.js";
 import { Command } from "./util/command-template.js";
 import { init, loadListeners } from "./util/init.js";
+import { onButtonPressed } from "./events/reactionroles.js";
+import { reactionRolesErrorHandler } from "./util/error-handler.js";
 
 // Loads the environment variables
 require("dotenv").config();
@@ -57,6 +59,7 @@ const client = new Bot({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageReactions,
         GatewayIntentBits.GuildPresences
     ],
     presence: {
@@ -108,8 +111,19 @@ for (const folder of cmdFolders) {
     }
 }
 
-// Command handler
+// Interaction handler
 client.on(Events.InteractionCreate, async (ctx: Interaction): Promise<void> => {
+    // Process button interactions
+    if (ctx.isButton()) {
+        try {
+            await onButtonPressed(ctx);
+        } catch (e) {
+            await reactionRolesErrorHandler(ctx, e);
+        }
+
+        return;
+    }
+
     // Do nothing if it's not a chat command
     if (!ctx.isChatInputCommand()) {
         return;

@@ -31,19 +31,19 @@ import { defaultErrorHandler } from "../../../util/error-handler.js";
 import { Server } from "../../../schemas/server.js";
 
 /*
- * A server configuration command for setting a logging channel for all logs
+ * A server configuration command for setting a logging channel for member logs
  */
 
-const name: string = "logs";
+const name: string = "memberlogs";
 
 export const command: Subcommand = {
     // Command headers
     data: new SlashCommandSubcommandBuilder()
         .setName(name)
-        .setDescription("Sets or unsets a channel for all logging")
+        .setDescription("Sets or unsets a channel for member logging")
         .addChannelOption(o => 
             o.setName("channel")
-                .setDescription("The channel to use as a general logs channel")
+                .setDescription("The channel to use as a member logs channel")
                 .addChannelTypes(ChannelType.GuildText)
         ),
 
@@ -58,13 +58,13 @@ export const command: Subcommand = {
         // Get the server document from the database
         const server: Server = await Server.get(ctx.guildId);
         
-        server.logs = channel?.id;
+        server.memberLogs = channel?.id;
         await server.save();
 
         if (channel) {
-            await ctx.followUp(`Set to output all logs in ${channel}`);
+            await ctx.followUp(`Set to output member logs in ${channel}`);
         } else {
-            await ctx.followUp("Set to not output any logs");
+            await ctx.followUp("Set to not output member logs");
         }
     },
     // Error handler
@@ -72,12 +72,12 @@ export const command: Subcommand = {
 
     // Help command embed
     help: new EmbedBuilder()
-        .setTitle("Logs")
+        .setTitle("Memberlogs")
         .setDescription(
-            "A server configutation command that sets the logging channel for a server"
+            "A server configutation command that sets the member logging channel for a server"
         )
         .addFields(
             { name: "Format", value: `\`/config ${name} [channel]\`` },
-            { name: "[channel]", value: "Optional parameter. The channel to set as a general logging channel. Omit to remove all logs channels" }
+            { name: "[channel]", value: "Optional parameter. The channel to set as a member logging channel. Omit to remove the member logs channel" }
         )
 };
