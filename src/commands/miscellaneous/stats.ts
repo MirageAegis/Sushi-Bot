@@ -23,19 +23,26 @@
  */
 
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import { execSync } from "node:child_process";
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
-import { BLUE } from "../../util/colours.js";
+import { AZURE } from "../../util/colours.js";
+import { Bot } from "../../util/bot.js";
 
 /*
- * Displays the current status of the bot in a rich embed.
+ * Displays the current stats of the bot in a rich embed.
  * The stats include the bot's current uptime, amount of servers it's in,
  * the date it was created, and its current version.
  */
 
-const millisToSecs: number = 1000;
+const hash: string = execSync("git rev-parse --short HEAD", { cwd: process.cwd() })
+    .toString()
+    .trim();
+
+const millisPerSecs: number = 1000;
 const secsPerMin: number = 60;
 const secsPerHour: number = 3600;
+const secsPerDay: number = 86400;
 
 /**
  * Generates a string representing the bot's uptime
@@ -45,14 +52,15 @@ const secsPerHour: number = 3600;
  */
 const formatUptime = (uptime: number): string => {
     // Total seconds translated to hours, minutes, seconds
-    const hours: number = Math.floor(uptime / secsPerHour);
+    const days: number = Math.floor(uptime / secsPerDay);
+    const hours: number = Math.floor(Math.floor(uptime % secsPerHour) / secsPerHour);
     const minutes: number = Math.floor(Math.floor(uptime % secsPerHour) / secsPerMin);
     const seconds: number = Math.floor(Math.floor(uptime % secsPerHour) % secsPerMin);
 
-    return `${hours} hour(s), ${minutes} minute(s), ${seconds} second(s)`;
+    return `${days} day(s), ${hours} hour(s), ${minutes} minute(s), ${seconds} second(s)`;
 };
 
-const name: string = "status";
+const name: string = "stats";
 
 export const command: Command = {
     // Command headers
@@ -65,9 +73,9 @@ export const command: Command = {
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         // Generate embed with bot stats
         const embed: EmbedBuilder = new EmbedBuilder()
-            .setTitle("Status")
-            .setColor(BLUE)
-            .setDescription("This is the current status of Sushi Bot")
+            .setTitle("Stats")
+            .setColor(AZURE)
+            .setDescription("These the current stats of Sushi Bot")
             .setAuthor({
                 name: "Sushi Bot",
                 iconURL: ctx.client.user.avatarURL()
@@ -85,19 +93,18 @@ export const command: Command = {
                 },
                 {
                     name: "Uptime",
-                    value: formatUptime(ctx.client.uptime / millisToSecs),
-                    inline: false
-                },
-                {
-                    name: "Developers",
-                    value: "<@123456133368119296>\n" + // Mira
-                           "<@458627903211569162>\n\n" + // Zaha
-                           "Feel free to leave suggestions and report bugs to us!",
+                    value: formatUptime(ctx.client.uptime / millisPerSecs),
                     inline: false
                 },
                 {
                     name: "Version",
-                    value: process.env.npm_package_version
+                    value: `${process.env.npm_package_version} (${hash})`,
+                    inline: false
+                },
+                {
+                    name: "Commands",
+                    value: `${(<Bot> ctx.client).commands.size}`,
+                    inline: false
                 }
             )
             .setFooter({ text: "Bot runs locally" });
@@ -113,7 +120,7 @@ export const command: Command = {
         .setTitle("Status")
         .setDescription(
             "A command that displays the current status of Sushi Bot.\n" +
-            "It contains the bot's date of creation, server count, uptime, developers, and version"
+            "It contains the bot's date of creation, server count, uptime, and version"
         )
         .addFields(
             { name: "Format", value: `\`/${name}\`` }
