@@ -119,8 +119,8 @@ export const command: Command = {
     help: new EmbedBuilder()
         .setTitle("Status")
         .setDescription(
-            "A command that displays the current status of Sushi Bot.\n" +
-            "It contains the bot's date of creation, server count, uptime, and version"
+            "A command that displays the current stats of Sushi Bot.\n" +
+            "It contains the bot's date of creation, server count, uptime, version, and command count"
         )
         .addFields(
             { name: "Format", value: `\`/${name}\`` }
