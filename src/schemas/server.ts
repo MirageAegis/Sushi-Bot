@@ -50,7 +50,15 @@ const serverSchema: Schema = new Schema({
                 type: Map,
                 of: String
             }
-        },
+        }
+    },
+    welcome: {
+        channel: String,
+        message: String
+    },
+    goodbye: {
+        channel: String,
+        message: String
     }
 });
 
@@ -62,9 +70,9 @@ const serverSchema: Schema = new Schema({
  * @param profiles channel ID for profile logs
  */
 export type Logs = {
-    members?: Snowflake;
-    messages?: Snowflake;
-    profiles?: Snowflake;
+    readonly members?: Snowflake;
+    readonly messages?: Snowflake;
+    readonly profiles?: Snowflake;
 };
 
 /**
@@ -111,6 +119,10 @@ export const CONFIRM_RR: ReactionRoleStyle = "confirm";
 /**
  * Represents reaction roles on a message where emogi IDs are
  * mapped to role IDs.
+ * 
+ * @param channel the channel ID
+ * @param mode the reaction role style
+ * @param reactionRoles the reaction roles map with emoji IDs mapped to role IDs
  */
 export type ReactionRoles = {
     readonly channel: Snowflake;
@@ -124,12 +136,25 @@ export type ReactionRoles = {
  */
 export type ReactionMessages = Map<Snowflake, ReactionRoles>;
 
+/**
+ * Represents welcome message- and goodbye message configurations
+ * 
+ * @param channel the ID of the channel where these posts are sent
+ * @param message the message used for these posts
+ */
+export type Greeting = {
+    readonly channel: Snowflake;
+    readonly message?: string;
+};
+
 interface ServerI {
     _id: Snowflake;
     logs?: Logs;
     shoutout?: Shoutout;
     goLive?: GoLive;
     reactionMessages?: ReactionMessages;
+    welcome?: Greeting;
+    goodbye?: Greeting;
 }
 
 /**
@@ -309,7 +334,7 @@ export class Server {
      */
     public get shoutout(): Shoutout {
         const shoutout: Shoutout = this.data.shoutout;
-        return shoutout.channel && shoutout.role ? shoutout : null;
+        return shoutout?.channel && shoutout?.role ? shoutout : null;
     }
 
     public set shoutout(data: Shoutout) {
@@ -321,7 +346,7 @@ export class Server {
      */
     public get goLive(): GoLive {
         const goLive: GoLive = this.data.goLive;
-        return goLive.channel ? goLive : null;
+        return goLive?.channel ? goLive : null;
     }
 
     public set goLive(data: GoLive) {
@@ -396,5 +421,29 @@ export class Server {
 
     public deleteReactionRoles(message: Snowflake): void {
         this.data.reactionMessages.delete(message);
+    }
+
+    /**
+     * The auto welcome message configuration.
+     */
+    public get welcome(): Greeting {
+        const welcome: Greeting = this.data.welcome;
+        return welcome?.channel ? welcome : null;
+    }
+
+    public set welcome(welcome: Greeting) {
+        this.data.welcome = welcome;
+    }
+
+    /**
+     * The auto goodbye message configuration.
+     */
+    public get goodbye(): Greeting {
+        const goodbye: Greeting = this.data.goodbye;
+        return goodbye?.channel ? goodbye : null;
+    }
+
+    public set goodbye(goodbye: Greeting) {
+        this.data.goodbye = goodbye;
     }
 }
