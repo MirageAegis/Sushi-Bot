@@ -35,7 +35,7 @@ import { AZURE } from "../../util/colours.js";
  * The base for the info embed.
  */
 const embed: EmbedBuilder = new EmbedBuilder()
-    .setTitle("Information")
+    .setTitle("Invite")
     .setColor(AZURE)
     .setDescription("Here are some useful links!")
     .addFields(
@@ -43,6 +43,12 @@ const embed: EmbedBuilder = new EmbedBuilder()
             name: "Sushi Hub",
             value: "Join Sushi Hub, the official Sushi Bot community server, " +
                    "[here](https://discord.gg/Pqv2JkDKAg \"Link to the Sushi Hub server\")!"
+        },
+        {
+            name: "Sushi Bot",
+            value: "Invite [Sushi Bot](https://discord.com/api/oauth2/authorize?" +
+                   "client_id=775039565836714026&permissions=1099713178822&scope=bot%20applications.commands) " +
+                   "to your server if you're a VTuber!"
         },
         {
             name: "Repository",
@@ -66,18 +72,20 @@ const embed: EmbedBuilder = new EmbedBuilder()
         {
             name: "_ _", // Empty field title
             value: "[Sushi Hub](https://discord.gg/Pqv2JkDKAg) | " +
+                   "[Sushi Bot](https://discord.com/api/oauth2/authorize?client_id=775039565836714026&" +
+                   "permissions=1099713178822&scope=bot%20applications.commands) | " +
                    "[Repo](https://github.com/MirageAegis/Sushi-Bot) | " +
                    "[ToS](https://github.com/MirageAegis/Sushi-Bot/wiki/Terms-of-Service) | " +
                    "[Privacy](https://github.com/MirageAegis/Sushi-Bot/wiki/Privacy-Policy)"
         }
     );
 
-const name: string = "info";
+const name: string = "invite";
 
 export const command: Command = {
     // Command headers
     data: new SlashCommandBuilder()
-        .setName("info")
+        .setName(name)
         .setDescription("Get a link to the bot's repository")
         .setDMPermission(false),
 
@@ -96,8 +104,10 @@ export const command: Command = {
 
     // Help command embed
     help: new EmbedBuilder()
-        .setTitle("Info")
-        .setDescription("A command the provides links to Sushi Bot's GitHub repository, which contains more information")
+        .setTitle("Invite")
+        .setDescription(
+            "A command the provides invitation links, and links to Sushi Bot's repository"
+        )
         .addFields(
             { name: "Format", value: `\`/${name}\`` }
         )
