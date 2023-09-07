@@ -6,23 +6,23 @@ with a variety of commands and a chat experience system with an RPG.
 ## Prerequisites
 
 ### Node.js and npm
-Sushi Bot is built on [Node.js v18 (Hydrogen)](https://nodejs.org/dist/v18.17.1/)
+Sushi Bot is built on [Node.js v18 (Hydrogen)][node v18]
 and therefore requires it to run. Select the appropriate installation
 for your system and follow the setup instructions.
 
 **For Windows users:** \
-Get the installer [here](https://nodejs.org/dist/v18.16.1/node-v18.16.1-x64.msi)
+Get the installer [here][node win]
 
 **For macOS users:** \
-Get the installer [here](https://nodejs.org/dist/v18.16.1/node-v18.16.1.pkg)
+Get the installer [here][node mac]
 
 **For Linux users:** \
-Refer to [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager)
+Refer to [Installing Node.js via package manager][node pm]
 and make sure to install Node v18
 
 ### Discord bot
 The programme needs a Discord bot to connect to. You can make
-a bot in Discord's [developer portal](https://discord.com/developers/applications)
+a bot in Discord's [developer portal][ddev]
 by creating a new application.
 
 The bot also need all of the privileged intents to function properly.
@@ -72,5 +72,12 @@ you want to contribute code.
 This project is licensed under the MIT license - see [LICENSE](./LICENSE) for details.
 
 ## Community
-Join the [Sushi Hub](https://discord.gg/Pqv2JkDKAg) community to interact with
+Join the [Sushi Hub][sushi hub] community to interact with
 other Sushi Bot users and the Sushi Bot developers!
+
+[node v18]: https://nodejs.org/dist/v18.17.1/
+[node win]: https://nodejs.org/dist/v18.16.1/node-v18.16.1-x64.msi
+[node mac]: https://nodejs.org/dist/v18.16.1/node-v18.16.1.pkg
+[node pm]: https://nodejs.org/en/download/package-manager
+[ddev]: https://discord.com/developers/applications
+[sushi hub]: https://discord.gg/Pqv2JkDKAg
