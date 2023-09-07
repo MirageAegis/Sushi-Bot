@@ -31,6 +31,47 @@ import { BLUE } from "../../util/colours.js";
  * Provides useful links that lead to the GitHub repository and select wiki pages
  */
 
+/**
+ * The base for the info embed.
+ */
+const embed: EmbedBuilder = new EmbedBuilder()
+    .setTitle("Information")
+    .setColor(BLUE)
+    .setDescription("Here are some useful links!")
+    .addFields(
+        {
+            name: "Sushi Hub",
+            value: "Join Sushi Hub, the official Sushi Bot community server, " +
+                   "[here](https://discord.gg/Pqv2JkDKAg \"Link to the Sushi Hub server\")!"
+        },
+        {
+            name: "Repository",
+            value: "Follow this [link](https://github.com/MirageAegis/Sushi-Bot \"Link to Sushi Bot's " +
+                   "repository\") to the bot's repository to see its source code and wiki pages"
+        },
+        {
+            name: "Terms of Service",
+            value: "The bot's Terms of Service can be found " +
+                   "[here](https://github.com/MirageAegis/Sushi-Bot/wiki/Terms-of-Service \"Link to Sushi Bot's " +
+                   "Terms of Service\")\n" +
+                   "By using Sushi Bot, you agree to the ToS"
+        },
+        {
+            name: "Privacy Policy",
+            value: "The bot's Privacy Policy can be found " +
+                   "[here](https://github.com/MirageAegis/Sushi-Bot/wiki/Privacy-Policy \"Link to Sushi Bot's " +
+                   "Privacy Policy\")\n" +
+                   "Find out what kind of data the bot collects and how it's being used"
+        },
+        {
+            name: "_ _", // Empty field title
+            value: "[Sushi Hub](https://discord.gg/Pqv2JkDKAg) | " +
+                   "[Repo](https://github.com/MirageAegis/Sushi-Bot) | " +
+                   "[ToS](https://github.com/MirageAegis/Sushi-Bot/wiki/Terms-of-Service) | " +
+                   "[Privacy](https://github.com/MirageAegis/Sushi-Bot/wiki/Privacy-Policy)"
+        }
+    );
+
 const name: string = "info";
 
 export const command: Command = {
@@ -42,35 +83,10 @@ export const command: Command = {
 
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
-        const embed = new EmbedBuilder()
-            .setTitle("Information")
-            .setColor(BLUE)
-            .setDescription("Here are some useful links!")
-            .setAuthor({
-                name: "Sushi Bot",
-                iconURL: ctx.client.user.avatarURL()
-            })
-            .addFields(
-                {
-                    name: "Repository",
-                    value: "Follow this [link](https://github.com/MirageAegis/Sushi-Bot \"Link to Sushi Bot's " +
-                           "repository\") to the bot's repository to see its source code and wiki pages"
-                },
-                {
-                    name: "Terms of Service",
-                    value: "The bot's Terms of Service can be found " +
-                           "[here](https://github.com/MirageAegis/Sushi-Bot/wiki/Terms-of-Service \"Link to Sushi Bot's " +
-                           "Terms of Service\")\n" +
-                           "By using Sushi Bot, you agree to the ToS"
-                },
-                {
-                    name: "Privacy Policy",
-                    value: "The bot's Privacy Policy can be found " +
-                           "[here](https://github.com/MirageAegis/Sushi-Bot/wiki/Privacy-Policy \"Link to Sushi Bot's " +
-                           "Privacy Policy\")\n" +
-                           "Find out what kind of data the bot collects and how it's being used"
-                }
-            );
+        embed.setAuthor({
+            name: "Sushi Bot",
+            iconURL: ctx.client.user.avatarURL()
+        });
 
         await ctx.reply({ embeds: [embed] });
     },
