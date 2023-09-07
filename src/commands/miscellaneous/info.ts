@@ -25,7 +25,7 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
-import { BLUE } from "../../util/colours.js";
+import { AZURE } from "../../util/colours.js";
 
 /*
  * Provides useful links that lead to the GitHub repository and select wiki pages
@@ -36,7 +36,7 @@ import { BLUE } from "../../util/colours.js";
  */
 const embed: EmbedBuilder = new EmbedBuilder()
     .setTitle("Information")
-    .setColor(BLUE)
+    .setColor(AZURE)
     .setDescription("Here are some useful links!")
     .addFields(
         {
