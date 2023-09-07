@@ -99,7 +99,7 @@ export const command: Subcommand = {
                        `- \`${NAME}\` - Replaced with the new member's display name\n` +
                        `- \`${PING}\` - Replaced with a mention to the new member\n` +
                        `- \`${SERVER}\` - Replaced with the server's name\n` +
-                       `- \`${OWNER}\` - Replaced with the server owner's display name` +
+                       `- \`${OWNER}\` - Replaced with the server owner's display name\n` +
                        `- \`${NEW_LINE}\` - Replaced with a new line`
             }
         )
