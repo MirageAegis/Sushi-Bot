@@ -35,9 +35,38 @@ import { Bot } from "../../util/bot.js";
  * the date it was created, and its current version.
  */
 
-const hash: string = execSync("git rev-parse --short HEAD", { cwd: process.cwd() })
-    .toString()
-    .trim();
+let hash: string;
+
+// Let the hash be the hash of the latest commit if in a repo,
+// otherwise it's "Untracked"
+if (process.platform === "win32") {
+    // Execute this in PowerShell if running on Windows
+    hash = execSync(
+        "if (git rev-parse --is-inside-work-tree 2>$null) {\n" +
+        "    git rev-parse --short HEAD\n" +
+        "} else {\n" +
+        "    echo \"Unofficial\"\n" +
+        "}",
+        {
+            cwd: process.cwd(),
+            shell: "powershell.exe"
+        }
+    )
+        .toString()
+        .trim();
+} else {
+    // Otherwise run this
+    hash = execSync(
+        "if git rev-parse --is-inside-work-tree 1>/dev/null 2>/dev/null; then\n" +
+        "    git rev-parse --short HEAD;\n" +
+        "else\n" +
+        "    echo \"Unofficial\";\n" +
+        "fi",
+        { cwd: process.cwd() }
+    )
+        .toString()
+        .trim();
+}
 
 const millisPerSecs: number = 1000;
 const secsPerMin: number = 60;
