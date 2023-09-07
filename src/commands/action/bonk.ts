@@ -73,7 +73,7 @@ export const command: Command = {
                 break;
             case bonked.id === ctx.client.user.id:
                 // User tries to bonk Sushi Bot
-                response = "Oh no don't\n" +
+                response = "Oh no you don't\n" +
                            `${ctx.client.user} bonks ${bonker}!`;
                 break;
             default:
