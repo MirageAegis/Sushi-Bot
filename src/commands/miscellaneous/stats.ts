@@ -75,7 +75,7 @@ export const command: Command = {
         const embed: EmbedBuilder = new EmbedBuilder()
             .setTitle("Stats")
             .setColor(AZURE)
-            .setDescription("These the current stats of Sushi Bot")
+            .setDescription("These are the current stats of Sushi Bot")
             .setAuthor({
                 name: "Sushi Bot",
                 iconURL: ctx.client.user.avatarURL()
