@@ -23,8 +23,7 @@
  */
 
 import {
-    ApplicationCommand, ButtonInteraction, ChatInputCommandInteraction, DiscordAPIError,
-    Interaction,
+    ButtonInteraction, ChatInputCommandInteraction, DiscordAPIError, Interaction,
     InteractionReplyOptions, User
 } from "discord.js";
 import { NoMemberFoundError, UserIsMemberError } from "./errors";
@@ -87,14 +86,13 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
     // ----- ERROR LOG -----
 
     const user: User = ctx.user;
-    const command: ApplicationCommand = ctx.command;
 
     const report: string = "```\n" +
                            "Command Error\n\n" +
                            `Server: ${ctx.guild.name}\n` +
                            `User: ${user.id} (${user.username})\n` +
-                           `Command: ${command.name}\n` +
-                           `Options: ${command.options.toString()}\n\n` +
+                           `Command: ${ctx.commandName}\n` +
+                           `Options: ${ctx.options.toString()}\n\n` +
                            // Error name, and error code if it's a Discord API error
                            `${err.name}${err instanceof DiscordAPIError ? `: ${err.code} (${err.message})` : ""}\n` +
                            "```";

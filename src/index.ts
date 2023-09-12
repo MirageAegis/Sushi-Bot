@@ -25,31 +25,16 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import {
-    ActivityType, Client, ClientOptions, Collection, Events, GatewayIntentBits, Interaction
+    ActivityType, Client, Events, GatewayIntentBits, Interaction
 } from "discord.js";
 import { Command } from "./util/command-template.js";
 import { init, loadListeners } from "./util/init.js";
 import { onButtonPressed } from "./events/reactionroles.js";
 import { reactionRolesErrorHandler } from "./util/error-handler.js";
+import { Bot } from "./util/bot.js";
 
 // Loads the environment variables
 require("dotenv").config();
-
-/**
- * Wrapper class adding a collection of slash commands
- * to a Discord Client
- */
-class Bot extends Client {
-    /**
-     * A collection of slash commands that the bot has
-     */
-    public readonly commands: Collection<string, Command>;
-
-    public constructor(options: ClientOptions) {
-        super(options);
-        this.commands = new Collection();
-    }
-}
 
 // Client instance with all required intents
 const client = new Bot({

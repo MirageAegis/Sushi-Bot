@@ -28,13 +28,14 @@ import {
 } from "discord.js";
 import { leaveIneligibleServer } from "../util/refresh";
 import { getAdminLogsChannel } from "../util/channels";
-import { Server } from "../schemas/server";
+import { Greeting, Server } from "../schemas/server";
 import {
     genMemberBanEmbed, genMemberJoinEmbed, genMemberLeaveEmbed, genMemberUnbanEmbed,
     genMemberUpdateEmbed, genMessageDeleteEmbed, genMessageEditEmbed, genUserUpdateEmbed
 } from "./logs";
 import { Blacklist } from "../schemas/blacklist";
 import { formatGoLivePost } from "./shoutout";
+import { Action, formatGreeting } from "./greet";
 
 /*
  * This module has event listeners for the bot
@@ -106,6 +107,56 @@ const logTo = async (
     await logs.send({ embeds: [embed] });
 };
 
+/**
+ * Greets a new member or says goodbye to a member in the specified server.
+ * 
+ * @param member the member to greet or say goodbye to
+ * @param server the server document from the database
+ * @param action the action of welcoming or saying goodbye
+ */
+const greet = async (
+    client: Client,
+    member: GuildMember,
+    server: Server,
+    action: Action
+): Promise<void> => {
+    let greeting: Greeting;
+
+    switch (action) {
+        case Action.Welcome:
+            greeting = server.welcome;
+            break;
+        case Action.Goodbye:
+            greeting = server.goodbye;
+            break;
+    }
+
+    // No need to greet if there's no configuration or
+    // if the new member is a bot
+    if (!greeting || member.user.bot) {
+        return;
+    }
+
+    // channel is guaranteed to be a text channel due to the constraints
+    // of the /config welcome and /config goodbye command
+    const channel: TextChannel = <TextChannel> client.channels.cache.get(greeting.channel);
+
+    if (!channel) {
+        // Remove configurations if the channel does not exist
+        switch (action) {
+            case Action.Welcome:
+                server.welcome = null;
+                break;
+            case Action.Goodbye:
+                server.goodbye = null;
+                break;
+        }
+        await server.save();
+    }
+
+    await channel.send(await formatGreeting(member, action, greeting.message));
+};
+
 
 // ----- MEMBER RELATED -----
 
@@ -116,6 +167,8 @@ const logTo = async (
  * @param member the member who joined
  */
 export const onMemberJoin = async (client: Client, member: GuildMember): Promise<void> => {
+    // ----- CHECK BLACKLIST -----
+
     // The server and logs channel ID of the server that the member joined
     const server: Server = await Server.get(member.guild.id);
 
@@ -130,7 +183,17 @@ export const onMemberJoin = async (client: Client, member: GuildMember): Promise
         await member.ban({
             reason: ban
         });
+        return;
     }
+
+    // ----- !CHECK BLACKLIST -----
+
+
+    // ----- GREET MEMBERS -----
+
+    await greet(client, member, server, Action.Welcome);
+    
+    // ----- !GREET MEMBERS -----
 };
 
 /**
@@ -144,6 +207,8 @@ export const onMemberLeave = async (client: Client, member: GuildMember): Promis
     const server: Server = await Server.get(member.guild.id);
 
     await logTo(client, server, Category.Members, await genMemberLeaveEmbed(member));
+
+    await greet(client, member, server, Action.Goodbye);
 };
 
 /**

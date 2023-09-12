@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-present Zahatikoff
+ * Copyright (c) 2023-present Zahatikoff, Mirage Aegis
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,13 @@
  * SOFTWARE.
  */
 
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder, User } from "discord.js";
+import {
+    ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder
+} from "discord.js";
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { TenorSingleton } from "../../util/tenor-utils.js";
+import { YELLOW } from "../../util/colours.js";
 
 /*
  * Creates an embed that states that the user had been bonked.
@@ -35,23 +38,53 @@ import { TenorSingleton } from "../../util/tenor-utils.js";
 const name: string = "bonk";
 
 export const command: Command = {
+    // Command headers
     data: <SlashCommandBuilder> new SlashCommandBuilder()
         .setName(name)
-        .setDescription("Bonk your friends ... or your enemies.\n ***the bonk*** *never* misses")
+        .setDescription("Bonk your friends... or your enemies. The bonk NEVER misses")
         .setDMPermission(false)
         .addUserOption(o =>
             o.setName("target")
                 .setDescription("The target of the bonkening")
                 .setRequired(true)
         ),
+
+    // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         const tenor: TenorSingleton = TenorSingleton.getInstance();
-        const bonker: User = <User> ctx.member.user;
-        const bonked: User = <User> ctx.options.getUser("target");
+        const bonker: GuildMember = <GuildMember> ctx.member;
+        const bonked: GuildMember = <GuildMember> ctx.options.getMember("target") ?? null;
         const gif: string = await tenor.getGifs("anime+bonk");
 
+        // If the user provided wasn't a member,
+        // tell the user so
+        if (!bonked) {
+            await ctx.reply("Couldn't find that member... who are you trying to bonk?");
+            return;
+        }
+
+        let response: string;
+
+        switch (true) {
+            case bonker.id === bonked.id:
+                // User tries to bonk themselves
+                response = "Why are you hitting yourself??\n" +
+                           `${bonker} bonks themselves!`;
+                break;
+            case bonked.id === ctx.client.user.id:
+                // User tries to bonk Sushi Bot
+                response = "Oh no you don't\n" +
+                           `${ctx.client.user} bonks ${bonker}!`;
+                break;
+            default:
+                // User bonks someone else
+                response = `${bonker} bonks ${bonked}. Ouchies!`;
+                break;
+        }
+
         const embed: EmbedBuilder = new EmbedBuilder()
-            .setDescription(`<@${bonker.id}> bonks <@${bonked.id}>. OUCH, THAT HURT!!`)
+            .setDescription(response)
+            .setColor(YELLOW)
             .setImage(gif);
 
         await ctx.reply({
@@ -59,8 +92,10 @@ export const command: Command = {
         });
     },
 
+    // Error handler
     error: defaultErrorHandler,
 
+    // Help command embed
     help: new EmbedBuilder()
         .setTitle("Bonk")
         .setDescription("A lil silly command to bonk another user")

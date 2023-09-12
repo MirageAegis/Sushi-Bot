@@ -25,7 +25,7 @@
 import { Activity } from "discord.js";
 
 /*
- * This module has string formatters for auto shout outs and go-live posts
+ * This module has a string formatter for auto shout outs and go-live posts
  */
 
 /**
@@ -71,7 +71,7 @@ export const NEW_LINE: string = "{nl}";
 const NEW_LINE_RE: RegExp = /{nl}/g;
 
 /**
- * Default go-live and shout out stringused when none is in the configurations.
+ * Default go-live and shout out string used when none is in the configurations.
  */
 const DEFAULT_POST: string = `${DISCORD_NAME} is live now! Go watch the stream at ${LINK}`;
 
