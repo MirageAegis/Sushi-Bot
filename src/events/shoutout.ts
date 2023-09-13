@@ -22,11 +22,13 @@
  * SOFTWARE.
  */
 
-import { Activity } from "discord.js";
+import { Activity, Snowflake } from "discord.js";
 
 /*
  * This module has a string formatter for auto shout outs and go-live posts
  */
+
+// ----- STRING FORMATTING -----
 
 /**
  * The string that gets replaced with the streamer's Discord display name
@@ -85,6 +87,7 @@ const getTwitchUsername = (link: string): string | null => {
     // Twitch stream links are formatted https://twitch.tv/{username}
     const tokens: string[] = link.split("/");
     // Return {username}
+    // eslint-disable-next-line no-magic-numbers
     return tokens[tokens.length - 1];
 };
 
@@ -111,3 +114,56 @@ export const formatGoLivePost = (activity: Activity, template: string): string |
         .replace(GAME_RE, game)
         .replace(NEW_LINE_RE, "\n");
 };
+
+// ----- !STRING FORMATTING -----
+
+
+// ----- COOLDOWNS -----
+
+/**
+ * The cooldown period in milliseconds.
+ */
+const TEN_MINUTES: number = 600_000;
+
+/**
+ * The cached shout out cooldowns.
+ */
+const cooldownCache: Map<Snowflake, NodeJS.Timeout> = new Map();
+
+/**
+ * Starts a cooldown for a user.
+ * Users on cooldown will not be shouted out.
+ * 
+ * @param user the ID of the user to start a cooldown for
+ */
+export const startCooldown = (user: Snowflake): void => {
+    // Get the existing cooldown if there is one
+    const cooldown: NodeJS.Timeout = cooldownCache.get(user);
+
+    // Remove the cooldown if it exists
+    if (cooldown) {
+        clearTimeout(cooldown);
+    }
+
+    // Set a new cooldown
+    cooldownCache.set(
+        user,
+        setTimeout(() => {
+            cooldownCache.delete(user);
+        }, TEN_MINUTES)
+    );
+};
+
+/**
+ * Checks whether a user is on cooldown or not.
+ * 
+ * @param user the ID of the user to check
+ */
+export const onCooldown = (user: Snowflake): boolean => {
+    // Get the existing cooldown if there is one
+    const cooldown: NodeJS.Timeout = cooldownCache.get(user);
+
+    return cooldown ? true : false;
+};
+
+// ----- COOLDOWNS -----
