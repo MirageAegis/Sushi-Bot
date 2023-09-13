@@ -24,7 +24,7 @@
 
 import {
     Activity, ActivityType, Client, Collection, EmbedBuilder, Guild, GuildBan,
-    GuildMember, Message, Presence, TextChannel, User
+    GuildMember, Message, Presence, Snowflake, TextChannel, User
 } from "discord.js";
 import { leaveIneligibleServer } from "../util/refresh";
 import { getAdminLogsChannel } from "../util/channels";
@@ -34,7 +34,7 @@ import {
     genMemberUpdateEmbed, genMessageDeleteEmbed, genMessageEditEmbed, genUserUpdateEmbed
 } from "./logs";
 import { Blacklist } from "../schemas/blacklist";
-import { formatGoLivePost } from "./shoutout";
+import { formatGoLivePost, onCooldown, startCooldown } from "./shoutout";
 import { Action, formatGreeting } from "./greet";
 
 /*
@@ -370,6 +370,7 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
     const guild: Guild = after.guild;
     const server: Server = await Server.get(guild.id);
     const member: GuildMember = after.member;
+    const uid: Snowflake = member.user.id;
     const oldStreams: Activity[] = [];
     let streams: Activity[] = [];
 
@@ -394,8 +395,13 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
         }
     }
 
-    // Skip if no stream was found
-    if (!streams.length) {
+    // If a stream has ended, add a cooldown
+    if (oldStreams.length > streams.length) {
+        startCooldown(uid);
+    }
+
+    // Skip if the member is on cooldown or no stream was found
+    if (onCooldown(uid) || !streams.length) {
         return;
     }
     
