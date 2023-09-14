@@ -186,17 +186,6 @@ type LogsAction = MemberLogsAction |
     MessageLogsAction;
 
 /**
- * The trigger of a logs error.
- * A User if it's related to a user update, or a ban, or
- * a message.
- * otherwise a member.
- */
-type Trigger<T extends LogsAction> = T extends ProfileLogsAction.UserUpdate |
-    MemberLogsAction.MemberBan |
-    MemberLogsAction.MemberUnban |
-    MessageLogsAction ? User : GuildMember;
-
-/**
  * The payload of a logs error.
  * The before and after states of a Message if it's a message edit action, or
  * a single message if it's a message delete action, or
@@ -222,14 +211,11 @@ type Payload<T extends LogsAction> = T extends MessageLogsAction.MessageEdit ? [
 export const moderationLogsErrorHandler = async <T extends LogsAction>(
     action: T,
     server: Guild,
-    trigger: Trigger<T>,
+    trigger: User,
     err: Error,
     ...payload: Payload<T>
 ): Promise<void> => {
     console.log(err);
-    
-    const username: string = trigger instanceof User ? trigger.username : trigger.user.username;
-    const uid: string = trigger instanceof User ? trigger.username : trigger.user.username;
 
     // The states from the payload
     let before: string = null;
@@ -284,7 +270,7 @@ export const moderationLogsErrorHandler = async <T extends LogsAction>(
     const report: string = "```\n" +
                            `${action} Error\n\n` +
                            `Server: ${server?.name}\n` +
-                           `Trigger: ${uid} (${username})\n\n` +
+                           `Trigger: ${trigger.id} (${trigger.username})\n\n` +
                            `${before ? "Payload\n\n" : ""}` +
                            `${before ? before + "\n": "" }${after ? after + "\n" : ""}` +
                            `${before ? "\n" : ""}` +

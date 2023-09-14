@@ -99,7 +99,7 @@ export const loadListeners = (client: Client): void => {
             await moderationLogsErrorHandler(
                 MemberLogsAction.MemberJoin,
                 member.guild,
-                member,
+                member.user,
                 e
             );
         }
@@ -112,7 +112,7 @@ export const loadListeners = (client: Client): void => {
             await moderationLogsErrorHandler(
                 MemberLogsAction.MemberLeave,
                 member.guild,
-                member,
+                member.user,
                 e
             );
         }
@@ -151,7 +151,7 @@ export const loadListeners = (client: Client): void => {
             await moderationLogsErrorHandler(
                 ProfileLogsAction.MemberUpdate,
                 before.guild,
-                before,
+                before.user,
                 e,
                 before,
                 after
