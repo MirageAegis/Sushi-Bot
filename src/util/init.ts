@@ -34,6 +34,7 @@ import {
     onMessageDelete, onMessageEdit, onPresenceUpdate, onServerJoin, onUserUpdate
 } from "../events/events";
 import { initRefreshReactionRolesInterval } from "../events/reactionroles";
+import { MemberLogsAction, MessageLogsAction, ProfileLogsAction, moderationLogsErrorHandler } from "./error-handler";
 
 /**
  * This module has an initialisation routine for the bot
@@ -92,35 +93,114 @@ export const loadListeners = (client: Client): void => {
     });
 
     client.on(Events.GuildMemberAdd, async (member: GuildMember): Promise<void> => {
-        await onMemberJoin(client, member);
+        try {
+            await onMemberJoin(client, member);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                MemberLogsAction.MemberJoin,
+                member.guild,
+                member,
+                e
+            );
+        }
     });
 
     client.on(Events.GuildMemberRemove, async (member: GuildMember): Promise<void> => {
-        await onMemberLeave(client, member);
+        try {
+            await onMemberLeave(client, member);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                MemberLogsAction.MemberLeave,
+                member.guild,
+                member,
+                e
+            );
+        }
     });
 
     client.on(Events.GuildBanAdd, async (ban: GuildBan): Promise<void> => {
-        await onMemberBan(client, ban);
+        try {
+            await onMemberBan(client, ban);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                MemberLogsAction.MemberBan,
+                ban.guild,
+                ban.user,
+                e
+            );
+        }
     });
 
     client.on(Events.GuildBanRemove, async (ban: GuildBan): Promise<void> => {
-        await onMemberUnban(client, ban);
+        try {
+            await onMemberUnban(client, ban);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                MemberLogsAction.MemberBan,
+                ban.guild,
+                ban.user,
+                e
+            );
+        }
     });
 
     client.on(Events.GuildMemberUpdate, async (before: GuildMember, after: GuildMember): Promise<void> => {
-        await onMemberUpdate(client, before, after);
+        try {
+            await onMemberUpdate(client, before, after);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                ProfileLogsAction.MemberUpdate,
+                before.guild,
+                before,
+                e,
+                before,
+                after
+            );
+        }
     });
 
     client.on(Events.UserUpdate, async (before: User, after: User): Promise<void> => {
-        await onUserUpdate(client, before, after);
+        try {
+            await onUserUpdate(client, before, after);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                ProfileLogsAction.UserUpdate,
+                null,
+                before,
+                e,
+                before,
+                after
+            );
+        }
     });
 
     client.on(Events.MessageUpdate, async (before: Message, after: Message): Promise<void> => {
-        await onMessageEdit(client, before, after);
+        try {
+            await onMessageEdit(client, before, after);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                MessageLogsAction.MessageEdit,
+                before.guild,
+                before.author,
+                e,
+                before,
+                after
+            );
+        }
     });
 
     client.on(Events.MessageDelete, async (message: Message): Promise<void> => {
-        await onMessageDelete(client, message);
+        try {
+            await onMessageDelete(client, message);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                MessageLogsAction.MessageDelete,
+                message.guild,
+                message.author,
+                e,
+                message
+            );
+        }
     });
 
     client.on(Events.Error, async (error: Error): Promise<void> => {
