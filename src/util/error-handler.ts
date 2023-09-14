@@ -254,7 +254,7 @@ export const moderationLogsErrorHandler = async <T extends LogsAction>(
 
             before = "user: {\n" +
                      `\tusername: ${beforeUser.username}\n` +
-                     `\tisplay name: ${beforeUser.displayName}\n` +
+                     `\tdisplay name: ${beforeUser.displayName}\n` +
                      `\tavatar: ${beforeUser.avatarURL()}\n` +
                      "}";
             after = "user: {\n" +
