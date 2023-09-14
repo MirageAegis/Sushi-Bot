@@ -395,9 +395,10 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
         }
     }
 
-    // If a stream has ended, add a cooldown
+    // If a stream has ended, add a cooldown and skip
     if (oldStreams.length > streams.length) {
         startCooldown(uid);
+        return;
     }
 
     // Skip if the member is on cooldown or no stream was found
