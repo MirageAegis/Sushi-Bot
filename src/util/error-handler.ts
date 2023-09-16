@@ -23,8 +23,8 @@
  */
 
 import {
-    ButtonInteraction, ChatInputCommandInteraction, DiscordAPIError, Interaction,
-    InteractionReplyOptions, User
+    ButtonInteraction, ChatInputCommandInteraction, DiscordAPIError, Guild, GuildMember,
+    Interaction, InteractionReplyOptions, Message, User
 } from "discord.js";
 import { NoMemberFoundError, UserIsMemberError } from "./errors";
 import { getAdminLogsChannel } from "./channels";
@@ -150,4 +150,133 @@ export const reactionRolesErrorHandler: ErrorHandler = async (ctx: ButtonInterac
     await getAdminLogsChannel().send(report);
     
     // ----- !ERROR LOG -----
+};
+
+/**
+ * Actions related to the members logs category.
+ */
+export enum MemberLogsAction {
+    MemberJoin = "Member Join",
+    MemberLeave = "Member Leave",
+    MemberBan = "Member Ban",
+    MemberUnban = "Member Unban"
+}
+
+/**
+ * Actions related to the profiles logs category.
+ */
+export enum ProfileLogsAction {
+    MemberUpdate = "Member Update",
+    UserUpdate = "User Update"
+}
+
+/**
+ * Actions related to the messages logs category.
+ */
+export enum MessageLogsAction {
+    MessageEdit = "Message Edit",
+    MessageDelete = "Message Delete"
+}
+
+/**
+ * All logs categories.
+ */
+type LogsAction = MemberLogsAction |
+    ProfileLogsAction |
+    MessageLogsAction;
+
+/**
+ * The payload of a logs error.
+ * The before and after states of a Message if it's a message edit action, or
+ * a single message if it's a message delete action, or
+ * the before and after states of a User if it's a user update action, or
+ * the before and after states of a Member if it's a member update action.
+ */
+type Payload<T extends LogsAction> = T extends MessageLogsAction.MessageEdit ? [before: Message, after: Message] :
+    T extends MessageLogsAction ? [message: Message] :
+    T extends ProfileLogsAction.UserUpdate ? [before: User, after: User] :
+    T extends ProfileLogsAction.MemberUpdate ? [before: GuildMember, after: GuildMember] :
+    [];
+
+/**
+ * Handles errors related to moderation logs.
+ * It logs the error along with any payload to the error logs channel.
+ * 
+ * @param action the logs action
+ * @param server the server the error originated from
+ * @param trigger the member or user who triggered the error
+ * @param err the error that occurred
+ * @param payload the error payload
+ */
+export const moderationLogsErrorHandler = async <T extends LogsAction>(
+    action: T,
+    server: Guild,
+    trigger: User,
+    err: Error,
+    ...payload: Payload<T>
+): Promise<void> => {
+    console.log(err);
+
+    // The states from the payload
+    let before: string = null;
+    let after: string = null;
+
+    /*eslint-disable no-magic-numbers*/
+    if (payload.length === 1) {
+        // Payload length of 1 means that a message was deleted
+        // We're slicing it to avoid having the error log message
+        // exceed the character limit
+        before = payload[0].content.slice(0, 100);
+    } else if (payload.length === 2) {
+        // Payload length of 2 means that something has changed
+        if (payload[0] instanceof Message) {
+            // If it's a message update, take the content of them
+            before = payload[0].content.slice(0, 100);
+            after = (<Message> payload[1]).content.slice(0, 100);
+        } else if (payload[0] instanceof User) {
+            // If it's a user profile update, take the relevant data
+            const beforeUser: User = payload[0];
+            const afterUser: User = <User> payload[1];
+
+            before = "user: {\n" +
+                     `\tusername: ${beforeUser.username}\n` +
+                     `\tdisplay name: ${beforeUser.displayName}\n` +
+                     `\tavatar: ${beforeUser.avatarURL()}\n` +
+                     "}";
+            after = "user: {\n" +
+                    `\tusername: ${afterUser.username}\n` +
+                    `\tdisplay name: ${afterUser.displayName}\n` +
+                    `\tavatar: ${afterUser.avatarURL()}\n` +
+                    "}";
+        } else {
+            // Do the same for member profile updates
+            const beforeMember: GuildMember = payload[0];
+            const afterMember: GuildMember = <GuildMember> payload[1];
+
+            before = "member: {\n" +
+                     `\tusername: ${beforeMember.user.username}\n` +
+                     `\tnickname: ${beforeMember.nickname}\n` +
+                     `\tavatar: ${beforeMember.avatarURL()}\n` +
+                     "}";
+            after = "user: {\n" +
+                    `\tusername: ${afterMember.user.username}\n` +
+                    `\tnickname: ${afterMember.nickname}\n` +
+                    `\tavatar: ${afterMember.avatarURL()}\n` +
+                    "}";
+        }
+    }
+    /*eslint-enable no-magic-numbers*/
+
+    const report: string = "```\n" +
+                           `${action} Error\n\n` +
+                           `Server: ${server?.name}\n` +
+                           `Trigger: ${trigger.id} (${trigger.username})\n\n` +
+                           `${before ? "Payload\n\n" : ""}` +
+                           `${before ? before + "\n": "" }${after ? after + "\n" : ""}` +
+                           `${before ? "\n" : ""}` +
+                           // Error name, and error code if it's a Discord API error
+                           `${err.name}${err instanceof DiscordAPIError ? `: ${err.code} (${err.message})` : ""}\n` +
+                           "```";
+    
+    await getAdminLogsChannel().send(report);
 };
