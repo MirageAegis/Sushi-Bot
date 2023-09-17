@@ -82,7 +82,7 @@ const secsPerDay: number = 86400;
 const formatUptime = (uptime: number): string => {
     // Total seconds translated to hours, minutes, seconds
     const days: number = Math.floor(uptime / secsPerDay);
-    const hours: number = Math.floor(Math.floor(uptime % secsPerHour) / secsPerHour);
+    const hours: number = Math.floor(Math.floor(uptime % secsPerDay) / secsPerHour);
     const minutes: number = Math.floor(Math.floor(uptime % secsPerHour) / secsPerMin);
     const seconds: number = Math.floor(Math.floor(uptime % secsPerHour) % secsPerMin);
 
