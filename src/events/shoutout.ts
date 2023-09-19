@@ -70,7 +70,7 @@ const GAME_RE: RegExp = /{game}/g;
  * in the formatted string.
  */
 export const NEW_LINE: string = "{nl}";
-const NEW_LINE_RE: RegExp = /{nl}/g;
+export const NEW_LINE_RE: RegExp = /{nl}/g;
 
 /**
  * Default go-live and shout out string used when none is in the configurations.
