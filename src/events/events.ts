@@ -384,7 +384,7 @@ export const onMessageEdit = async (client: Client, before: Message, after: Mess
     }
 
     try {
-        await logTo(client, server, Category.Profiles, embed);
+        await logTo(client, server, Category.Messages, embed);
     } catch (e) {
         await moderationLogsErrorHandler(
             MessageLogsAction.MessageEdit,
@@ -414,7 +414,7 @@ export const onMessageDelete = async (client: Client, message: Message): Promise
     }
 
     try {
-        await logTo(client, server, Category.Profiles, embed);
+        await logTo(client, server, Category.Messages, embed);
     } catch (e) {
         await moderationLogsErrorHandler(
             MessageLogsAction.MessageDelete,
