@@ -31,7 +31,6 @@ import axios from "axios";
 import { TenorError } from "./errors";
 
 // Content safety filter level for the GIFs
-
 type FilterType = "off" | "low" | "medium" | "high";
 
 /*
@@ -130,7 +129,7 @@ type TenorMediaObject = {
 
 //
 
-const DEFAULT_RESPONSE_LIMIT: number = 50;
+const DEFAULT_RESPONSE_LIMIT: number = 20;
 const TWELVE_HOURS: number = 43_200_000;
 
 // Exported Singleton class that will later be used in the program.
@@ -186,7 +185,7 @@ export class TenorSingleton {
 
         /*eslint-disable camelcase*/
         const requestParams: TenorRequestParameters = {
-            q: topic,
+            q: "anime " + topic, // Prepend every query with "anime " to only receive anime gifs
             key: process.env.TENOR_API_KEY,
             client_key: "sushi-bot",
             contentfilter: "low",
