@@ -23,7 +23,7 @@
  */
 
 import {
-    ButtonInteraction, ChatInputCommandInteraction, DiscordAPIError, Guild, GuildMember,
+    ButtonInteraction, ChatInputCommandInteraction, CommandInteractionOption, DiscordAPIError, Guild, GuildMember,
     Interaction, InteractionReplyOptions, Message, User
 } from "discord.js";
 import { NoMemberFoundError, UserIsMemberError } from "./errors";
@@ -87,12 +87,29 @@ export const defaultErrorHandler: ErrorHandler = async (ctx: ChatInputCommandInt
 
     const user: User = ctx.user;
 
+    let options: string = "{ ";
+    const optionsData: readonly CommandInteractionOption[] = ctx.options.data;
+
+    for (let i = 0; i < optionsData.length; i++) {
+        const option: CommandInteractionOption = optionsData[i];
+
+        // This line looks like a mess, so here's a breakdown:
+        // if the first option is being added, prepend with a new line,
+        // add the option in the following format: "name: type = value",
+        // Add a comma if it's not the last option, and
+        // add a new line
+        // eslint-disable-next-line no-magic-numbers
+        options += `${!i ? "\n" : ""}\t${option.name}: ${option.type} = ${option.value}${i === optionsData.length - 1 ? "," : ""}\n`;
+    }
+
+    options += "}";
+
     const report: string = "```\n" +
                            "Command Error\n\n" +
                            `Server: ${ctx.guild.name}\n` +
                            `User: ${user.id} (${user.username})\n` +
                            `Command: ${ctx.commandName}\n` +
-                           `Options: ${ctx.options.toString()}\n\n` +
+                           `Options: ${options}\n\n` +
                            // Error name, and error code if it's a Discord API error
                            `${err.name}${err instanceof DiscordAPIError ? `: ${err.code} (${err.message})` : ""}\n` +
                            "```";
