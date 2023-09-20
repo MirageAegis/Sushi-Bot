@@ -54,7 +54,7 @@ export const command: Command = {
         const tenor: TenorSingleton = TenorSingleton.getInstance();
         const kisser: GuildMember = <GuildMember> ctx.member;
         const kissed: GuildMember = <GuildMember> ctx.options.getMember("target") ?? null;
-        const gif: string = await tenor.getGifs("anime+kiss");
+        const gif: string = await tenor.getGifs("kiss");
 
         // If the user provided wasn't a member,
         // tell the user so
