@@ -374,6 +374,11 @@ export const onUserUpdate = async (client: Client, before: User, after: User): P
  * @param after the message's current state
  */
 export const onMessageEdit = async (client: Client, before: Message, after: Message): Promise<void> => {
+    // Ignore own messages
+    if (before.author.id === client.user.id) {
+        return;
+    }
+    
     // The server and logs channel ID of the server that had a message edited
     const server: Server = await Server.get(before.guild.id);
     const embed: EmbedBuilder = genMessageEditEmbed(before, after);
@@ -404,6 +409,11 @@ export const onMessageEdit = async (client: Client, before: Message, after: Mess
  * @param message the message that was deleted
  */
 export const onMessageDelete = async (client: Client, message: Message): Promise<void> => {
+    // Ignore own messages
+    if (message.author.id === client.user.id) {
+        return;
+    }
+
     // The server and logs channel ID of the server that had a message deleted
     const server: Server = await Server.get(message.guild.id);
     const embed: EmbedBuilder = genMessageDeleteEmbed(message);
