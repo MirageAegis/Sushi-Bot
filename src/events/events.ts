@@ -448,6 +448,13 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
     }
 
     const guild: Guild = after.guild;
+
+    // Force fetch members that aren't cached, to avoid partial data
+    // The joined timestamp is 0 for partial member objects
+    if (!guild.members.cache.get(before.userId).joinedTimestamp) {
+        await guild.members.fetch({ user: before.user, force: true });
+    }
+
     const server: Server = await Server.get(guild.id);
     const member: GuildMember = after.member;
     const uid: Snowflake = member.user.id;
