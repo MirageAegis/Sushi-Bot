@@ -857,6 +857,6 @@ export const command: Subcommand = {
             "A server configuration command that starts a reaction role setup wizard"
         )
         .addFields(
-            { name: "Format", value: `\`/${name}\`` }
+            { name: "Format", value: `\`/config ${name}\`` }
         )
 };
