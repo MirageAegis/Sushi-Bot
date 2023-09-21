@@ -86,6 +86,11 @@ export const command: Command = {
             })
             .setFields(
                 {
+                    name: "Created",
+                    value: `<t:${ctx.guild.createdTimestamp}:f>`,
+                    inline: false
+                },
+                {
                     name: "Owner",
                     value: `${await ctx.guild.fetchOwner()}`,
                     inline: false
