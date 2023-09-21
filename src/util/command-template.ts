@@ -38,7 +38,7 @@ export type Command = {
      * 
      * @param ctx the command context
      */
-    execute(ctx: ChatInputCommandInteraction): Promise<void>;
+    readonly execute: { (ctx: ChatInputCommandInteraction): Promise<void> };
 
 
     readonly error: ErrorHandler;
@@ -63,7 +63,7 @@ export type Subcommand = {
      * 
      * @param ctx the command context
      */
-    execute(ctx: ChatInputCommandInteraction): Promise<void>;
+    readonly execute: { (ctx: ChatInputCommandInteraction): Promise<void> };
 
 
     readonly error: ErrorHandler;
