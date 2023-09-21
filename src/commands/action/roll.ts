@@ -71,11 +71,7 @@ export const command: Command = {
 
         const sides: number = ctx.options.getInteger("sides") ?? DEFAULT_SIDES;
         const amount: number = ctx.options.getInteger("amount") ?? MIN_AMOUNT;
-<<<<<<< HEAD
-        const multi: boolean = amount > 1;
-=======
         const multi: boolean = amount > MIN_AMOUNT;
->>>>>>> 17285a8e6caf1eff6c2cde302b387c916281ef16
         const user: User = ctx.user;
 
         // Roll a numbers between 1~sides
