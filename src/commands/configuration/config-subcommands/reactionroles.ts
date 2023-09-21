@@ -337,7 +337,7 @@ export const command: Subcommand = {
             // Create a menu with the two message types
             const embedColourMenu: StringSelectMenuBuilder = new StringSelectMenuBuilder()
                 .setCustomId("colour")
-                .setPlaceholder("Select a reaction role message type")
+                .setPlaceholder("Select a colour for the embed")
                 .addOptions(
                     new StringSelectMenuOptionBuilder()
                         .setLabel("Red")
