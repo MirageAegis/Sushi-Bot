@@ -229,7 +229,7 @@ export const genMemberUpdateEmbed = (before: GuildMember, after: GuildMember): E
     if (oldNick !== newNick) {
         embed.addFields(
             { name: "Old nickname", value: oldNick ?? before.displayName, inline: false },
-            { name: "New nickname", value: newPfp ?? after.displayName, inline: false },
+            { name: "New nickname", value: newNick ?? after.displayName, inline: false },
         );
     }
 
@@ -255,8 +255,8 @@ export const genUserUpdateEmbed = (before: User, after: User): EmbedBuilder | nu
     // Properties to check
     const oldUsername: string = before.username;
     const newUsername: string = after.username;
-    const oldDisplayName: string = before.globalName;
-    const newDisplayName: string = after.globalName;
+    const oldDisplayName: string = before.displayName;
+    const newDisplayName: string = after.displayName;
     const oldPfp: string = before.avatar;
     const newPfp: string = after.avatar;
 
