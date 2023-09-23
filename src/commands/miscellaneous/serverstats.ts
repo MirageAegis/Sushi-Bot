@@ -36,6 +36,8 @@ import { AZURE } from "../../util/colours.js";
  * and bots in that server
  */
 
+const millisPerSecs: number = 1000;
+
 const name: string = "serverstats";
 
 export const command: Command = {
@@ -87,7 +89,7 @@ export const command: Command = {
             .setFields(
                 {
                     name: "Created",
-                    value: `<t:${ctx.guild.createdTimestamp}:f>`,
+                    value: `<t:${Math.floor(ctx.guild.createdTimestamp / millisPerSecs)}:f>`,
                     inline: false
                 },
                 {
