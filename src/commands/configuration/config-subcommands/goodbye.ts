@@ -85,7 +85,7 @@ export const command: Subcommand = {
     
     // Help command embed
     help: new EmbedBuilder()
-        .setTitle("Welcome")
+        .setTitle("Goodbye")
         .setDescription(
             "A server configutation command that sets the goodbye message for the server"
         )
@@ -97,7 +97,7 @@ export const command: Subcommand = {
                 value: "Optional parameter. The message to say goodbye with. Omit to use the default message\n" +
                        "Variables:\n" +
                        `- \`${NAME}\` - Replaced with the new member's display name\n` +
-                       `- \`${PING}\` - Replaced with a mention to the new member\n` +
+                       `- \`${PING}\` - Replaced with a mention to the member\n` +
                        `- \`${SERVER}\` - Replaced with the server's name\n` +
                        `- \`${OWNER}\` - Replaced with the server owner's display name\n` +
                        `- \`${NEW_LINE}\` - Replaced with a new line`

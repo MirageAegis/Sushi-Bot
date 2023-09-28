@@ -28,63 +28,63 @@ import {
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { TenorSingleton } from "../../util/tenor-utils.js";
-import { AZURE } from "../../util/colours.js";
+import { PINK } from "../../util/colours.js";
 
 /*
- * Creates an embed that states that the user headpatted another user.
+ * Creates an embed that states that the user had been kissed.
  * The embed has an appropriate gif.
  */
 
-const name: string = "pat";
+const name: string = "kiss";
 
 export const command: Command = {
     // Command headers
     data: <SlashCommandBuilder> new SlashCommandBuilder()
         .setName(name)
-        .setDescription("Give someone a nice headpat")
+        .setDescription("Show your love for someone by kissing them!")
         .setDMPermission(false)
         .addUserOption(o =>
             o.setName("target")
-                .setDescription("The user you want to headpat")
+                .setDescription("The user you want to kiss")
                 .setRequired(true)
         ),
 
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         const tenor: TenorSingleton = TenorSingleton.getInstance();
-        const patter: GuildMember = <GuildMember> ctx.member;
-        const patted: GuildMember = <GuildMember> ctx.options.getMember("target") ?? null;
-        const gif: string = await tenor.getGifs("headpat");
+        const kisser: GuildMember = <GuildMember> ctx.member;
+        const kissed: GuildMember = <GuildMember> ctx.options.getMember("target") ?? null;
+        const gif: string = await tenor.getGifs("kiss");
 
         // If the user provided wasn't a member,
         // tell the user so
-        if (!patted) {
-            await ctx.reply("Couldn't find that member... who are you trying to pat?");
+        if (!kissed) {
+            await ctx.reply("Couldn't find that member... who are you trying to kiss?");
             return;
         }
 
         let response: string;
 
         switch (true) {
-            case patter.id === patted.id:
-                // User tries to pat themselves
-                response = "Looking for a pat? I'll give you one!\n" +
-                           `${ctx.client.user} pats ${patter}`;
+            case kisser.id === kissed.id:
+                // User tries to bonk themselves
+                response = "I don't think that's how it works.. but I'll help you out\n" +
+                           `${ctx.client.user} kisses ${kisser} on the forehead!`;
                 break;
-            case patted.id === ctx.client.user.id:
-                // User pats Sushi Bot
-                response = "Aww, thanks for the pat!\n" +
-                           `${ctx.client.user} pats ${patter} back`;
+            case kissed.id === ctx.client.user.id:
+                // User tries to bonk Sushi Bot
+                response = "Oh, didn't really expect that\n" +
+                           `${kisser} kisses ${ctx.client.user}(?)`;
                 break;
             default:
-                // User pats someone else
-                response = `${patter} pats ${patted}. Awww`;
+                // User bonks someone else
+                response = `${kisser} kisses ${kissed}. How lovely!`;
                 break;
         }
 
         const embed: EmbedBuilder = new EmbedBuilder()
             .setDescription(response)
-            .setColor(AZURE)
+            .setColor(PINK)
             .setImage(gif);
 
         await ctx.reply({
@@ -97,10 +97,10 @@ export const command: Command = {
 
     // Help command embed
     help: new EmbedBuilder()
-        .setTitle("Pat")
-        .setDescription("A command to headpat another user")
+        .setTitle("Kiss")
+        .setDescription("A kiss command to show your love")
         .setFields(
             { name: "Format", value: `\`/${name} <target>\`` },
-            { name: "target", value: "Required parameter. The user you want to headpat" }
+            { name: "target", value: "Required parameter. The user you want to kiss" }
         )
 };

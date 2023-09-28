@@ -36,6 +36,8 @@ import { AZURE } from "../../util/colours.js";
  * and bots in that server
  */
 
+const millisPerSecs: number = 1000;
+
 const name: string = "serverstats";
 
 export const command: Command = {
@@ -85,6 +87,11 @@ export const command: Command = {
                 iconURL: ctx.guild.iconURL()
             })
             .setFields(
+                {
+                    name: "Created",
+                    value: `<t:${Math.floor(ctx.guild.createdTimestamp / millisPerSecs)}:f>`,
+                    inline: false
+                },
                 {
                     name: "Owner",
                     value: `${await ctx.guild.fetchOwner()}`,

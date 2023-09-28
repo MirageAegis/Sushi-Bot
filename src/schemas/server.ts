@@ -85,7 +85,7 @@ export type Logs = {
 export type Shoutout = {
     readonly channel?: Snowflake;
     readonly role?: Snowflake;
-    readonly message?: Snowflake;
+    readonly message?: string;
 };
 
 /**
@@ -96,7 +96,7 @@ export type Shoutout = {
  */
 export type GoLive = {
     readonly channel?: Snowflake;
-    readonly message?: Snowflake;
+    readonly message?: string;
 };
 
 /**
@@ -273,7 +273,9 @@ export class Server {
      * The Logs configuration
      */
     public get logs(): Logs {
-        return this.data.logs;
+        const logs: Logs = this.data.logs;
+        return logs.members || logs.messages || logs.profiles ?
+            logs : null;
     }
 
     public set logs(id: Snowflake) {

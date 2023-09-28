@@ -28,63 +28,63 @@ import {
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { TenorSingleton } from "../../util/tenor-utils.js";
-import { AZURE } from "../../util/colours.js";
+import { RED } from "../../util/colours.js";
 
 /*
- * Creates an embed that states that the user headpatted another user.
+ * Creates an embed that states that the user had been bitten.
  * The embed has an appropriate gif.
  */
 
-const name: string = "pat";
+const name: string = "bite";
 
 export const command: Command = {
     // Command headers
     data: <SlashCommandBuilder> new SlashCommandBuilder()
         .setName(name)
-        .setDescription("Give someone a nice headpat")
+        .setDescription("Nom on someone!")
         .setDMPermission(false)
         .addUserOption(o =>
             o.setName("target")
-                .setDescription("The user you want to headpat")
+                .setDescription("The user you want to bite")
                 .setRequired(true)
         ),
 
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         const tenor: TenorSingleton = TenorSingleton.getInstance();
-        const patter: GuildMember = <GuildMember> ctx.member;
-        const patted: GuildMember = <GuildMember> ctx.options.getMember("target") ?? null;
-        const gif: string = await tenor.getGifs("headpat");
+        const biter: GuildMember = <GuildMember> ctx.member;
+        const bit: GuildMember = <GuildMember> ctx.options.getMember("target") ?? null;
+        const gif: string = await tenor.getGifs("bite");
 
         // If the user provided wasn't a member,
         // tell the user so
-        if (!patted) {
-            await ctx.reply("Couldn't find that member... who are you trying to pat?");
+        if (!bit) {
+            await ctx.reply("Couldn't find that member... who are you trying to bite?");
             return;
         }
 
         let response: string;
 
         switch (true) {
-            case patter.id === patted.id:
-                // User tries to pat themselves
-                response = "Looking for a pat? I'll give you one!\n" +
-                           `${ctx.client.user} pats ${patter}`;
+            case biter.id === bit.id:
+                // User tries to bonk themselves
+                response = "Wait, why would you do that?\n" +
+                           `${biter} bites themselves!`;
                 break;
-            case patted.id === ctx.client.user.id:
-                // User pats Sushi Bot
-                response = "Aww, thanks for the pat!\n" +
-                           `${ctx.client.user} pats ${patter} back`;
+            case bit.id === ctx.client.user.id:
+                // User tries to bonk Sushi Bot
+                response = "Hey! I'm not *actually* edible\n" +
+                           `${ctx.client.user} bites ${biter}!!!`;
                 break;
             default:
-                // User pats someone else
-                response = `${patter} pats ${patted}. Awww`;
+                // User bonks someone else
+                response = `${biter} bites ${bit}. Yikes!`;
                 break;
         }
 
         const embed: EmbedBuilder = new EmbedBuilder()
             .setDescription(response)
-            .setColor(AZURE)
+            .setColor(RED)
             .setImage(gif);
 
         await ctx.reply({
@@ -97,10 +97,10 @@ export const command: Command = {
 
     // Help command embed
     help: new EmbedBuilder()
-        .setTitle("Pat")
-        .setDescription("A command to headpat another user")
+        .setTitle("Bite")
+        .setDescription("A bite command for when you feel peckish")
         .setFields(
             { name: "Format", value: `\`/${name} <target>\`` },
-            { name: "target", value: "Required parameter. The user you want to headpat" }
+            { name: "target", value: "Required parameter. The user you want to bite" }
         )
 };

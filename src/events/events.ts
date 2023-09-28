@@ -36,6 +36,7 @@ import {
 import { Blacklist } from "../schemas/blacklist";
 import { formatGoLivePost, onCooldown, startCooldown } from "./shoutout";
 import { Action, formatGreeting } from "./greet";
+import { MemberLogsAction, MessageLogsAction, ProfileLogsAction, moderationLogsErrorHandler } from "../util/error-handler";
 
 /*
  * This module has event listeners for the bot
@@ -172,7 +173,16 @@ export const onMemberJoin = async (client: Client, member: GuildMember): Promise
     // The server and logs channel ID of the server that the member joined
     const server: Server = await Server.get(member.guild.id);
 
-    await logTo(client, server, Category.Members, genMemberJoinEmbed(member));
+    try {
+        await logTo(client, server, Category.Members, await genMemberJoinEmbed(member));
+    } catch (e) {
+        await moderationLogsErrorHandler(
+            MemberLogsAction.MemberJoin,
+            member.guild,
+            member.user,
+            e
+        );
+    }
 
     // Check if the new member is blacklisted
     const bl: Blacklist = await Blacklist.get();
@@ -206,7 +216,16 @@ export const onMemberLeave = async (client: Client, member: GuildMember): Promis
     // The server and logs channel ID of the server that the member left
     const server: Server = await Server.get(member.guild.id);
 
-    await logTo(client, server, Category.Members, await genMemberLeaveEmbed(member));
+    try {
+        await logTo(client, server, Category.Members, await genMemberLeaveEmbed(member));
+    } catch (e) {
+        await moderationLogsErrorHandler(
+            MemberLogsAction.MemberLeave,
+            member.guild,
+            member.user,
+            e
+        );
+    }
 
     await greet(client, member, server, Action.Goodbye);
 };
@@ -221,7 +240,16 @@ export const onMemberBan = async (client: Client, ban: GuildBan): Promise<void> 
     // The server and logs channel ID of the server that the member was banned from
     const server: Server = await Server.get(ban.guild.id);
 
-    await logTo(client, server, Category.Members, await genMemberBanEmbed(ban));
+    try {
+        await logTo(client, server, Category.Members, await genMemberBanEmbed(ban));
+    } catch (e) {
+        await moderationLogsErrorHandler(
+            MemberLogsAction.MemberBan,
+            ban.guild,
+            ban.user,
+            e
+        );
+    }
 };
 
 /**
@@ -234,7 +262,16 @@ export const onMemberUnban = async (client: Client, ban: GuildBan): Promise<void
     // The server and logs channel ID of the server that the member was unbanned from
     const server: Server = await Server.get(ban.guild.id);
 
-    await logTo(client, server, Category.Members, await genMemberUnbanEmbed(ban));
+    try {
+        await logTo(client, server, Category.Members, await genMemberUnbanEmbed(ban));
+    } catch (e) {
+        await moderationLogsErrorHandler(
+            MemberLogsAction.MemberUnban,
+            ban.guild,
+            ban.user,
+            e
+        );
+    }
 };
 
 // ----- !MEMBER RELATED -----
@@ -259,7 +296,18 @@ export const onMemberUpdate = async (client: Client, before: GuildMember, after:
         return;
     }
 
-    await logTo(client, server, Category.Profiles, embed);
+    try {
+        await logTo(client, server, Category.Profiles, embed);
+    } catch (e) {
+        await moderationLogsErrorHandler(
+            ProfileLogsAction.MemberUpdate,
+            before.guild,
+            before.user,
+            e,
+            before,
+            after
+        );
+    }
 };
 
 /**
@@ -298,7 +346,18 @@ export const onUserUpdate = async (client: Client, before: User, after: User): P
             iconURL: guild.iconURL()
         });
 
-        await logTo(client, server, Category.Profiles, embed);
+        try {
+            await logTo(client, server, Category.Profiles, embed);
+        } catch (e) {
+            await moderationLogsErrorHandler(
+                ProfileLogsAction.UserUpdate,
+                guild,
+                before,
+                e,
+                before,
+                after
+            );
+        }
     }
 };
 
@@ -315,6 +374,11 @@ export const onUserUpdate = async (client: Client, before: User, after: User): P
  * @param after the message's current state
  */
 export const onMessageEdit = async (client: Client, before: Message, after: Message): Promise<void> => {
+    // Ignore own messages
+    if (before.author.id === client.user.id) {
+        return;
+    }
+    
     // The server and logs channel ID of the server that had a message edited
     const server: Server = await Server.get(before.guild.id);
     const embed: EmbedBuilder = genMessageEditEmbed(before, after);
@@ -324,7 +388,18 @@ export const onMessageEdit = async (client: Client, before: Message, after: Mess
         return;
     }
 
-    await logTo(client, server, Category.Messages, embed);
+    try {
+        await logTo(client, server, Category.Messages, embed);
+    } catch (e) {
+        await moderationLogsErrorHandler(
+            MessageLogsAction.MessageEdit,
+            before.guild,
+            before.author,
+            e,
+            before,
+            after
+        );
+    }
 };
 
 /**
@@ -334,6 +409,11 @@ export const onMessageEdit = async (client: Client, before: Message, after: Mess
  * @param message the message that was deleted
  */
 export const onMessageDelete = async (client: Client, message: Message): Promise<void> => {
+    // Ignore own messages
+    if (message.author.id === client.user.id) {
+        return;
+    }
+
     // The server and logs channel ID of the server that had a message deleted
     const server: Server = await Server.get(message.guild.id);
     const embed: EmbedBuilder = genMessageDeleteEmbed(message);
@@ -343,7 +423,17 @@ export const onMessageDelete = async (client: Client, message: Message): Promise
         return;
     }
 
-    await logTo(client, server, Category.Messages, embed);
+    try {
+        await logTo(client, server, Category.Messages, embed);
+    } catch (e) {
+        await moderationLogsErrorHandler(
+            MessageLogsAction.MessageDelete,
+            message.guild,
+            message.author,
+            e,
+            message
+        );
+    }
 };
 
 // ----- MESSAGE RELATED -----
@@ -368,6 +458,13 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
     }
 
     const guild: Guild = after.guild;
+
+    // Force fetch members that aren't cached, to avoid partial data
+    // The joined timestamp is 0 for partial member objects
+    if (!guild.members.cache.get(before.userId).joinedTimestamp) {
+        await guild.members.fetch({ user: before.user, force: true });
+    }
+
     const server: Server = await Server.get(guild.id);
     const member: GuildMember = after.member;
     const uid: Snowflake = member.user.id;
