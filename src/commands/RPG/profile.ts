@@ -65,6 +65,7 @@ export const command: Command = {
         // eslint-disable-next-line no-magic-numbers
         if (player.level === 1 && !player.experience && !player.prestige) {
             await ctx.reply(`${ctx.user.id === user.id ? "You don't" : "This player doesn't"} have a profile yet!`);
+            return;
         }
 
         await ctx.reply({ embeds: [genProfileEmbed(user, ctx.guild, player)]});
