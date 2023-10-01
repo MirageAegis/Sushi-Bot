@@ -237,7 +237,7 @@ const DAILY_STREAK_BONUS: number = 0.2;
 /**
  * The point at which the bonus will stop increasing.
  */
-const DAILY_STREAK_BONUS_LIMIT: number = 0.2;
+const DAILY_STREAK_BONUS_LIMIT: number = 15;
 
 /**
  * The base level threshold that gets multiplied
@@ -469,7 +469,7 @@ export class Player {
         streak: [before: number, after: number],
         before: [level: number, stats: Stats],
         after: [level: number, stats: Stats] | null,
-        funds: number
+        rewards: [experience: number, funds: number]
     ] {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / millisPerSecs);
@@ -513,13 +513,13 @@ export class Player {
 
         // If the streak exceeds the streak bonus limit, cap it
         if (this.dailyStreak > DAILY_STREAK_BONUS_LIMIT) {
-            expGain = Math.floor(expGain * DAILY_STREAK_BONUS_LIMIT * DAILY_STREAK_BONUS);
-            funds = Math.floor(funds * DAILY_STREAK_BONUS_LIMIT * DAILY_STREAK_BONUS);
+            expGain += Math.floor(expGain * DAILY_STREAK_BONUS_LIMIT * DAILY_STREAK_BONUS);
+            funds += Math.floor(funds * DAILY_STREAK_BONUS_LIMIT * DAILY_STREAK_BONUS);
         } else {
             // Otherwise use the streak to calculate the bonus
             // We remove 1 from the calculation to make up for the offset after incrementing
-            expGain = Math.floor(expGain * (this.dailyStreak - 1) * DAILY_STREAK_BONUS);
-            funds = Math.floor(funds * (this.dailyStreak - 1) * DAILY_STREAK_BONUS);
+            expGain += Math.floor(expGain * (this.dailyStreak - 1) * DAILY_STREAK_BONUS);
+            funds += Math.floor(funds * (this.dailyStreak - 1) * DAILY_STREAK_BONUS);
         }
 
         // Add a reputation boost
@@ -532,7 +532,7 @@ export class Player {
 
         // Don't continue if the player doesn't have enough experience to level up
         if (this.experience < this.levelThreshold) {
-            return [[streak, this.dailyStreak], [level, stats], null, funds];
+            return [[streak, this.dailyStreak], [level, stats], null, [expGain, funds]];
         }
 
         // Accumulated growths from levelling up
@@ -584,7 +584,11 @@ export class Player {
             luck: stats.luck + growths.luck
         };
 
-        return [[streak, this.dailyStreak], [level, stats], [this.data.level, this.data.stats], funds];
+        return [
+            [streak, this.dailyStreak],
+            [level, stats],
+            [this.data.level, this.data.stats],
+            [expGain, funds]];
     }
 
     /**
