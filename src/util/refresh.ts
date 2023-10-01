@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
-import { Client, Collection, Guild, GuildMember, TextChannel, User } from "discord.js";
+import {
+    Client, Collection, Guild, GuildMember, Snowflake, TextChannel, User
+} from "discord.js";
 import { Blacklist } from "../schemas/blacklist";
 import { getAdminLogsChannel, getAdminServer } from "./channels";
 
@@ -88,7 +90,7 @@ export const refreshBlacklist = async (client: Client): Promise<void> => {
  * @param user the user to check
  * @returns whether the user is eligible or not
  */
-export const verify = async (user: User): Promise<boolean> => {
+export const verify = async (user: User | Snowflake): Promise<boolean> => {
     // The official server
     const adminServer: Guild = await getAdminServer();
 
