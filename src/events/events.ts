@@ -24,7 +24,7 @@
 
 import {
     Activity, ActivityType, Client, Collection, EmbedBuilder, Guild, GuildBan,
-    GuildMember, Message, Presence, Snowflake, TextChannel, User
+    GuildMember, Message, PermissionFlagsBits, Presence, Snowflake, TextChannel, User
 } from "discord.js";
 import { leaveIneligibleServer } from "../util/refresh";
 import { getAdminLogsChannel } from "../util/channels";
@@ -36,7 +36,11 @@ import {
 import { Blacklist } from "../schemas/blacklist";
 import { formatGoLivePost, onCooldown, startCooldown } from "./shoutout";
 import { Action, formatGreeting } from "./greet";
-import { MemberLogsAction, MessageLogsAction, ProfileLogsAction, moderationLogsErrorHandler } from "../util/error-handler";
+import {
+    MemberLogsAction, MessageLogsAction, ProfileLogsAction, moderationLogsErrorHandler
+} from "../util/error-handler";
+import { Player } from "../schemas/player";
+import { genLevelUpEmbed } from "../util/profile-embed-factory";
 
 /*
  * This module has event listeners for the bot
@@ -597,6 +601,75 @@ export const onServerLeave = async (client: Client, server: Guild): Promise<void
 };
 
 // ----- SERVER RELATED -----
+
+
+// ----- CHAT EXPERIENCE -----
+
+/**
+ * Triggered when a new message is created.
+ * Handles chat experience.
+ * 
+ * @param client the Discord bot
+ * @param message the new message
+ */
+export const onMessage = async (client: Client, message: Message): Promise<void> => {
+    // Bots and system users do not have profiles
+    if (message.author.bot || message.author.system) {
+        return;
+    }
+
+    const server: Server = await Server.get(message.guildId);
+
+    // Do not award experience if the server doesn't have it set up
+    if (!server.levelUps) {
+        return;
+    }
+
+    const channel: TextChannel = <TextChannel> client.channels.cache.get(server.levelUps);
+
+    // If the channel doesn't exist of if we can't message in there,
+    // remove the configurations
+    if (!channel || !message.guild.members.me.permissionsIn(channel).has(PermissionFlagsBits.SendMessages)) {
+        server.levelUps = null;
+        await server.save();
+        return;
+    }
+
+    const player: Player = await Player.get(message.author.id);
+    const [before, after] = player.chat();
+
+    // Only save if no level up occurred
+    if (!after) {
+        await player.save();
+        return;
+    }
+
+    let response: string;
+
+    // Ping if the user has opted in or if it's their first level up
+    // eslint-disable-next-line no-magic-numbers
+    if (player.levelPing || (before[0] === 1 && !player.prestige)) {
+        response = `${message.author} has levelled up!\n`;
+    } else {
+        response = `${message.author.username} has levelled up!\n`;
+    }
+
+    // Tell users on their first level up that pings are defaulted to being off
+    // eslint-disable-next-line no-magic-numbers
+    if (before[0] === 1 && !player.prestige) {
+        response += "Level up pings are defaulted to being **off**\n" +
+                    "If you wish to be pinged in future level ups, use the `/levels` command!";
+    }
+    
+    await channel.send({
+        content: response,
+        embeds: [genLevelUpEmbed(message.author, message.guild, player, before, after)]
+    });
+
+    await player.save();
+};
+
+// ----- CHAT EXPERIENCE -----
 
 
 /**
