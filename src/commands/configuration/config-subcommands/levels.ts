@@ -62,7 +62,7 @@ export const command: Subcommand = {
         await server.save();
 
         if (levelup) {
-            await ctx.followUp(`Enabled chat experience and set to out put level ups in ${levelup}`);
+            await ctx.followUp(`Enabled chat experience and set to output level ups in ${levelup}`);
         } else {
             await ctx.followUp("Disabled chat experience");
         }
