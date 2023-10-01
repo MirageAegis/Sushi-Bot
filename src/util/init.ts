@@ -31,9 +31,11 @@ import { refreshBlacklist, refreshServers } from "./refresh";
 import { Blacklist } from "../schemas/blacklist";
 import {
     onError, onMemberBan, onMemberJoin, onMemberLeave, onMemberUnban, onMemberUpdate,
+    onMessage,
     onMessageDelete, onMessageEdit, onPresenceUpdate, onServerJoin, onUserUpdate
 } from "../events/events";
 import { initRefreshReactionRolesInterval } from "../events/reactionroles";
+import { FrozenPlayerList } from "../schemas/frozen-player-list";
 
 /**
  * This module has an initialisation routine for the bot
@@ -72,6 +74,10 @@ export const init = async (client: Client): Promise<void> => {
     console.log("Fetching blacklist...");
     await Blacklist.get();
     console.log("Blacklist fetched");
+
+    console.log("Fetching frozen player list...");
+    await FrozenPlayerList.get();
+    console.log("Frozen player list fetched");
 
     console.log("Refreshing servers...");
     await refreshServers(client);
@@ -129,5 +135,9 @@ export const loadListeners = (client: Client): void => {
 
     client.on(Events.PresenceUpdate, async (before: Presence, after: Presence): Promise<void> => {
         await onPresenceUpdate(client, before, after);
+    });
+
+    client.on(Events.MessageCreate, async (message: Message): Promise<void> => {
+        await onMessage(client, message);
     });
 };
