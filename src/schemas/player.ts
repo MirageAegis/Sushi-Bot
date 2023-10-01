@@ -138,6 +138,16 @@ type Cooldowns = {
     reputation: number;
 };
 
+/**
+ * The cooldowns of a user.
+ * Tells when a certain event can be triggered again.
+ */
+export type ReadonlyCooldowns = {
+    readonly experience: number;
+    readonly daily: number;
+    readonly reputation: number;
+};
+
 interface PlayerI {
     _id: Snowflake;
     prestige: number;
@@ -586,7 +596,7 @@ export class Player {
             return 2500;
         }
 
-        // 100 exp for level 1 and then 50 more for each level, until level 99
+        // 500 exp for level 1 and then 20 more for each level, until level 101
         return 20 * this.data.level + 480;
     }
 
@@ -599,6 +609,9 @@ export class Player {
         // Don't question this maths, I don't even know
         // how it works
         // Please do explain if you do know
+        // Formula: levelExp = 10 level^2 + 470 level - 480, level <= 100
+        //          levelExp = 10 * 101^2 + 470 * 101 - 480 + (level - 101) * 2500, level > 100
+        // This calculation gives the required total exp for any given level
         let levelExperience: number;
         if (level > 100) {
             levelExperience = 10 * (Math.pow(101, 2) + 47 * 101) - 480;
@@ -741,5 +754,12 @@ export class Player {
 
     public get dailyStreak(): number {
         return this.data.dailyStreak;
+    }
+
+    /**
+     * The player's cooldowns.
+     */
+    public get cooldowns(): ReadonlyCooldowns {
+        return this.data.cooldowns;
     }
 }
