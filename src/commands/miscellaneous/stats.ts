@@ -28,6 +28,7 @@ import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { AZURE } from "../../util/colours.js";
 import { Bot } from "../../util/bot.js";
+import { MILLIS_PER_SEC, formatTime } from "../../util/format.js";
 
 /*
  * Displays the current stats of the bot in a rich embed.
@@ -68,27 +69,6 @@ if (process.platform === "win32") {
         .trim();
 }
 
-const millisPerSecs: number = 1000;
-const secsPerMin: number = 60;
-const secsPerHour: number = 3600;
-const secsPerDay: number = 86400;
-
-/**
- * Generates a string representing the bot's uptime
- * 
- * @param uptime the uptime of the bot in seconds
- * @returns a formatted string
- */
-const formatUptime = (uptime: number): string => {
-    // Total seconds translated to hours, minutes, seconds
-    const days: number = Math.floor(uptime / secsPerDay);
-    const hours: number = Math.floor(Math.floor(uptime % secsPerDay) / secsPerHour);
-    const minutes: number = Math.floor(Math.floor(uptime % secsPerHour) / secsPerMin);
-    const seconds: number = Math.floor(Math.floor(uptime % secsPerHour) % secsPerMin);
-
-    return `${days} day(s), ${hours} hour(s), ${minutes} minute(s), ${seconds} second(s)`;
-};
-
 const name: string = "stats";
 
 export const command: Command = {
@@ -122,7 +102,7 @@ export const command: Command = {
                 },
                 {
                     name: "Uptime",
-                    value: formatUptime(ctx.client.uptime / millisPerSecs),
+                    value: formatTime(ctx.client.uptime / MILLIS_PER_SEC),
                     inline: false
                 },
                 {
