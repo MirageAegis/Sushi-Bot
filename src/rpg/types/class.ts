@@ -25,7 +25,6 @@
 import path from "node:path";
 import fs from "node:fs";
 import { Stats } from "../../schemas/player";
-import { time } from "discord.js";
 
 /**
  * The Paths that a player can tread.
