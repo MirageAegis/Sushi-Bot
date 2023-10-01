@@ -59,7 +59,8 @@ const serverSchema: Schema = new Schema({
     goodbye: {
         channel: String,
         message: String
-    }
+    },
+    levelUps: String
 });
 
 /**
@@ -155,6 +156,7 @@ interface ServerI {
     reactionMessages?: ReactionMessages;
     welcome?: Greeting;
     goodbye?: Greeting;
+    levelUps?: Snowflake
 }
 
 /**
@@ -447,5 +449,16 @@ export class Server {
 
     public set goodbye(goodbye: Greeting) {
         this.data.goodbye = goodbye;
+    }
+
+    /**
+     * The ID of the level up channel
+     */
+    public get levelUps(): Snowflake {
+        return this.data.levelUps;
+    }
+
+    public set levelUps(levelUps: Snowflake) {
+        this.data.levelUps = levelUps;
     }
 }
