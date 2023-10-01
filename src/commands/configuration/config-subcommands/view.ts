@@ -64,6 +64,7 @@ export const command: Subcommand = {
         const reactionRoles: ReadonlyMap<Snowflake, ReactionRoles> = server.reactionRoles;
         const welcome: Greeting = server.welcome;
         const goodbye: Greeting = server.goodbye;
+        const levelUps: Snowflake = server.levelUps;
 
         // The base embed
         const embed: EmbedBuilder = new EmbedBuilder()
@@ -178,6 +179,12 @@ export const command: Subcommand = {
                 }
             );
         }
+
+        // The chat experience configuration
+        embed.addFields({
+            name: "Chat experience",
+            value: `${levelUps ? `**Enabled** with output in <#${levelUps}>` : "**Disabled**"}`
+        });
 
         await ctx.reply({ embeds: [embed] });
     },
