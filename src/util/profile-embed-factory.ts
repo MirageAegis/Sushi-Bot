@@ -111,7 +111,13 @@ export const genProfileEmbed = (user: User, server: Guild, player: Player): Embe
             },
             {
                 name: "Balance",
-                value: `${player.balance} Sushi Coins`
+                value: `${player.balance} Sushi Coins`,
+                inline: true
+            },
+            {
+                name: "Reputation",
+                value: `${player.reputation}`,
+                inline: true
             }
         );
 
