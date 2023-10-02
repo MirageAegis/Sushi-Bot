@@ -85,7 +85,7 @@ export const command: Command = {
 
         await ctx.reply({
             content: response,
-            embeds: [embed]
+            embeds: embed ? [embed] : null
         });
     },
     
