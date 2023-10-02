@@ -216,13 +216,15 @@ const REPUTATION_DAILY_FACTOR: number = 2;
 
 /**
  * The cooldown for experience gain in seconds.
+ * FIXME: Change to 120
  */
-const EXPERIENCE_COOLDOWN: number = 120;
+const EXPERIENCE_COOLDOWN: number = 0;
 
 /**
  * The cooldown for daily claims in seconds.
+ * FIXME: Change to 86_400
  */
-const DAILY_COOLDOWN: number = 86_400;
+const DAILY_COOLDOWN: number = 5;
 
 /**
  * The base amount of daily funds, affected by the streak.
@@ -503,6 +505,8 @@ export class Player {
             funds += VTUBER_DAILY_BOOST;
         }
 
+        /*
+         * FIXME: Uncomment after test phase
         // If the daily was missed, reset the streak
         if (now - this.data.cooldowns.daily > DAILY_COOLDOWN) {
             this.data.dailyStreak = 1;
@@ -510,6 +514,8 @@ export class Player {
             // Otherwise increment the streak
             this.data.dailyStreak++;
         }
+         */
+        this.data.dailyStreak++;
 
         // If the streak exceeds the streak bonus limit, cap it
         if (this.dailyStreak > DAILY_STREAK_BONUS_LIMIT) {
