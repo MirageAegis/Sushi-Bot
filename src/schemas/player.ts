@@ -216,15 +216,24 @@ const REPUTATION_DAILY_FACTOR: number = 2;
 
 /**
  * The cooldown for experience gain in seconds.
+ * 2 minutes.
  * FIXME: Change to 120
  */
 const EXPERIENCE_COOLDOWN: number = 0;
 
 /**
  * The cooldown for daily claims in seconds.
+ * 1 day.
  * FIXME: Change to 86_400
  */
 const DAILY_COOLDOWN: number = 5;
+
+/**
+ * The cooldown for giving out reputation points in seconds.
+ * 1 week.
+ * FIXME: Change to 604_800
+ */
+const REPUTATION_COOLDOWN: number = 5;
 
 /**
  * The base amount of daily funds, affected by the streak.
@@ -714,6 +723,39 @@ export class Player {
     /* eslint-enable no-magic-numbers */
 
     /**
+     * Gives reputation to another player. Only works on other players.
+     * Does not check the blacklist nor the frozen player list.
+     * 
+     * @param target the player to give a reputation point to
+     * @returns the execution status, whether the player tried to give reputation
+     * to themselves, and the remaining cooldown iff the command isn't ready
+     */
+    public giveReputation(target: Player): [
+        success: boolean,
+        selfRep: boolean,
+        cooldown: number
+    ] {
+        // Players cannot give reputation to themselves
+        if (this === target) {
+            return [false, true, null];
+        }
+        
+        // The current timestamp in seconds
+        const now: number = Math.floor(Date.now() / millisPerSecs);
+
+        // Do nothing if on cooldown
+        if (now < this.cooldowns.reputation) {
+            return [false, false, this.cooldowns.reputation];
+        }
+
+        // Increment the target's reputation, and update the cooldown
+        target.data.reputation++;
+        this.data.cooldowns.reputation = now + REPUTATION_COOLDOWN;
+
+        return [true, false, null];
+    }
+
+    /**
      * The path of a player.
      */
     public get path(): Paths {
@@ -735,7 +777,7 @@ export class Player {
     }
 
     /**
-     * The level of a player.
+     * The level of a player. A natural number.
      */
     public get level(): number {
         return this.data.level;
@@ -749,19 +791,29 @@ export class Player {
     }
 
     /**
-     * The prestige of a player.
+     * The prestige of a player. An integer >= 0.
      */
     public get prestige(): number {
         return this.data.prestige;
     }
 
     /**
-     * The amount of money a player has
+     * The amount of money a player has. An integer >= 0.
      */
     public get balance(): number {
         return this.data.balance;
     }
 
+    /**
+     * The player's reputation. A natural number.
+     */
+    public get reputation(): number {
+        return this.data.reputation;
+    }
+
+    /**
+     * The player's daily streak. An integer >= 0.
+     */
     public get dailyStreak(): number {
         return this.data.dailyStreak;
     }
