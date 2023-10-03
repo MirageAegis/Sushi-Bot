@@ -727,17 +727,17 @@ export class Player {
      * Does not check the blacklist nor the frozen player list.
      * 
      * @param target the player to give a reputation point to
-     * @returns the execution status, whether the player tried to give reputation
-     * to themselves, and the remaining cooldown iff the command isn't ready
+     * @returns whether the player tried to give reputation to themselves,
+     * and the remaining cooldown iff the command isn't ready.
+     * [false, null] indicates success
      */
     public giveReputation(target: Player): [
-        success: boolean,
         selfRep: boolean,
         cooldown: number
     ] {
         // Players cannot give reputation to themselves
         if (this === target) {
-            return [false, true, null];
+            return [true, null];
         }
         
         // The current timestamp in seconds
@@ -745,14 +745,14 @@ export class Player {
 
         // Do nothing if on cooldown
         if (now < this.cooldowns.reputation) {
-            return [false, false, this.cooldowns.reputation];
+            return [false, this.cooldowns.reputation];
         }
 
         // Increment the target's reputation, and update the cooldown
         target.data.reputation++;
         this.data.cooldowns.reputation = now + REPUTATION_COOLDOWN;
 
-        return [true, false, null];
+        return [false, null];
     }
 
     /**
