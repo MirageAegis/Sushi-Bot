@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { Snowflake } from "discord.js";
+import { User } from "discord.js";
 import { Blacklist } from "../../schemas/blacklist";
 import { FrozenPlayerList } from "../../schemas/frozen-player-list";
 
@@ -31,19 +31,24 @@ import { FrozenPlayerList } from "../../schemas/frozen-player-list";
  * Blacklisted users and users who have terminated their profile cannot
  * access the commands.
  * 
- * @param user the ID of the user to check
+ * @param user the user to check
  * @returns whether the user can access RPG commands or not
  */
-export const checkValid = async (user: Snowflake): Promise<boolean> => {
+export const checkValid = async (user: User): Promise<boolean> => {
+    // Bots cannot access the RPG
+    if (user.bot || user.system) {
+        return false;
+    }
+
     // Check the blacklist
     const blacklist: Blacklist = await Blacklist.get();
-    if (blacklist.users.has(user)) {
+    if (blacklist.users.has(user.id)) {
         return false;
     }
 
     // Check the frozen player list
     const frozenList: FrozenPlayerList = await FrozenPlayerList.get();
-    if (frozenList.users.has(user)) {
+    if (frozenList.users.has(user.id)) {
         return false;
     }
 
