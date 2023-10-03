@@ -28,6 +28,7 @@ import { defaultErrorHandler } from "../../util/error-handler.js";
 import { Player } from "../../schemas/player.js";
 import { MILLIS_PER_SEC, formatTime } from "../../util/format.js";
 import { genLevelUpEmbed } from "../../util/profile-embed-factory.js";
+import { checkValid } from "../../rpg/util/check.js";
 
 /*
  * A command that lets users claim daily rewards.
@@ -45,6 +46,14 @@ export const command: Command = {
     
     // Command exacution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
+        // Check if the user can access the command
+        if (!checkValid(ctx.user.id)) {
+            await ctx.reply(
+                "You cannot access this command! Contact the administrators if this doesn't sound right"
+            );
+            return;
+        }
+
         // The player who's claiming their daily
         const player: Player = await Player.get(ctx.user.id);
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
@@ -96,8 +105,8 @@ export const command: Command = {
     help: new EmbedBuilder()
         .setTitle("Daily")
         .setDescription(
-            "The command to claim your daily rewards with, if your rewards are ready. " +
-            "Otherwise it shows you your cooldown"
+            "The command to claim your daily rewards with, if your rewards are ready\n" +
+            "This command has a 1 day cooldown"
         )
         .addFields(
             { name: "Format", value: `\`/${name}\`` }

@@ -28,6 +28,7 @@ import { defaultErrorHandler } from "../../util/error-handler.js";
 import { Player } from "../../schemas/player.js";
 import { Blacklist } from "../../schemas/blacklist.js";
 import { genProfileEmbed } from "../../util/profile-embed-factory.js";
+import { checkValid } from "../../rpg/util/check.js";
 
 /*
  * Displays a user's RPG profile in a rich embed.
@@ -48,6 +49,14 @@ export const command: Command = {
     
     // Command exacution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
+        // Check if the user can access the command
+        if (!checkValid(ctx.user.id)) {
+            await ctx.reply(
+                "You cannot access this command! Contact the administrators if this doesn't sound right"
+            );
+            return;
+        }
+
         // Default parameter values
         const user: User = ctx.options.getUser("user") ?? ctx.user;
 
@@ -79,6 +88,7 @@ export const command: Command = {
         .setTitle("Profile")
         .setDescription("Displays a user profile which includes the path, classes, and stats of the user")
         .addFields(
-            { name: "Format", value: `\`/${name} [user]\`` }
+            { name: "Format", value: `\`/${name} [user]\`` },
+            { name: "[user]", value: "Optional parameter. The user whose profile to show if not your own" }
         )
 };
