@@ -26,7 +26,7 @@ import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { Player } from "../../schemas/player.js";
-import { MILLIS_PER_SEC, formatTime } from "../../util/format.js";
+import { formatTime } from "../../util/format.js";
 import { genLevelUpEmbed } from "../../util/profile-embed-factory.js";
 import { checkValid } from "../../rpg/util/check.js";
 
@@ -47,7 +47,7 @@ export const command: Command = {
     // Command exacution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         // Check if the user can access the command
-        if (!checkValid(ctx.user)) {
+        if (!await checkValid(ctx.user)) {
             await ctx.reply(
                 "You cannot access this command! Contact the administrators if this doesn't sound right"
             );
@@ -56,21 +56,26 @@ export const command: Command = {
 
         // The player who's claiming their daily
         const player: Player = await Player.get(ctx.user.id);
-        const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
-        const cooldown: number = player.cooldowns.daily - now;
+        const [
+            streak,
+            before,
+            after,
+            rewards,
+            cooldown,
+            pathUnlock,
+            classUnlock
+        ] = player.daily();
 
         let response: string;
 
         // Tell the user if their rewards are on cooldown
-        // eslint-disable-next-line no-magic-numbers
-        if (cooldown > 0) {
+        if (cooldown) {
             response = "Your daily rewards are on cooldown, " +
                        `you can collect them in ${formatTime(cooldown)}!`;
             await ctx.reply(response);
             return;
         }
 
-        const [streak, before, after, rewards] = player.daily();
         await player.save();
 
         response = "Daily rewards claimed!\n";
@@ -82,14 +87,22 @@ export const command: Command = {
             response += "Daily streak lost... 😢\n";
         }
 
-        response += `Claimed ${rewards[0]} experience and ${rewards[1]} Sushi Coins!\n`;
+        response += `Claimed **${rewards[0]}** experience and **${rewards[1]}** Sushi Coins!\n`;
 
         let embed: EmbedBuilder;
 
         // Check if the player levelled up
         if (after) {
             embed = genLevelUpEmbed(ctx.user, ctx.guild, player, before, after);
-            response += "You've also levelled up!";
+            response += "You've also levelled up!\n";
+        }
+
+        // Check if the player can tread a Path
+        if (pathUnlock) {
+            response += "You can now tread a path!";
+        } else if (classUnlock) {
+            // Or if the player can unlock a class
+            response += "You can spec into a class!";
         }
 
         await ctx.reply({

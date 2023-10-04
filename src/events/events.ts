@@ -41,6 +41,7 @@ import {
 } from "../util/error-handler";
 import { Player } from "../schemas/player";
 import { genLevelUpEmbed } from "../util/profile-embed-factory";
+import { checkValid } from "../rpg/util/check";
 
 /*
  * This module has event listeners for the bot
@@ -613,8 +614,8 @@ export const onServerLeave = async (client: Client, server: Guild): Promise<void
  * @param message the new message
  */
 export const onMessage = async (client: Client, message: Message): Promise<void> => {
-    // Bots and system users do not have profiles
-    if (message.author.bot || message.author.system) {
+    // Only proceed if the user is eligible
+    if (!await checkValid(message.author)) {
         return;
     }
 
@@ -636,11 +637,16 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
     }
 
     const player: Player = await Player.get(message.author.id);
-    const [before, after] = player.chat();
+    const [
+        before,
+        after,
+        pathUnlock,
+        classUnlock
+    ] = player.chat();
+    await player.save();
 
-    // Only save if no level up occurred
+    // If no level up occurred, return
     if (!after) {
-        await player.save();
         return;
     }
 
@@ -660,13 +666,19 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
         response += "Level up pings are defaulted to being **off**\n" +
                     "If you wish to be pinged in future level ups, use the `/levels` command!";
     }
+
+    // Check if the player can tread a Path
+    if (pathUnlock) {
+        response += "You can now tread a path!";
+    } else if (classUnlock) {
+        // Or if the player can unlock a class
+        response += "You can spec into a class!";
+    }
     
     await channel.send({
         content: response,
         embeds: [genLevelUpEmbed(message.author, message.guild, player, before, after)]
     });
-
-    await player.save();
 };
 
 // ----- CHAT EXPERIENCE -----
