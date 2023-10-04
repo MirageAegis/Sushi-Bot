@@ -22,11 +22,12 @@
  * SOFTWARE.
  */
 
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, User, Snowflake } from "discord.js";
+import {
+    SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, User
+} from "discord.js";
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { Player } from "../../schemas/player.js";
-import { Blacklist } from "../../schemas/blacklist.js";
 import { genProfileEmbed } from "../../util/profile-embed-factory.js";
 import { checkValid } from "../../rpg/util/check.js";
 
@@ -50,7 +51,7 @@ export const command: Command = {
     // Command exacution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         // Check if the user can access the command
-        if (!checkValid(ctx.user)) {
+        if (!await checkValid(ctx.user)) {
             await ctx.reply(
                 "You cannot access this command! Contact the administrators if this doesn't sound right"
             );
@@ -60,11 +61,9 @@ export const command: Command = {
         // Default parameter values
         const user: User = ctx.options.getUser("user") ?? ctx.user;
 
-        // Check if the requested user is in the blacklist
-        const blacklist: ReadonlyMap<Snowflake, string> = (await Blacklist.get()).users;
-        // Blacklisted users do not have profiles
-        if (blacklist.get(user.id)) {
-            await ctx.reply("The specified user is blacklisted!");
+        // Check if the target user can access the RPG
+        if (!await checkValid(user)) {
+            await ctx.reply("The specified user is cannot have a profile!");
             return;
         }
 
