@@ -179,3 +179,18 @@ export const getPaths = (): ReadonlyMap<Paths, Path> => {
 export const getClasses = (): ReadonlyMap<PathClasses, Class<Paths, boolean>> => {
     return classes;
 };
+
+/**
+ * The level requirement for a player to unlock Paths.
+ */
+export const PATH_LEVEL: number = 10;
+
+/**
+ * The level requirement for a player to unlock their first class.
+ */
+export const CLASS_1_LEVEL: number = 30;
+
+/**
+ * The level requirement for a player to unlock their second class.
+ */
+export const CLASS_2_LEVEL: number = 50;
