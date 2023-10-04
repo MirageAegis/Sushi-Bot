@@ -52,7 +52,7 @@ export const command: Command = {
     // Command exacution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         // Check if the user can access the command
-        if (!checkValid(ctx.user)) {
+        if (!await checkValid(ctx.user)) {
             await ctx.reply(
                 "You cannot access this command! Contact the administrators if this doesn't sound right"
             );
@@ -71,7 +71,7 @@ export const command: Command = {
         }
 
         // Check if the target user is valid
-        if (!checkValid(target.user)) {
+        if (!await checkValid(target.user)) {
             await ctx.reply(
                 "The specified user cannot access the RPG!"
             );
@@ -106,7 +106,7 @@ export const command: Command = {
         await targetPlayer.save();
 
         await ctx.reply(
-            `You gave a reputation point to ${target}!`
+            `You gave a reputation point to **${target.displayName}**!`
         );
     },
     
