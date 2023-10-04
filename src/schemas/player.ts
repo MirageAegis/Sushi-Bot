@@ -25,7 +25,8 @@
 import { Snowflake } from "discord.js";
 import { Schema, HydratedDocument, Model, model } from "mongoose";
 import { verify } from "../util/refresh";
-import { Class, Path, PathClasses, Paths, getClasses, getPaths } from "../rpg/types/class";
+import { CLASS_1_LEVEL, CLASS_2_LEVEL, Class, PATH_LEVEL, Path, PathClasses, Paths, getClasses, getPaths } from "../rpg/types/class";
+import { MILLIS_PER_SEC } from "../util/format";
 
 const playerSchema: Schema = new Schema({
     _id: String,
@@ -183,8 +184,6 @@ const BASE_STATS: Stats = {
  * 20 minutes
  */
 const playerLifetime: number = 1_200_000;
-
-const millisPerSecs: number = 1000;
 
 /**
  * The base amount of experience gained form chatting.
@@ -374,9 +373,14 @@ export class Player {
      * @returns the player's level and stats before and after chatting.
      * If no level up occurred, after is set to null
      */
-    public chat(): [before: [level: number, stats: Stats], after: [level: number, stats: Stats] | null] {
+    public chat(): [
+        before: [level: number, stats: Stats],
+        after: [level: number, stats: Stats] | null,
+        pathUnlock: boolean,
+        classUnlock: boolean
+    ] {
         // The current timestamp in seconds
-        const now: number = Math.floor(Date.now() / millisPerSecs);
+        const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
         const stats: Stats = {
             health: this.stats.health,
             guard: this.stats.guard,
@@ -392,7 +396,7 @@ export class Player {
 
         // Do nothing if on cooldown
         if (now < this.data.cooldowns.experience) {
-            return [[level, stats], null];
+            return [[level, stats], null, false, false];
         }
 
         // The baseline exp gain
@@ -412,7 +416,7 @@ export class Player {
 
         // Don't continue if the player doesn't have enough experience to level up
         if (this.experience < this.levelThreshold) {
-            return [[level, stats], null];
+            return [[level, stats], null, false, false];
         }
 
         // Accumulated growths from levelling up
@@ -464,7 +468,17 @@ export class Player {
             luck: stats.luck + growths.luck
         };
 
-        return [[level, stats], [this.data.level, this.data.stats]];
+        return [
+            [level, stats],
+            [this.level, this.stats],
+            // If the resulting level is past the Path requirement and
+            // the player is pathless, then they have a Path unlock
+            this.level >= PATH_LEVEL && this.path === Paths.Pathless ? true : false,
+            // If the resulting level is past ano of the Class requirements and
+            // the player is doesn't have the corresponding class, then they have a Class unlock
+            this.level >= CLASS_1_LEVEL && !this.classes[0] ||
+            this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false
+        ];
     }
 
     /**
@@ -480,10 +494,13 @@ export class Player {
         streak: [before: number, after: number],
         before: [level: number, stats: Stats],
         after: [level: number, stats: Stats] | null,
-        rewards: [experience: number, funds: number]
+        rewards: [experience: number, funds: number],
+        cooldown: number,
+        pathUnlock: boolean,
+        classUnlock: boolean
     ] {
         // The current timestamp in seconds
-        const now: number = Math.floor(Date.now() / millisPerSecs);
+        const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
         const stats: Stats = {
             health: this.stats.health,
             guard: this.stats.guard,
@@ -500,7 +517,15 @@ export class Player {
 
         // Do nothing if on cooldown
         if (now < this.data.cooldowns.daily) {
-            return [[streak, streak], [level, stats], null, null];
+            return [
+                [streak, streak],
+                [level, stats],
+                null,
+                null,
+                this.data.cooldowns.daily - now,
+                false,
+                false
+            ];
         }
 
         // The baseline exp gain
@@ -547,7 +572,15 @@ export class Player {
 
         // Don't continue if the player doesn't have enough experience to level up
         if (this.experience < this.levelThreshold) {
-            return [[streak, this.dailyStreak], [level, stats], null, [expGain, funds]];
+            return [
+                [streak, this.dailyStreak],
+                [level, stats],
+                null,
+                [expGain, funds],
+                null,
+                false,
+                false
+            ];
         }
 
         // Accumulated growths from levelling up
@@ -603,7 +636,16 @@ export class Player {
             [streak, this.dailyStreak],
             [level, stats],
             [this.data.level, this.data.stats],
-            [expGain, funds]];
+            [expGain, funds],
+            null,
+            // If the resulting level is past the Path requirement and
+            // the player is pathless, then they have a Path unlock
+            this.level >= PATH_LEVEL && this.path === Paths.Pathless ? true : false,
+            // If the resulting level is past ano of the Class requirements and
+            // the player is doesn't have the corresponding class, then they have a Class unlock
+            this.level >= CLASS_1_LEVEL && !this.classes[0] ||
+            this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false
+        ];
     }
 
     /**
@@ -741,11 +783,11 @@ export class Player {
         }
         
         // The current timestamp in seconds
-        const now: number = Math.floor(Date.now() / millisPerSecs);
+        const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
 
         // Do nothing if on cooldown
         if (now < this.cooldowns.reputation) {
-            return [false, this.cooldowns.reputation];
+            return [false, this.cooldowns.reputation - now];
         }
 
         // Increment the target's reputation, and update the cooldown
