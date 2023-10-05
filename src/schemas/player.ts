@@ -25,7 +25,7 @@
 import { Snowflake } from "discord.js";
 import { Schema, HydratedDocument, Model, model } from "mongoose";
 import { verify } from "../util/refresh";
-import { CLASS_1_LEVEL, CLASS_2_LEVEL, Class, PATH_LEVEL, Path, PathClasses, Paths, getClasses, getPaths } from "../rpg/types/class";
+import { AdministratorClasses, CLASS_1_LEVEL, CLASS_2_LEVEL, CasterClasses, Class, PATH_LEVEL, Path, PathClasses, Paths, RECLASS_COST, RangerClasses, WarriorClasses, getClasses, getPaths, pathNames } from "../rpg/types/class";
 import { MILLIS_PER_SEC } from "../util/format";
 
 const playerSchema: Schema = new Schema({
@@ -742,6 +742,168 @@ export class Player {
             dexterity: dexterityRoll <= growths.dexterity ? 1 : 0,
             luck: luckRoll <= growths.luck ? 1 : 0
         };
+    }
+
+    public getAvailablePaths(): readonly Paths[] {
+        return pathNames.filter(p => p !== this.path);
+    }
+
+    /**
+     * Whether a player can change Path or not.
+     */
+    public get canChangePath(): boolean {
+        return this.level >= PATH_LEVEL && 
+               (this.path === Paths.Pathless || this.balance >= RECLASS_COST);
+    }
+
+    /**
+     * Changes the Path of the player.
+     * Removes subclasses and deducts the reclass cost if the player
+     * is already treading a Path.
+     * 
+     * @param path the Path to change to
+     * @returns Whether it was a success and whether it was a reclass or not
+     */
+    public changePath(path: Paths): [
+        success: boolean,
+        reclass: boolean
+    ] {
+        // Disallow players form changing to Pathless
+        // and to their current Path
+        // The player myst also be able to change Path
+        // The Path must also be in the list of available ones
+        if (
+            !this.canChangePath ||
+            path === Paths.Pathless ||
+            path === this.path ||
+            !this.getAvailablePaths().includes(path)
+        ) {
+            return [false, false];
+        }
+
+        // If the player's Path is Pathless, change from it directly
+        if (this.path === Paths.Pathless) {
+            this.data.classes.path = path;
+            return [true, false];
+        }
+
+        this.data.balance -= RECLASS_COST;
+        this.data.classes.path = path;
+        this.data.classes.subclasses = [];
+        return [true, true];
+    }
+
+    public getAvailableClasses(
+        admin: "regular" | "owner" | "sushi" = null
+    ): readonly PathClasses[] {
+        let classes: PathClasses[];
+
+        switch (this.path) {
+            case Paths.Pathless:
+                return [];
+            case Paths.Warrior:
+                classes = Object.values(WarriorClasses);
+                break;
+            case Paths.Caster:
+                classes = Object.values(CasterClasses);
+                break;
+            case Paths.Ranger:
+                classes = Object.values(RangerClasses);
+                break;
+        }
+
+        /* eslint-disable no-fallthrough */
+        switch (admin) {
+            case "sushi":
+                classes.push(AdministratorClasses.Arbiter);
+            case "owner":
+                classes.push(AdministratorClasses.Idol);
+            case "regular":
+                classes.push(AdministratorClasses.Lord);
+        }
+        /* eslint-enable no-fallthrough */
+
+        classes = classes.filter(c => !this.classes.includes(c));
+        return classes;
+    }
+
+    /**
+     * Whether a player can add a Class or not.
+     */
+    public get canAddClass(): boolean {
+        if (this.classes[1]) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Adds a class to a player, if the class is compatible.
+     * 
+     * @param cls the Class to add
+     * @param admin which type of admin the player is
+     * @returns Whether it was a success or not
+     */
+    public addClass(cls: PathClasses, admin: "regular" | "owner" | "sushi" = null): boolean {
+        // The player must be able to add a class
+        if (!this.canAddClass) {
+            return false;
+        }
+
+        const classes: readonly PathClasses[] = this.getAvailableClasses(admin);
+
+        // Chaeck if the class is in the list of compatible classes
+        if (!classes.includes(cls)) {
+            return false;
+        }
+
+        // If the player is Classless
+        if (this.classes[0]) {
+            // Set the 2nd class to the provided class
+            this.data.classes.subclasses[1] = cls;
+            return true;
+        }
+
+        // Otherwise, set the 1st class to the provided class
+        this.data.classes.subclasses[0] = cls;
+        return true;
+    }
+
+    /**
+     * Whether a player can change class or not.
+     */
+    public get canChangeClass(): boolean {
+        return !this.canAddClass;
+    }
+
+    /**
+     * Changes a Class of the player and deducts the reclass cost.
+     * 
+     * @param cls the Class to change to
+     * @param position the position of the Class to change from
+     * @param admin which type of admin the player is
+     * @returns Whether it was a success or not
+     */
+    public changeClass(
+        cls: PathClasses,
+        position: 0 | 1,
+        admin: "regular" | "owner" | "sushi" = null
+    ): boolean {
+        // The player must be able to reclass
+        if (!this.canChangeClass) {
+            return false;
+        }
+
+        const classes: readonly PathClasses[] = this.getAvailableClasses(admin);
+
+        // Chaeck if the class is in the list of compatible classes
+        if (classes.includes(cls)) {
+            return false;
+        }
+
+        // Change the class at the requested position
+        this.data.classes.subclasses[position] = cls;
+        return true;
     }
 
     /**
