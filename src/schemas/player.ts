@@ -376,6 +376,7 @@ export class Player {
     public chat(): [
         before: [level: number, stats: Stats],
         after: [level: number, stats: Stats] | null,
+        cooldown: number,
         pathUnlock: boolean,
         classUnlock: boolean
     ] {
@@ -396,7 +397,13 @@ export class Player {
 
         // Do nothing if on cooldown
         if (now < this.data.cooldowns.experience) {
-            return [[level, stats], null, false, false];
+            return [
+                [level, stats],
+                null,
+                this.data.cooldowns.experience - now,
+                false,
+                false
+            ];
         }
 
         // The baseline exp gain
@@ -416,7 +423,13 @@ export class Player {
 
         // Don't continue if the player doesn't have enough experience to level up
         if (this.experience < this.levelThreshold) {
-            return [[level, stats], null, false, false];
+            return [
+                [level, stats],
+                null,
+                null,
+                false,
+                false
+            ];
         }
 
         // Accumulated growths from levelling up
@@ -471,6 +484,7 @@ export class Player {
         return [
             [level, stats],
             [this.level, this.stats],
+            null,
             // If the resulting level is past the Path requirement and
             // the player is pathless, then they have a Path unlock
             this.level >= PATH_LEVEL && this.path === Paths.Pathless ? true : false,
