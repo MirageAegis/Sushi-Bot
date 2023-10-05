@@ -371,14 +371,17 @@ export class Player {
      * If the player has enough experience to level up, they do so.
      * 
      * @returns the player's level and stats before and after chatting.
-     * If no level up occurred, after is set to null
+     * If no level up occurred, after is set to null. Also returns the
+     * amount of daily funds claimed and whether the player has unlocked
+     * Paths, a Class slot, or Limitbreak
      */
     public chat(): [
         before: [level: number, stats: Stats],
         after: [level: number, stats: Stats] | null,
         cooldown: number,
         pathUnlock: boolean,
-        classUnlock: boolean
+        classUnlock: boolean,
+        canLimitbreak: boolean
     ] {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
@@ -401,6 +404,7 @@ export class Player {
                 [level, stats],
                 null,
                 this.data.cooldowns.experience - now,
+                false,
                 false,
                 false
             ];
@@ -428,6 +432,7 @@ export class Player {
                 null,
                 null,
                 false,
+                false,
                 false
             ];
         }
@@ -449,7 +454,7 @@ export class Player {
         // or until the level threshold is reached
         while (
             this.experience >= this.levelThreshold &&
-            this.level < LEVEL_THRESHOLD * (this.prestige + 1)
+            !this.canLimitbreak
         ) {
             const increases: Stats = this.levelUp();
 
@@ -491,7 +496,8 @@ export class Player {
             // If the resulting level is past ano of the Class requirements and
             // the player is doesn't have the corresponding class, then they have a Class unlock
             this.level >= CLASS_1_LEVEL && !this.classes[0] ||
-            this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false
+            this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
+            this.canLimitbreak
         ];
     }
 
@@ -502,7 +508,8 @@ export class Player {
      * @returns the player's streak before and after the daily;
      * level, and stats before and after the daily.
      * If no level up occurred, after is set to null. Also returns the
-     * amount of daily funds claimed
+     * amount of daily funds claimed and whether the player has unlocked
+     * Paths, a Class slot, or Limitbreak
      */
     public daily(): [
         streak: [before: number, after: number],
@@ -511,7 +518,8 @@ export class Player {
         rewards: [experience: number, funds: number],
         cooldown: number,
         pathUnlock: boolean,
-        classUnlock: boolean
+        classUnlock: boolean,
+        canLimitbreak: boolean
     ] {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
@@ -537,6 +545,7 @@ export class Player {
                 null,
                 null,
                 this.data.cooldowns.daily - now,
+                false,
                 false,
                 false
             ];
@@ -593,6 +602,7 @@ export class Player {
                 [expGain, funds],
                 null,
                 false,
+                false,
                 false
             ];
         }
@@ -614,7 +624,7 @@ export class Player {
         // or until the level threshold is reached
         while (
             this.experience >= this.levelThreshold &&
-            this.level < LEVEL_THRESHOLD * (this.prestige + 1)
+            !this.canLimitbreak
         ) {
             const increases: Stats = this.levelUp();
 
@@ -658,7 +668,8 @@ export class Player {
             // If the resulting level is past ano of the Class requirements and
             // the player is doesn't have the corresponding class, then they have a Class unlock
             this.level >= CLASS_1_LEVEL && !this.classes[0] ||
-            this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false
+            this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
+            this.canLimitbreak
         ];
     }
 
@@ -775,6 +786,13 @@ export class Player {
         }
 
         return growths;
+    }
+
+    /**
+     * Whether a player can break their limits and return to level 1.
+     */
+    public get canLimitbreak(): boolean {
+        return this.level >= LEVEL_THRESHOLD * (this.prestige + 1);
     }
     /* eslint-enable no-magic-numbers */
 
