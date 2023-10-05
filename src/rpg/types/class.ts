@@ -172,6 +172,12 @@ export const getPaths = (): ReadonlyMap<Paths, Path> => {
 };
 
 /**
+ * The names of each Path excluding Pathless.
+ */
+export const pathNames: readonly Paths[] = Object.values(Paths)
+    .filter(c => c !== Paths.Pathless);
+
+/**
  * Gets all the classes with Class name mapped to the Class.
  * 
  * @returns a map with all the Classes
@@ -194,3 +200,8 @@ export const CLASS_1_LEVEL: number = 30;
  * The level requirement for a player to unlock their second class.
  */
 export const CLASS_2_LEVEL: number = 50;
+
+/**
+ * The cost to change Path or Class
+ */
+export const RECLASS_COST: number = 10_000;
