@@ -640,9 +640,16 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
     const [
         before,
         after,
+        cooldown,
         pathUnlock,
         classUnlock
     ] = player.chat();
+
+    // Do nothing if on cooldown
+    if (cooldown) {
+        return;
+    }
+
     await player.save();
 
     // If no level up occurred, return
