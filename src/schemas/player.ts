@@ -225,7 +225,7 @@ const EXPERIENCE_COOLDOWN: number = 0;
  * 1 day.
  * FIXME: Change to 86_400
  */
-const DAILY_COOLDOWN: number = 5;
+const DAILY_COOLDOWN: number = 0;
 
 /**
  * The cooldown for giving out reputation points in seconds.
@@ -298,7 +298,7 @@ export class Player {
             this.data = new Player.model({
                 _id: <string> arg,
                 classes: {
-                    path: "Pathless",
+                    path: Paths.Pathless,
                     classes: []
                 },
                 stats: BASE_STATS
@@ -659,7 +659,7 @@ export class Player {
         return [
             [streak, this.dailyStreak],
             [level, stats],
-            [this.data.level, this.data.stats],
+            this.data.level !== level ? [this.data.level, this.data.stats] : null,
             [expGain, funds],
             null,
             // If the resulting level is past the Path requirement and
@@ -907,6 +907,43 @@ export class Player {
     }
 
     /**
+     * Whether a player can break their limits and return to level 1.
+     * The player must reach their level cap to limit break.
+     * Max level = 100 + 100 for every limit break.
+     */
+    public get canLimitbreak(): boolean {
+        return this.level >= this.maxLevel;
+    }
+
+    /**
+     * Breaks the limits of a player.
+     * Increases prestige and level cap but resets classes, level, and stats.
+     * 
+     * @returns whether the limitbreak was successful or not
+     */
+    public limitbreak(): boolean {
+        // Check if the player can limitbreak
+        if (!this.canLimitbreak) {
+            return false;
+        }
+
+        // Reset the player's experience
+        this.data.experience = 0;
+        // Reset the player's level
+        this.data.level = 1;
+        // Reset the player's Path and Classes
+        this.data.classes = {
+            path: Paths.Pathless,
+            subclasses: []
+        };
+        // Reset the player's stats
+        this.data.stats = BASE_STATS;
+        // Increment the player's prestige
+        this.data.prestige++;
+        return true;
+    }
+
+    /**
      * The growth rates of a player
      */
     public get growths(): Stats {
@@ -948,13 +985,6 @@ export class Player {
         }
 
         return growths;
-    }
-
-    /**
-     * Whether a player can break their limits and return to level 1.
-     */
-    public get canLimitbreak(): boolean {
-        return this.level >= LEVEL_THRESHOLD * (this.prestige + 1);
     }
     /* eslint-enable no-magic-numbers */
 
@@ -1009,7 +1039,18 @@ export class Player {
      * The stats of a player.
      */
     public get stats(): Stats {
-        return this.data.stats;
+        // Return a copy of the stats
+        return {
+            health: this.data.stats.health,
+            guard: this.data.stats.guard,
+            strength: this.data.stats.strength,
+            magic: this.data.stats.magic,
+            speed: this.data.stats.speed,
+            defence: this.data.stats.defence,
+            resistance: this.data.stats.resistance,
+            dexterity: this.data.stats.dexterity,
+            luck: this.data.stats.luck
+        };
     }
 
     /**
@@ -1017,6 +1058,15 @@ export class Player {
      */
     public get level(): number {
         return this.data.level;
+    }
+
+    /**
+     * The max level that a player can reach.
+     * Max level = 100 + 100 for every limit break.
+     */
+    public get maxLevel(): number {
+        // eslint-disable-next-line no-magic-numbers
+        return LEVEL_THRESHOLD * (this.prestige + 1);
     }
 
     /**
