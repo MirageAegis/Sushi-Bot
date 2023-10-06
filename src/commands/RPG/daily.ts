@@ -96,6 +96,13 @@ export const command: Command = {
         if (after) {
             embed = genLevelUpEmbed(ctx.user, ctx.guild, player, before, after);
             response += "You've also levelled up!\n";
+
+            // Tell users on their first level up that pings are defaulted to being off
+            // eslint-disable-next-line no-magic-numbers
+            if (before[0] === 1 && !player.prestige) {
+                response += "Level up pings are defaulted to being **off**\n" +
+                            "If you wish to be pinged in future level ups, use the `/levels` command!";
+            }
         }
 
         // Check if the player can tread a Path
