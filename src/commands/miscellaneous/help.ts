@@ -24,8 +24,8 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Collection } from "discord.js";
-import { Command } from "../../util/command-template.js";
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Collection, AutocompleteInteraction } from "discord.js";
+import { Command, MAX_CHOICES } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { MAGENTA } from "../../util/colours.js";
 
@@ -129,26 +129,50 @@ export const command: Command = {
         .addStringOption(o =>
             o.setName("command")
                 .setDescription("The command to get more information about")
-                .addChoices(...choices)
+                .setAutocomplete(true)
         ),
+
+    // Option autocompleter
+    async autocomplete(ctx: AutocompleteInteraction): Promise<void> {
+        // The value that the user has entered
+        const focusedValue: string = ctx.options.getFocused() ?? "";
+        // Filter out everything that doesn't start with the entered string
+        let filtered: { name: string, value: string }[] = choices.filter(c =>
+            c.name.includes(focusedValue)
+        );
+        
+        // Slice the array if it's too large
+        if (filtered.length > MAX_CHOICES) {
+            // eslint-disable-next-line no-magic-numbers
+            filtered = filtered.slice(0, MAX_CHOICES);
+        }
+        await ctx.respond(filtered);
+    },
     
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         // Get the command if it exists
         const command = ctx.options.getString("command") ?? null;
         
-        // If there is a command, send its embed
-        if (command) {
-            // Set the embed author field to "Help" and add the server's icon
-            const embed = commands.get(command)
-                .setAuthor({ name: "Help", iconURL: ctx.guild.iconURL() });
-            await ctx.reply({ embeds: [embed] });
-            return;
-        } else { // Otherwise send the default help window
+        // If no command was provided, send the default help window
+        if (!command) {
             defaultEmbed.setAuthor({ name: "Help", iconURL: ctx.guild.iconURL() });
             await ctx.reply({ embeds: [defaultEmbed] });
             return;
         }
+
+        // Otherwise try to send the corresponding help window
+        const embed: EmbedBuilder = commands.get(command);
+
+        // Check if the command exists
+        if (!embed) {
+            await ctx.reply(`\`/${command}\` isn't a valid command!`);
+            return;
+        }
+
+        // Set the embed author field to "Help" and add the server's icon
+        embed.setAuthor({ name: "Help", iconURL: ctx.guild.iconURL() });
+        await ctx.reply({ embeds: [embed] });
     },
 
     // Error handler

@@ -24,7 +24,11 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Collection, PermissionsBitField } from "discord.js";
+import {
+    SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Collection,
+    PermissionsBitField,
+    AutocompleteInteraction
+} from "discord.js";
 import { Command, Subcommand } from "../../util/command-template.js";
 
 /*
@@ -61,6 +65,13 @@ for (const file of subcmdFiles) {
 export const command: Command = {
     // Command headers
     data: data,
+
+    async autocomplete(ctx: AutocompleteInteraction): Promise<void> {
+        const subcmd = ctx.options.getSubcommand();
+
+        // Execute the requested subcommand's autocompleter
+        await subcommands.get(subcmd).autocomplete(ctx);
+    },
 
     // Command execution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
