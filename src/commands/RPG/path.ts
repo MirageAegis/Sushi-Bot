@@ -83,9 +83,7 @@ export const command: Command = {
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(path.name)
                         .setValue(p);
-                }
-            ))
-            .addOptions(
+                }),
                 new StringSelectMenuOptionBuilder()
                     .setLabel(CANCEL)
                     .setValue(CANCEL)
@@ -161,13 +159,13 @@ export const command: Command = {
         // Check if the player changed from a Path other than Pathless
         if (reclass) {
             await ctx.followUp(
-                `You're now treading the Path of the **${path}** and your classes have been removed!`
+                `You're now treading the **Path of the ${path}** and your classes have been removed!`
             );
             return;
         }
 
         await ctx.followUp(
-            `You're now treading the Path of the **${path}**!`
+            `You're now treading the **Path of the ${path}**!`
         );
     },
     
