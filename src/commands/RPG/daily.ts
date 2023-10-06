@@ -63,7 +63,8 @@ export const command: Command = {
             rewards,
             cooldown,
             pathUnlock,
-            classUnlock
+            classUnlock,
+            canLimitbreak
         ] = player.daily();
 
         let response: string;
@@ -99,10 +100,15 @@ export const command: Command = {
 
         // Check if the player can tread a Path
         if (pathUnlock) {
-            response += "You can now tread a path!";
+            response += "You can now tread a path!\n";
         } else if (classUnlock) {
             // Or if the player can unlock a class
-            response += "You can spec into a class!";
+            response += "You can spec into a class!\n";
+        }
+
+        // Check if the player can break their limits
+        if (canLimitbreak) {
+            response += "You're ready to break your limits!";
         }
 
         await ctx.reply({

@@ -642,7 +642,8 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
         after,
         cooldown,
         pathUnlock,
-        classUnlock
+        classUnlock,
+        canLimitbreak
     ] = player.chat();
 
     // Do nothing if on cooldown
@@ -676,10 +677,15 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
 
     // Check if the player can tread a Path
     if (pathUnlock) {
-        response += "You can now tread a path!";
+        response += "You can now tread a path!\n";
     } else if (classUnlock) {
         // Or if the player can unlock a class
-        response += "You can spec into a class!";
+        response += "You can spec into a class!\n";
+    }
+
+    // Check if the player can break their limits
+    if (canLimitbreak) {
+        response += "You're ready to break your limits!";
     }
     
     await channel.send({
