@@ -24,7 +24,8 @@
 
 import { EmbedBuilder, Guild, User } from "discord.js";
 import { Player, Stats } from "../schemas/player";
-import { AZURE, GREEN } from "./colours";
+import { AZURE, GREEN, MAGENTA } from "./colours";
+import { Paths } from "../rpg/types/class";
 
 /**
  * Generates an embed representing a user's profile.
@@ -125,14 +126,14 @@ export const genProfileEmbed = (user: User, server: Guild, player: Player): Embe
 };
 
 /**
- * Generates an embed representing a user's profile.
+ * Generates an embed representing a user's level up.
  * 
  * @param user the server member
  * @param player the player document
  * @param stats the stats to display
  * @param before the level and stats before the level up
  * @param after the level and stats after the level up
- * @returns an embed with the player's level, experience, and stats
+ * @returns an embed representing the player's level up
  */
 export const genLevelUpEmbed = (
     user: User,
@@ -159,6 +160,97 @@ export const genLevelUpEmbed = (
             {
                 name: "Classes",
                 value: `${player.classes[0] ?? "none"}\n${player.classes[1] ?? ""}`,
+                inline: false
+            },
+            {
+                name: "Level",
+                value: `${before[0]} ➟ **${after[0]}**`,
+                inline: false
+            },
+            {
+                name: "HP",
+                value: `${beforeStats.health}${afterStats.health !== beforeStats.health ? ` ➟ **${afterStats.health}**` : ""}`,
+                inline: true
+            },
+            {
+                name: "GP",
+                value: `${beforeStats.guard}${afterStats.guard !== beforeStats.guard ? ` ➟ **${afterStats.guard}**` : ""}`,
+                inline: true
+            },
+            {
+                name: "Speed",
+                value: `${beforeStats.speed}${afterStats.speed !== beforeStats.speed ? ` ➟ **${afterStats.speed}**` : ""}`,
+                inline: true
+            },
+            {
+                name: "Strength",
+                value: `${beforeStats.strength}${afterStats.strength !== beforeStats.strength ? ` ➟ **${afterStats.strength}**` : ""}`,
+                inline: true
+            },
+            {
+                name: "Defence",
+                value: `${beforeStats.defence}${afterStats.defence !== beforeStats.defence ? ` ➟ **${afterStats.defence}**` : ""}`,
+                inline: true
+            },
+            {
+                name: "Dexterity",
+                value: `${beforeStats.dexterity}${afterStats.dexterity !== beforeStats.dexterity ? ` ➟ **${afterStats.dexterity}**` : ""}`,
+                inline: true
+            },
+            {
+                name: "Magic",
+                value: `${beforeStats.magic}${afterStats.magic !== beforeStats.magic ? ` ➟ **${afterStats.magic}**` : ""}`,
+                inline: true
+            },
+            {
+                name: "Resistance",
+                value: `${beforeStats.resistance}${afterStats.resistance !== beforeStats.resistance ? ` ➟ **${afterStats.resistance}**` : ""}`,
+                inline: true
+            },
+            {
+                name: "Luck",
+                value: `${beforeStats.luck}${afterStats.luck !== beforeStats.luck ? ` ➟ **${afterStats.luck}**` : ""}`,
+                inline: true
+            }
+        );
+
+    return embed;
+};
+
+/**
+ * Generates an embed representing a user's limitbreak.
+ * 
+ * @param user the server member
+ * @param player the player document
+ * @param stats the stats to display
+ * @param before the level, stats, and prestige before the limitbreak
+ * @param after the level, stats, and prestige after the limitbreak
+ * @returns an embed representing the player's limitbreak
+ */
+export const genLimitbreakEmbed = (
+    user: User,
+    server: Guild,
+    before: [level: number, stats: Stats, prestige: number],
+    after: [level: number, stats: Stats, prestige: number]
+): EmbedBuilder => {
+    const beforeStats: Stats = before[1];
+    const afterStats: Stats = after[1];
+
+    const embed: EmbedBuilder = new EmbedBuilder()
+        .setTitle(user.username)
+        .setDescription(
+            `**Path:** ${Paths.Pathless}\n**Limit Breaker ${before[2]}** ➟ **${after[2]}**`
+        )
+        .setColor(MAGENTA)
+        .setAuthor({
+            name: "Limitbreak!",
+            iconURL: server.iconURL()
+        })
+        .setThumbnail(user.displayAvatarURL())
+        .addFields(
+            {
+                name: "Classes",
+                value: "none",
                 inline: false
             },
             {
