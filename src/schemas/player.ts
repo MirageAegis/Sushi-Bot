@@ -1076,6 +1076,10 @@ export class Player {
         return this.data.levelPing;
     }
 
+    public set levelPing(levelPing: boolean) {
+        this.data.levelPing = levelPing;
+    }
+
     /**
      * The prestige of a player. An integer >= 0.
      */
