@@ -62,6 +62,9 @@ export const command: Command = {
 
         const player: Player = await Player.get(ctx.user.id);
         player.levelPing = ping;
+        await player.save();
+
+        await ctx.reply(`Set level up pings to **${ping ? "on" : "off"}**`);
     },
     
     // Error handler
