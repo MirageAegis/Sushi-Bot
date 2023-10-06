@@ -22,8 +22,16 @@
  * SOFTWARE.
  */
 
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import {
+    SlashCommandBuilder, SlashCommandSubcommandBuilder, EmbedBuilder,
+    ChatInputCommandInteraction, AutocompleteInteraction
+} from "discord.js";
 import { ErrorHandler } from "./error-handler.js";
+
+/**
+ * The maximum amount of choices an option can have
+ */
+export const MAX_CHOICES: number = 25;
 
 export type Command = {
     /**
@@ -32,6 +40,13 @@ export type Command = {
      * May also include command options
      */
     readonly data: SlashCommandBuilder;
+
+    /**
+     * Autocompleter for options with too many choices.
+     * MUST be included in commands where a choice has autocomplete
+     * set to true.
+     */
+    readonly autocomplete?: { (ctx: AutocompleteInteraction): Promise<void> }
 
     /**
      * The callback function to execute whenever a slash command is used
@@ -57,6 +72,13 @@ export type Subcommand = {
      * May also include command options
      */
     readonly data: SlashCommandSubcommandBuilder;
+
+    /**
+     * Autocompleter for options with too many choices.
+     * MUST be included in commands where a choice has autocomplete
+     * set to true.
+     */
+    readonly autocomplete?: { (ctx: AutocompleteInteraction): Promise<void> }
 
     /**
      * The callback function to execute whenever a slash command is used
