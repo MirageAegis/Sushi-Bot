@@ -105,29 +105,41 @@ client.on(Events.InteractionCreate, async (ctx: Interaction): Promise<void> => {
         } catch (e) {
             await reactionRolesErrorHandler(ctx, e);
         }
-
         return;
     }
 
-    // Do nothing if it's not a chat command
-    if (!ctx.isChatInputCommand()) {
+    // Process autocomplete interactions
+    if (ctx.isAutocomplete()) {
+        // Get the command from the command register
+        const cmd: Command = client.commands.get(ctx.commandName);
+        
+        // If the command is not found, inform the user and log the error
+        if (!cmd) {
+            console.error(`Command ${ctx.commandName} not found.`);
+            return;
+        }
+
+        await cmd.autocomplete(ctx);
         return;
     }
     
-    // Get the command from the command register
-    const cmd: Command = client.commands.get(ctx.commandName);
-    
-    // If the command is not found, inform the user and log the error
-    if (!cmd) {
-        console.error(`Command ${ctx.commandName} not found.`);
-        return;
-    }
-    
-    // Try to run the command
-    try {
-        await cmd.execute(ctx);
-    } catch (e) { // Command error handling
-        await cmd.error(ctx, e);
+    // Process commands
+    if (ctx.isChatInputCommand()) {
+        // Get the command from the command register
+        const cmd: Command = client.commands.get(ctx.commandName);
+        
+        // If the command is not found, inform the user and log the error
+        if (!cmd) {
+            console.error(`Command ${ctx.commandName} not found.`);
+            return;
+        }
+        
+        // Try to run the command
+        try {
+            await cmd.execute(ctx);
+        } catch (e) { // Command error handling
+            await cmd.error(ctx, e);
+        }
     }
 });
 
