@@ -644,7 +644,7 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
         pathUnlock,
         classUnlock,
         canLimitbreak
-    ] = player.chat();
+    ] = await player.chat();
 
     // Do nothing if on cooldown
     if (cooldown) {

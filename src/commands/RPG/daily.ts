@@ -65,7 +65,7 @@ export const command: Command = {
             pathUnlock,
             classUnlock,
             canLimitbreak
-        ] = player.daily();
+        ] = await player.daily();
 
         let response: string;
 

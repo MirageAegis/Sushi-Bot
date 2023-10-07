@@ -375,14 +375,14 @@ export class Player {
      * amount of daily funds claimed and whether the player has unlocked
      * Paths, a Class slot, or Limitbreak
      */
-    public chat(): [
+    public async chat(): Promise<[
         before: [level: number, stats: Stats],
         after: [level: number, stats: Stats] | null,
         cooldown: number,
         pathUnlock: boolean,
         classUnlock: boolean,
         canLimitbreak: boolean
-    ] {
+    ]> {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
         const stats: Stats = {
@@ -414,7 +414,7 @@ export class Player {
         let expGain: number = BASE_CHAT_EXP;
 
         // Add the VTuber boost if it's a VTuber
-        if (verify(this.data._id)) {
+        if (await verify(this.data._id)) {
             expGain += VTUBER_EXP_BOOST;
         }
 
@@ -488,7 +488,7 @@ export class Player {
 
         return [
             [level, stats],
-            [this.level, this.stats],
+            this.data.level !== level ? [this.data.level, this.data.stats] : null,
             null,
             // If the resulting level is past the Path requirement and
             // the player is pathless, then they have a Path unlock
@@ -511,7 +511,7 @@ export class Player {
      * amount of daily funds claimed and whether the player has unlocked
      * Paths, a Class slot, or Limitbreak
      */
-    public daily(): [
+    public async daily(): Promise<[
         streak: [before: number, after: number],
         before: [level: number, stats: Stats],
         after: [level: number, stats: Stats] | null,
@@ -520,7 +520,7 @@ export class Player {
         pathUnlock: boolean,
         classUnlock: boolean,
         canLimitbreak: boolean
-    ] {
+    ]> {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
         const stats: Stats = {
@@ -557,7 +557,7 @@ export class Player {
         let funds: number = BASE_DAILY_FUNDS;
 
         // Add the VTuber boost if it's a VTuber
-        if (verify(this.data._id)) {
+        if (await verify(this.data._id)) {
             expGain += VTUBER_DAILY_BOOST;
             funds += VTUBER_DAILY_BOOST;
         }
