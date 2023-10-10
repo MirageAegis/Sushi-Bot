@@ -30,15 +30,15 @@ export const path: Path = {
                  "with a great magical prowess fit for magical combat. This comes at the " +
                  "cost of being vulnerable to physical attacks",
     growths: {
-        health: 55,
+        health: 60,
         guard: 15,
         strength: 10,
         magic: 55,
         speed: 30,
         defence: 20,
-        resistance: 45,
-        dexterity: 20,
-        luck: 30
+        resistance: 50,
+        dexterity: 25,
+        luck: 35
     },
     skills: []
 };

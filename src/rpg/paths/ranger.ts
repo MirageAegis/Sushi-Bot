@@ -33,7 +33,7 @@ export const path: Path = {
         health: 50,
         guard: 15,
         strength: 55,
-        magic: 30,
+        magic: 15,
         speed: 30,
         defence: 20,
         resistance: 20,

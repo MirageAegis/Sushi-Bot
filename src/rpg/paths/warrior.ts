@@ -30,11 +30,11 @@ export const path: Path = {
                  "with a strong physique fit for physical combat. This comes at the " +
                  "cost of being vulnerable to magical attacks",
     growths: {
-        health: 70,
+        health: 75,
         guard: 15,
         strength: 50,
         magic: 10,
-        speed: 30,
+        speed: 40,
         defence: 40,
         resistance: 20,
         dexterity: 30,
