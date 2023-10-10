@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-import {
-    Client, Collection, Guild, GuildMember, Snowflake, TextChannel, User
-} from "discord.js";
+import { Client, Collection, Guild, TextChannel, User } from "discord.js";
 import { Blacklist } from "../schemas/blacklist";
-import { getAdminLogsChannel, getAdminServer } from "./channels";
+import { getAdminLogsChannel } from "./channels";
+import { verify } from "./verify";
 
 /**
  * This module contains functions for refreshing things.
  * It currently has a function for:
  * - refreshing the blacklist
+ * - refreshing the bot's servers
  */
 
 /**
@@ -85,32 +85,7 @@ export const refreshBlacklist = async (client: Client): Promise<void> => {
 };
 
 /**
- * Checks whether a user is eligible to have Sushi Bot in their server
- * 
- * @param user the user to check
- * @returns whether the user is eligible or not
- */
-export const verify = async (user: User | Snowflake): Promise<boolean> => {
-    // The official server
-    const adminServer: Guild = await getAdminServer();
-
-    // The member object tied to the user, if they're a member
-    let member: GuildMember;
-    try {
-        // Try fetching the member
-        member = await adminServer.members.fetch(user);
-    } catch (e) {
-        // Any error is probably an unknown member error, aka. the user
-        // isn't a member
-        return false;
-    }
-    
-    // If they have the VTuber role, they're eligible, else they're not
-    return member.roles.cache.get(process.env.VTUBER_ROLE_ID) ? true : false;
-};
-
-/**
- * Refreshes the bot's servers, leaving any ineligible server
+ * Refreshes the bot's servers, leaving any ineligible server.
  * 
  * @param client the client that performs the refreshing
  */
