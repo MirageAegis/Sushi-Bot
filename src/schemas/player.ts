@@ -22,11 +22,16 @@
  * SOFTWARE.
  */
 
-import { Snowflake } from "discord.js";
+import { GuildMember, PermissionsBitField, Snowflake } from "discord.js";
 import { Schema, HydratedDocument, Model, model } from "mongoose";
-import { verify } from "../util/refresh";
-import { AdministratorClasses, CLASS_1_LEVEL, CLASS_2_LEVEL, CasterClasses, Class, PATH_LEVEL, Path, PathClasses, Paths, RECLASS_COST, RangerClasses, WarriorClasses, getClasses, getPaths, pathNames } from "../rpg/types/class";
+import { 
+    AdministratorClasses, CLASS_1_LEVEL, CLASS_2_LEVEL, CasterClasses, Class,
+    CommonClasses,
+    PATH_LEVEL, Path, PathClasses, Paths, RECLASS_COST, RangerClasses, WarriorClasses,
+    getClasses, getPaths, pathNames 
+} from "../rpg/types/class";
 import { MILLIS_PER_SEC } from "../util/format";
+import { verify, verifyAdmin } from "../util/verify";
 
 const playerSchema: Schema = new Schema({
     _id: String,
@@ -744,6 +749,12 @@ export class Player {
         };
     }
 
+    /**
+     * Gets the classes that a player can spec into.
+     * Depends on which Path the player is treading.
+     * 
+     * @returns an array with all the Paths that the player can change to
+     */
     public getAvailablePaths(): readonly Paths[] {
         return pathNames.filter(p => p !== this.path);
     }
@@ -793,9 +804,15 @@ export class Player {
         return [true, true];
     }
 
-    public getAvailableClasses(
-        admin: "regular" | "owner" | "sushi" = null
-    ): readonly PathClasses[] {
+    /**
+     * Gets the classes that a player can spec into.
+     * Depends on which Path the player is treading, the Classes that the player
+     * is currently specced into, and the type of administrator the player is.
+     * 
+     * @param member the player's member object
+     * @returns an array with all the classes that the player can spec into
+     */
+    public async getAvailableClasses(member: GuildMember): Promise<readonly PathClasses[]> {
         let classes: PathClasses[];
 
         switch (this.path) {
@@ -810,6 +827,23 @@ export class Player {
             case Paths.Ranger:
                 classes = Object.values(RangerClasses);
                 break;
+        }
+
+        classes.push(...Object.values(CommonClasses));
+
+        let admin: "regular" | "owner" | "sushi";
+        switch (true) {
+            case await verifyAdmin(member.user.id):
+                admin = "sushi";
+                break;
+            case await verify(member.user.id):
+                admin = "owner";
+                break;
+            case member.permissions.has(PermissionsBitField.Flags.Administrator):
+                admin = "regular";
+                break;
+            default:
+                admin = null;
         }
 
         /* eslint-disable no-fallthrough */
@@ -841,16 +875,16 @@ export class Player {
      * Adds a class to a player, if the class is compatible.
      * 
      * @param cls the Class to add
-     * @param admin which type of admin the player is
+     * @param member the player's member object
      * @returns Whether it was a success or not
      */
-    public addClass(cls: PathClasses, admin: "regular" | "owner" | "sushi" = null): boolean {
+    public async addClass(cls: PathClasses, member: GuildMember): Promise<boolean> {
         // The player must be able to add a class
         if (!this.canAddClass) {
             return false;
         }
 
-        const classes: readonly PathClasses[] = this.getAvailableClasses(admin);
+        const classes: readonly PathClasses[] = await this.getAvailableClasses(member);
 
         // Chaeck if the class is in the list of compatible classes
         if (!classes.includes(cls)) {
@@ -881,20 +915,20 @@ export class Player {
      * 
      * @param cls the Class to change to
      * @param position the position of the Class to change from
-     * @param admin which type of admin the player is
+     * @param member the player's member object
      * @returns Whether it was a success or not
      */
-    public changeClass(
+    public async changeClass(
         cls: PathClasses,
         position: 0 | 1,
-        admin: "regular" | "owner" | "sushi" = null
-    ): boolean {
+        member: GuildMember
+    ): Promise<boolean> {
         // The player must be able to reclass
         if (!this.canChangeClass) {
             return false;
         }
 
-        const classes: readonly PathClasses[] = this.getAvailableClasses(admin);
+        const classes: readonly PathClasses[] = await this.getAvailableClasses(member);
 
         // Chaeck if the class is in the list of compatible classes
         if (classes.includes(cls)) {
