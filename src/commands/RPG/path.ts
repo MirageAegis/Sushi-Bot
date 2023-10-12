@@ -69,7 +69,7 @@ export const command: Command = {
             return;
         }
 
-        // Get all Paths except for Path
+        // Get all Paths except for Pathless and the player's current Path
         const paths: readonly Paths[] = player.getAvailablePaths();
         const pathData: ReadonlyMap<Paths, Path> = getPaths();
 
