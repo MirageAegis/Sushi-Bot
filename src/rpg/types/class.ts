@@ -59,7 +59,7 @@ export enum CasterClasses {
  */
 export enum RangerClasses {
     Trickster = "Trickster",
-    Hunter = "Hunter",
+    Sniper = "Sniper",
     Adventurer = "Adventurer"
 }
 
@@ -121,10 +121,10 @@ export type Path = {
 export type Class<T extends Paths, A extends boolean = false> = {
     readonly path: T;
     readonly name: (A extends true ? AdministratorClasses :
+                    T extends null ? CommonClasses :
                     T extends Paths.Warrior ? WarriorClasses :
                     T extends Paths.Caster ? CasterClasses :
-                    T extends Paths.Ranger ? RangerClasses :
-                    CommonClasses);
+                    RangerClasses);
     readonly description: string;
     readonly growths: Stats;
     readonly skills: readonly string[];
