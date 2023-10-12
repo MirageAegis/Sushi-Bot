@@ -865,7 +865,16 @@ export class Player {
      * Whether a player can add a Class or not.
      */
     public get canAddClass(): boolean {
-        if (this.classes[1]) {
+        if (
+            // If the player is below the required level for the first class,
+            this.level < CLASS_1_LEVEL ||
+            // or if they have their first class but are below the requirement
+            // for the second class,
+            this.level < CLASS_2_LEVEL && this.classes[0] ||
+            // or if they already have 2 classes;
+            this.classes[1]
+        ) {
+            // they won't be able to add another class
             return false;
         }
         return true;
@@ -907,7 +916,8 @@ export class Player {
      * Whether a player can change class or not.
      */
     public get canChangeClass(): boolean {
-        return !this.canAddClass;
+        // The player must have 2 classes and enough money to reclass
+        return this.classes[1] && this.balance >= RECLASS_COST;
     }
 
     /**
