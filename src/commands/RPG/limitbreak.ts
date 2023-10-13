@@ -63,6 +63,13 @@ export const command: Command = {
             return;
         }
 
+        // Action lock the player
+        const now: number = Date.now();
+        if (!player.lock(now)) {
+            await ctx.reply("You're currently performing an action, please finish that first!");
+            return;
+        }
+
         const yes: ButtonBuilder = new ButtonBuilder()
             .setCustomId("yes")
             .setLabel("Yes")
@@ -99,6 +106,9 @@ export const command: Command = {
 
             // If the user selected no, abort reload
             if (confirmation.customId === "no") {
+                // Action lock release the player
+                player.release(now);
+
                 await ctx.followUp(
                     "You will not be able to progress any further, " +
                     "come back when you're ready to break your limits!"
@@ -106,6 +116,9 @@ export const command: Command = {
                 return;
             }
         } catch (e) {
+            // Action lock release the player
+            player.release(now);
+
             // End the interaction upon timeout
             await prompt.edit({
                 components: [row]
@@ -120,6 +133,9 @@ export const command: Command = {
 
         player.limitbreak();
         await player.save();
+
+        // Action lock release the player
+        player.release(now);
 
         await ctx.followUp({
             content: "You have broken your limits! You feel a bit weak but that you can grow even stronger than before!",

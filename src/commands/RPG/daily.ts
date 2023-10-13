@@ -56,6 +56,14 @@ export const command: Command = {
 
         // The player who's claiming their daily
         const player: Player = await Player.get(ctx.user.id);
+
+        // Action lock the player
+        const now: number = Date.now();
+        if (!player.lock(now)) {
+            await ctx.reply("You're currently performing an action, please finish that first!");
+            return;
+        }
+        
         const [
             streak,
             before,
@@ -71,6 +79,9 @@ export const command: Command = {
 
         // Tell the user if their rewards are on cooldown
         if (cooldown) {
+            // Action lock release the player
+            player.release(now);
+
             response = "Your daily rewards are on cooldown, " +
                        `you can collect them in ${formatTime(cooldown)}!`;
             await ctx.reply(response);
@@ -78,6 +89,9 @@ export const command: Command = {
         }
 
         await player.save();
+
+        // Action lock release the player
+        player.release(now);
 
         response = "Daily rewards claimed!\n";
 

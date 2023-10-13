@@ -61,8 +61,19 @@ export const command: Command = {
         const ping: boolean = ctx.options.getBoolean("ping") ?? false;
 
         const player: Player = await Player.get(ctx.user.id);
+
+        // Action lock the player
+        const now: number = Date.now();
+        if (!player.lock(now)) {
+            await ctx.reply("You're currently performing an action, please finish that first!");
+            return;
+        }
+
         player.levelPing = ping;
         await player.save();
+
+        // Action lock release the player
+        player.release(now);
 
         await ctx.reply(`Set level up pings to **${ping ? "on" : "off"}**`);
     },

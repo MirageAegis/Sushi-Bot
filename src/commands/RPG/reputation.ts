@@ -82,6 +82,22 @@ export const command: Command = {
         const player: Player = await Player.get(ctx.user.id);
         const targetPlayer: Player = await Player.get(target.user.id);
 
+        // Action lock the player
+        const now: number = Date.now();
+        if (!player.lock(now)) {
+            await ctx.reply("You're currently performing an action, please finish that first!");
+            return;
+        }
+
+        // Action lock the target player
+        if (!targetPlayer.lock(now)) {
+            // Action lock release the player
+            player.release(now);
+
+            await ctx.reply(`**${target.displayName}** is currently performing an action!`);
+            return;
+        }
+
         const [selfRep, cooldown] = player.giveReputation(targetPlayer);
 
         // Tell the user that they can't rep themselves if they're trying to
@@ -104,6 +120,12 @@ export const command: Command = {
         // Save the affected player documents if successful
         await player.save();
         await targetPlayer.save();
+
+        // Action lock release the player
+        player.release(now);
+
+        // Action lock release the player
+        targetPlayer.release(now);
 
         await ctx.reply(
             `You gave a reputation point to **${target.displayName}**!`

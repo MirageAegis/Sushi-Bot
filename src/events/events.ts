@@ -637,6 +637,13 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
     }
 
     const player: Player = await Player.get(message.author.id);
+
+    // Action lock the player
+    const now: number = Date.now();
+    if (!player.lock(now)) {
+        return;
+    }
+
     const [
         before,
         after,
@@ -652,6 +659,9 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
     }
 
     await player.save();
+
+    // Action lock release the player
+    player.release(now);
 
     // If no level up occurred, return
     if (!after) {

@@ -276,7 +276,12 @@ export class Player {
     /**
      * The instance data from the database.
      */
-    declare private data: HydratedDocument<PlayerI>;
+    private data: HydratedDocument<PlayerI>;
+
+    /**
+     * The timestamp that an action started, null if not in an action.
+     */
+    private inAction: number;
 
     /**
      * Creates a new document for a player.
@@ -312,6 +317,42 @@ export class Player {
             // Otherwise use the document from the database
             this.data = <HydratedDocument<PlayerI>> arg;
         }
+        this.inAction = null;
+    }
+
+    /**
+     * Lock a player's access to RPG actions when performing one.
+     * MUST be released using the same `time` when the action has been completed.
+     * 
+     * @param time the timestamp to use for the lock
+     * @returns whether the action lock was successful or not
+     */
+    public lock(time: number): boolean {
+        // Don't do onything if actions are already locked
+        if (this.inAction) {
+            return false;
+        }
+
+        // Otherwise set a lock
+        this.inAction = time;
+        return true;
+    }
+
+    /**
+     * Release a player's action lock.
+     * This MUST be called once an action has been finished.
+     * `time` MUST match the `time` that was used when locking.
+     * 
+     * @param time the timestamp that was used for the lock
+     * @returns whether the release was successful or not
+     */
+    public release(time: number): boolean {
+        if (!this.inAction || this.inAction !== time) {
+            return false;
+        }
+
+        this.inAction = null;
+        return true;
     }
 
     /**

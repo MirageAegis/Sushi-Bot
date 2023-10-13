@@ -77,6 +77,13 @@ export const command: Command = {
             return;
         }
 
+        // Action lock the player
+        const now: number = Date.now();
+        if (!player.lock(now)) {
+            await ctx.reply("You're currently performing an action, please finish that first!");
+            return;
+        }
+
         // Get all Classes except for Classes the player has
         const classes: readonly PathClasses[] = await player.getAvailableClasses(<GuildMember> ctx.member);
         const classData: ReadonlyMap<PathClasses, Class<Paths, boolean>> = getClasses();
@@ -129,6 +136,9 @@ export const command: Command = {
                     components: [classRow]
                 });
             } catch {
+                // Action lock release the player
+                player.release(now);
+
                 // End the interaction upon timeout
                 await prompt.edit({
                     components: [classRow]
@@ -143,6 +153,9 @@ export const command: Command = {
             const cls: string = classSelection.values[0];
     
             if (cls === CANCEL) {
+                // Action lock release the player
+                player.release(now);
+
                 await ctx.followUp("Cancelled Class selection. Come back when you're ready!");
                 return;
             }
@@ -154,11 +167,17 @@ export const command: Command = {
 
             // Check if the change was successful
             if (!success) {
+                // Action lock release the player
+                player.release(now);
+
                 await ctx.followUp("Failed to add Class...");
                 return;
             }
 
             await player.save();
+
+            // Action lock release the player
+            player.release(now);
 
             await ctx.followUp(
                 `You're now specialising in the **${cls}** Class!`
@@ -209,6 +228,9 @@ export const command: Command = {
                     components: [classRemoveRow]
                 });
             } catch {
+                // Action lock release the player
+                player.release(now);
+
                 // End the interaction upon timeout
                 await prompt.edit({
                     components: [classRemoveRow]
@@ -223,6 +245,9 @@ export const command: Command = {
             const rmvCls: string = classRemoveSelection.values[0];
     
             if (rmvCls === CANCEL) {
+                // Action lock release the player
+                player.release(now);
+
                 await ctx.followUp("Cancelled Class change. Come back when you're ready!");
                 return;
             }
@@ -260,6 +285,9 @@ export const command: Command = {
                     components: [classRow]
                 });
             } catch {
+                // Action lock release the player
+                player.release(now);
+
                 // End the interaction upon timeout
                 await prompt.edit({
                     components: [classRow]
@@ -274,11 +302,12 @@ export const command: Command = {
             const cls: string = classSelection.values[0];
 
             if (cls === CANCEL) {
+                // Action lock release the player
+                player.release(now);
+
                 await ctx.followUp("Cancelled Class change. Come back when you're ready!");
                 return;
             }
-
-            console.log(`${player.classes[index]} -> ${cls}`);
 
             const success: boolean = await player.changeClass(
                 <PathClasses> cls,
@@ -289,15 +318,29 @@ export const command: Command = {
 
             // Check if the change was successful
             if (!success) {
+                // Action lock release the player
+                player.release(now);
+
                 await ctx.followUp("Failed to change Class...");
                 return;
             }
 
             await player.save();
 
+            // Action lock release the player
+            player.release(now);
+
             await ctx.followUp(
                 `You're now specialising in the **${cls}** Class!`
             );
+        } else {
+            // If the player can't add nor change Classes, they must not have
+            // enough money to do so
+
+            // Action lock release the player
+            player.release(now);
+
+            await ctx.reply(`You need ${RECLASS_COST} Sushi Coins to reclass!`);
         }
     },
     
@@ -308,7 +351,7 @@ export const command: Command = {
     help: new EmbedBuilder()
         .setTitle("Class")
         .setDescription(
-            "Specialising in a Class to modify your growths and unlock Class Skills or " +
+            "Specialise in a Class to modify your growths and unlock Class Skills or " +
             "change Classes"
         )
         .addFields(

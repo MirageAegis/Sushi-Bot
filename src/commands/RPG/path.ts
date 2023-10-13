@@ -69,6 +69,13 @@ export const command: Command = {
             return;
         }
 
+        // Action lock the player
+        const now: number = Date.now();
+        if (!player.lock(now)) {
+            await ctx.reply("You're currently performing an action, please finish that first!");
+            return;
+        }
+
         // Get all Paths except for Pathless and the player's current Path
         const paths: readonly Paths[] = player.getAvailablePaths();
         const pathData: ReadonlyMap<Paths, Path> = getPaths();
@@ -124,6 +131,9 @@ export const command: Command = {
                 components: [pathRow]
             });
         } catch {
+            // Action lock release the player
+            player.release(now);
+
             // End the interaction upon timeout
             await prompt.edit({
                 components: [pathRow]
@@ -138,6 +148,9 @@ export const command: Command = {
         const path: string = pathSelection.values[0];
 
         if (path === CANCEL) {
+            // Action lock release the player
+            player.release(now);
+
             await ctx.followUp("Cancelled Path selection. Come back when you're ready!");
             return;
         }
@@ -150,11 +163,17 @@ export const command: Command = {
 
         // Check if the change was successful
         if (!success) {
+            // Action lock release the player
+            player.release(now);
+
             await ctx.followUp("Failed to change Path...");
             return;
         }
 
         await player.save();
+
+        // Action lock release the player
+        player.release(now);
 
         // Check if the player changed from a Path other than Pathless
         if (reclass) {
