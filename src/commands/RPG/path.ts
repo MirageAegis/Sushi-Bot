@@ -175,7 +175,9 @@ export const command: Command = {
     // Help command embed
     help: new EmbedBuilder()
         .setTitle("Path")
-        .setDescription("help description")
+        .setDescription(
+            "Tread a Path to unlock better growth rates and Path Skills or change your Path"
+        )
         .addFields(
             { name: "Format", value: `\`/${name}\`` }
         )
