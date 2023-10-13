@@ -941,7 +941,7 @@ export class Player {
         const classes: readonly PathClasses[] = await this.getAvailableClasses(member);
 
         // Chaeck if the class is in the list of compatible classes
-        if (classes.includes(cls)) {
+        if (!classes.includes(cls)) {
             return false;
         }
 
