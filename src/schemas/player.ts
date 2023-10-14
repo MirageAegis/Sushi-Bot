@@ -416,19 +416,43 @@ export class Player {
      * Increases the experience of a player.
      * If the player has enough experience to level up, they do so.
      * 
-     * @returns the player's level and stats before and after chatting.
-     * If no level up occurred, after is set to null. Also returns the
-     * amount of daily funds claimed and whether the player has unlocked
-     * Paths, a Class slot, or Limitbreak
+     * @returns data of the player before and after chatting, and various flags
+     * for level based unlocks
      */
-    public async chat(): Promise<[
-        before: [level: number, stats: Stats],
-        after: [level: number, stats: Stats] | null,
+    public async chat(): Promise<{
+        /**
+         * The level and stats before daily.
+         */
+        before: {
+            level: number,
+            stats: Stats
+        },
+        /**
+         * The level and stats after daily.
+         * `null` if on cooldown or the player didn't level up.
+         */
+        after: {
+            level: number,
+            stats: Stats
+        } | null,
+        /**
+         * The cooldown in seconds.
+         * `null` if not on cooldown.
+         */
         cooldown: number,
+        /**
+         * Whether or not the player can tread a Path after chatting.
+         */
         pathUnlock: boolean,
+        /**
+         * Whether or not the player can specialise in a Class after chatting.
+         */
         classUnlock: boolean,
+        /**
+         * Whether or not the player can limitbreak after chatting.
+         */
         canLimitbreak: boolean
-    ]> {
+    }> {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
         const stats: Stats = {
@@ -446,14 +470,14 @@ export class Player {
 
         // Do nothing if on cooldown
         if (now < this.data.cooldowns.experience) {
-            return [
-                [level, stats],
-                null,
-                this.data.cooldowns.experience - now,
-                false,
-                false,
-                false
-            ];
+            return {
+                before: { level, stats },
+                after: null,
+                cooldown: this.data.cooldowns.experience - now,
+                pathUnlock: false,
+                classUnlock: false,
+                canLimitbreak: false
+            };
         }
 
         // The baseline exp gain
@@ -473,14 +497,14 @@ export class Player {
 
         // Don't continue if the player doesn't have enough experience to level up
         if (this.experience < this.levelThreshold) {
-            return [
-                [level, stats],
-                null,
-                null,
-                false,
-                false,
-                false
-            ];
+            return {
+                before: { level, stats },
+                after: null,
+                cooldown: null,
+                pathUnlock: false,
+                classUnlock: false,
+                canLimitbreak: false
+            };
         }
 
         // Accumulated growths from levelling up
@@ -532,19 +556,22 @@ export class Player {
             luck: stats.luck + growths.luck
         };
 
-        return [
-            [level, stats],
-            this.data.level !== level ? [this.data.level, this.data.stats] : null,
-            null,
+        return {
+            before: { level, stats },
+            after: this.data.level !== level ? {
+                level: this.data.level,
+                stats: this.data.stats
+            } : null,
+            cooldown: null,
             // If the resulting level is past the Path requirement and
             // the player is pathless, then they have a Path unlock
-            this.level >= PATH_LEVEL && this.path === Paths.Pathless ? true : false,
+            pathUnlock: this.level >= PATH_LEVEL && this.path === Paths.Pathless ? true : false,
             // If the resulting level is past ano of the Class requirements and
             // the player is doesn't have the corresponding class, then they have a Class unlock
-            this.level >= CLASS_1_LEVEL && !this.classes[0] ||
-            this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
-            this.canLimitbreak
-        ];
+            classUnlock: this.level >= CLASS_1_LEVEL && !this.classes[0] ||
+                         this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
+            canLimitbreak: this.canLimitbreak
+        };
     }
 
     /**
@@ -557,16 +584,55 @@ export class Player {
      * amount of daily funds claimed and whether the player has unlocked
      * Paths, a Class slot, or Limitbreak
      */
-    public async daily(): Promise<[
-        streak: [before: number, after: number],
-        before: [level: number, stats: Stats],
-        after: [level: number, stats: Stats] | null,
-        rewards: [experience: number, funds: number],
+    public async daily(): Promise<{
+        /**
+         * The streak before and after the daily.
+         */
+        streak: {
+            before: number,
+            after: number
+        },
+        /**
+         * The level and stats before daily.
+         */
+        before: {
+            level: number,
+            stats: Stats
+        },
+        /**
+         * The level and stats after daily.
+         * `null` if on cooldown or the player didn't level up.
+         */
+        after: {
+            level: number,
+            stats: Stats
+        } | null,
+        /**
+         * The rewards from the daily.
+         * `null` if on cooldown.
+         */
+        rewards: {
+            experience: number,
+            funds: number
+        } | null,
+        /**
+         * The cooldown in seconds.
+         * `null` if not on cooldown.
+         */
         cooldown: number,
+        /**
+         * Whether or not the player can tread a Path after daily.
+         */
         pathUnlock: boolean,
+        /**
+         * Whether or not the player can specialise in a Class after daily.
+         */
         classUnlock: boolean,
+        /**
+         * Whether or not the player can limitbreak after daily.
+         */
         canLimitbreak: boolean
-    ]> {
+    }> {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
         const stats: Stats = {
@@ -585,16 +651,19 @@ export class Player {
 
         // Do nothing if on cooldown
         if (now < this.data.cooldowns.daily) {
-            return [
-                [streak, streak],
-                [level, stats],
-                null,
-                null,
-                this.data.cooldowns.daily - now,
-                false,
-                false,
-                false
-            ];
+            return {
+                streak: {
+                    before: streak,
+                    after: streak
+                },
+                before: { level, stats },
+                after: null,
+                rewards: null,
+                cooldown: this.data.cooldowns.daily - now,
+                pathUnlock: false,
+                classUnlock: false,
+                canLimitbreak: false
+            };
         }
 
         // The baseline exp gain
@@ -641,16 +710,22 @@ export class Player {
 
         // Don't continue if the player doesn't have enough experience to level up
         if (this.experience < this.levelThreshold) {
-            return [
-                [streak, this.dailyStreak],
-                [level, stats],
-                null,
-                [expGain, funds],
-                null,
-                false,
-                false,
-                false
-            ];
+            return {
+                streak: {
+                    before: streak,
+                    after: this.dailyStreak
+                },
+                before: { level, stats },
+                after: null,
+                rewards: {
+                    experience: expGain,
+                    funds
+                },
+                cooldown: null,
+                pathUnlock: false,
+                classUnlock: false,
+                canLimitbreak: false
+            };
         }
 
         // Accumulated growths from levelling up
@@ -702,21 +777,30 @@ export class Player {
             luck: stats.luck + growths.luck
         };
 
-        return [
-            [streak, this.dailyStreak],
-            [level, stats],
-            this.data.level !== level ? [this.data.level, this.data.stats] : null,
-            [expGain, funds],
-            null,
+        return {
+            streak: {
+                before: streak,
+                after: this.dailyStreak
+            },
+            before: { level, stats },
+            after: this.data.level !== level ? {
+                level: this.data.level,
+                stats: this.data.stats
+            } : null,
+            rewards: {
+                experience: expGain,
+                funds
+            },
+            cooldown: null,
             // If the resulting level is past the Path requirement and
             // the player is pathless, then they have a Path unlock
-            this.level >= PATH_LEVEL && this.path === Paths.Pathless ? true : false,
+            pathUnlock: this.level >= PATH_LEVEL && this.path === Paths.Pathless ? true : false,
             // If the resulting level is past ano of the Class requirements and
             // the player is doesn't have the corresponding class, then they have a Class unlock
-            this.level >= CLASS_1_LEVEL && !this.classes[0] ||
-            this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
-            this.canLimitbreak
-        ];
+            classUnlock: this.level >= CLASS_1_LEVEL && !this.classes[0] ||
+                         this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
+            canLimitbreak: this.canLimitbreak
+        };
     }
 
     /**
