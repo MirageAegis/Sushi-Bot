@@ -22,7 +22,11 @@
  * SOFTWARE.
  */
 
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, InteractionResponse, CollectorFilter, StringSelectMenuInteraction, ComponentType } from "discord.js";
+import {
+    SlashCommandBuilder,EmbedBuilder, ChatInputCommandInteraction, StringSelectMenuBuilder,
+    StringSelectMenuOptionBuilder, ActionRowBuilder, InteractionResponse, CollectorFilter,
+    StringSelectMenuInteraction, ComponentType
+} from "discord.js";
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { Player } from "../../schemas/player.js";

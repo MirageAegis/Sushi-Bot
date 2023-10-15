@@ -28,7 +28,7 @@ import {
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { Player } from "../../schemas/player.js";
-import { genProfileEmbed } from "../../util/profile-embed-factory.js";
+import { genProfileEmbed } from "../../rpg/util/profile-embed-factory.js";
 import { checkValid } from "../../rpg/util/check.js";
 
 /*
