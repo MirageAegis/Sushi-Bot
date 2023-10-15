@@ -23,9 +23,9 @@
  */
 
 import { EmbedBuilder, Guild, User } from "discord.js";
-import { Player, Stats } from "../schemas/player";
-import { AZURE, GREEN, MAGENTA } from "./colours";
-import { Paths } from "../rpg/types/class";
+import { Player, Stats } from "../../schemas/player";
+import { AZURE, GREEN, MAGENTA } from "../../util/colours";
+import { Paths } from "../types/class";
 
 /**
  * Generates an embed representing a user's profile.
@@ -139,11 +139,17 @@ export const genLevelUpEmbed = (
     user: User,
     server: Guild,
     player: Player,
-    before: [level: number, stats: Stats],
-    after: [level: number, stats: Stats]
+    before: {
+        level: number,
+        stats: Stats
+    },
+    after: {
+        level: number,
+        stats: Stats
+    }
 ): EmbedBuilder => {
-    const beforeStats: Stats = before[1];
-    const afterStats: Stats = after[1];
+    const beforeStats: Stats = before.stats;
+    const afterStats: Stats = after.stats;
 
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(user.username)
@@ -164,7 +170,7 @@ export const genLevelUpEmbed = (
             },
             {
                 name: "Level",
-                value: `${before[0]} ➟ **${after[0]}**`,
+                value: `${before.level} ➟ **${after.level}**`,
                 inline: false
             },
             {
@@ -230,16 +236,24 @@ export const genLevelUpEmbed = (
 export const genLimitbreakEmbed = (
     user: User,
     server: Guild,
-    before: [level: number, stats: Stats, prestige: number],
-    after: [level: number, stats: Stats, prestige: number]
+    before: {
+        level: number,
+        stats: Stats,
+        prestige: number
+    },
+    after: {
+        level: number,
+        stats: Stats,
+        prestige: number
+    }
 ): EmbedBuilder => {
-    const beforeStats: Stats = before[1];
-    const afterStats: Stats = after[1];
+    const beforeStats: Stats = before.stats;
+    const afterStats: Stats = after.stats;
 
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(user.username)
         .setDescription(
-            `**Path:** ${Paths.Pathless}\n**Limit Breaker ${before[2]}** ➟ **${after[2]}**`
+            `**Path:** ${Paths.Pathless}\n**Limit Breaker ${before.prestige}** ➟ **${after.prestige}**`
         )
         .setColor(MAGENTA)
         .setAuthor({
@@ -255,7 +269,7 @@ export const genLimitbreakEmbed = (
             },
             {
                 name: "Level",
-                value: `${before[0]} ➟ **${after[0]}**`,
+                value: `${before.level} ➟ **${after.level}**`,
                 inline: false
             },
             {
