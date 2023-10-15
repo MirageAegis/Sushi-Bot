@@ -40,7 +40,7 @@ import {
     MemberLogsAction, MessageLogsAction, ProfileLogsAction, moderationLogsErrorHandler
 } from "../util/error-handler";
 import { Player } from "../schemas/player";
-import { genLevelUpEmbed } from "../util/profile-embed-factory";
+import { genLevelUpEmbed } from "../rpg/util/profile-embed-factory";
 import { checkValid } from "../rpg/util/check";
 
 /*
@@ -644,17 +644,19 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
         return;
     }
 
-    const [
+    const {
         before,
         after,
         cooldown,
         pathUnlock,
         classUnlock,
         canLimitbreak
-    ] = await player.chat();
+    } = await player.chat();
 
     // Do nothing if on cooldown
     if (cooldown) {
+        // Action lock release the player
+        player.release(now);
         return;
     }
 
@@ -672,7 +674,7 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
 
     // Ping if the user has opted in or if it's their first level up
     // eslint-disable-next-line no-magic-numbers
-    if (player.levelPing || (before[0] === 1 && !player.prestige)) {
+    if (player.levelPing || (before.level === 1 && !player.prestige)) {
         response = `${message.author} has levelled up!\n`;
     } else {
         response = `${message.author.username} has levelled up!\n`;
@@ -680,7 +682,7 @@ export const onMessage = async (client: Client, message: Message): Promise<void>
 
     // Tell users on their first level up that pings are defaulted to being off
     // eslint-disable-next-line no-magic-numbers
-    if (before[0] === 1 && !player.prestige) {
+    if (before.level === 1 && !player.prestige) {
         response += "Level up pings are defaulted to being **off**\n" +
                     "If you wish to be pinged in future level ups, use the `/levels` command!";
     }

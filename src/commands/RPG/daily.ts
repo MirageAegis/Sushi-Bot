@@ -27,7 +27,7 @@ import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { Player } from "../../schemas/player.js";
 import { formatTime } from "../../util/format.js";
-import { genLevelUpEmbed } from "../../util/profile-embed-factory.js";
+import { genLevelUpEmbed } from "../../rpg/util/profile-embed-factory.js";
 import { checkValid } from "../../rpg/util/check.js";
 
 /*
@@ -64,7 +64,7 @@ export const command: Command = {
             return;
         }
         
-        const [
+        const {
             streak,
             before,
             after,
@@ -73,7 +73,7 @@ export const command: Command = {
             pathUnlock,
             classUnlock,
             canLimitbreak
-        ] = await player.daily();
+        } = await player.daily();
 
         let response: string;
 
@@ -96,13 +96,13 @@ export const command: Command = {
         response = "Daily rewards claimed!\n";
 
         // Check the daily streak
-        if (streak[1] > streak[0]) {
-            response += `Streak up! Your streak is now **${streak[1]}**\n`;
-        } else if (streak[1] < streak[0]) {
+        if (streak.after > streak.before) {
+            response += `Streak up! Your streak is now **${streak.after}**\n`;
+        } else if (streak.after < streak.before) {
             response += "Daily streak lost... 😢\n";
         }
 
-        response += `Claimed **${rewards[0]}** experience and **${rewards[1]}** Sushi Coins!\n`;
+        response += `Claimed **${rewards.experience}** experience and **${rewards.funds}** Sushi Coins!\n`;
 
         let embed: EmbedBuilder;
 
@@ -113,7 +113,7 @@ export const command: Command = {
 
             // Tell users on their first level up that pings are defaulted to being off
             // eslint-disable-next-line no-magic-numbers
-            if (before[0] === 1 && !player.prestige) {
+            if (before.level === 1 && !player.prestige) {
                 response += "Level up pings are defaulted to being **off**\n" +
                             "If you wish to be pinged in future level ups, use the `/levels` command!";
             }

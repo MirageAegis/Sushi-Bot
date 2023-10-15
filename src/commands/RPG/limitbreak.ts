@@ -22,12 +22,16 @@
  * SOFTWARE.
  */
 
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder, CollectorFilter, ButtonInteraction, InteractionResponse, MessageComponentInteraction } from "discord.js";
+import {
+    SlashCommandBuilder,EmbedBuilder, ChatInputCommandInteraction, ButtonBuilder,
+    ButtonStyle, ActionRowBuilder, CollectorFilter, ButtonInteraction,
+    InteractionResponse, MessageComponentInteraction
+} from "discord.js";
 import { Command } from "../../util/command-template.js";
 import { defaultErrorHandler } from "../../util/error-handler.js";
 import { checkValid } from "../../rpg/util/check.js";
 import { Player, Stats } from "../../schemas/player.js";
-import { genLimitbreakEmbed } from "../../util/profile-embed-factory.js";
+import { genLimitbreakEmbed } from "../../rpg/util/profile-embed-factory.js";
 
 /*
  * A command that lets players prestige to progress further.
@@ -142,8 +146,12 @@ export const command: Command = {
             embeds: [genLimitbreakEmbed(
                 ctx.user,
                 ctx.guild,
-                [level, stats, prestige],
-                [player.level, player.stats, player.prestige]
+                { level, stats, prestige },
+                {
+                    level: player.level,
+                    stats: player.stats,
+                    prestige: player.prestige
+                }
             )]
         });
     },
