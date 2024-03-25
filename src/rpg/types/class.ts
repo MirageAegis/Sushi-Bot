@@ -24,7 +24,8 @@
 
 import path from "node:path";
 import fs from "node:fs";
-import { Stats } from "../../schemas/player";
+import { Player, Stats } from "../../schemas/player";
+import { IntrinsicSkills, WieldWeaponSkills } from "./skill";
 
 /**
  * The Paths that a player can tread.
@@ -92,17 +93,38 @@ export type PathClasses = WarriorClasses |
  * A Path that that a player can tread.
  * Contains the Path's name, description, base growth rates,
  * and intrinsic skills.
- * 
- * @param name the Path's name
- * @param description the Path's description
- * @param growths the Path's base growth rates
- * @param skills the Path's intrinsic skills
  */
 export type Path = {
+    /**
+     * The Path's name.
+     */
     readonly name: Paths;
+
+    /**
+     * The Path's description.
+     */
     readonly description: string;
+
+    /**
+     * The Path's base growth rates.
+     */
     readonly growths: Stats;
-    readonly skills: readonly string[];
+
+    /**
+     * Executed every time a player treads a Path.
+     * May include Weapons, Arts, and/or Spells.
+     */
+    readonly unlock: { (player: Player): void };
+
+    /**
+     * The Path's wield weapon skills.
+     */
+    readonly wieldWeaponSkills: readonly WieldWeaponSkills[];
+
+    /**
+     * The Path's intrinsic skills.
+     */
+    readonly intrinsicSkills: readonly IntrinsicSkills[];
 };
 
 /**
@@ -110,24 +132,49 @@ export type Path = {
  * Contains the Class's Path, name, description, growth rate modifiers,
  * and intrinsic skills.
  * 
- * @param T the Path that the Class belongs to
- * @param A whether the Class is limited to administrators or not
- * @param path the Path that the Class belongs to
- * @param name the Class's name
- * @param description the Class's description
- * @param growths the Class's growth rate modifiers
- * @param skills the Class's intrinsic skills
+ * @template T the Path that the Class belongs to
+ * @template A whether the Class is limited to administrators or not
  */
 export type Class<T extends Paths, A extends boolean = false> = {
+    /**
+     * The Path that the Class belongs to.
+     */
     readonly path: T;
+
+    /**
+     * The Class's name.
+     */
     readonly name: (A extends true ? AdministratorClasses :
                     T extends null ? CommonClasses :
                     T extends Paths.Warrior ? WarriorClasses :
                     T extends Paths.Caster ? CasterClasses :
                     RangerClasses);
+    
+    /**
+     * The Class's description.
+     */
     readonly description: string;
+    
+    /**
+     * The Class's growth rate modifiers.
+     */
     readonly growths: Stats;
-    readonly skills: readonly string[];
+
+    /**
+     * Executed every time a player specialises in a Class.
+     * May include Weapons, Arts, and/or Spells.
+     */
+    readonly unlock: { (player: Player): void };
+
+    /**
+     * The Class's wield weapon skills.
+     */
+    readonly wieldWeaponSkills: readonly WieldWeaponSkills[];
+
+    /**
+     * The Class's intrinsic skills.
+     */
+    readonly intrinsicSkills: readonly IntrinsicSkills[];
 };
 
 const paths: Map<Paths, Path> = new Map();
