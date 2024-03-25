@@ -102,6 +102,7 @@ export const command: Command = {
 
         // Tell the user that they can't rep themselves if they're trying to
         if (selfRep) {
+            player.release(now);
             await ctx.reply(
                 "You can't give yourself reputation points!"
             );
@@ -110,6 +111,7 @@ export const command: Command = {
 
         // Tell the user if the command is on cooldown
         if (cooldown) {
+            player.release(now);
             await ctx.reply(
                 "You don't have a reputation point to give right now!\n" +
                 `You'll have one to give in ${formatTime(cooldown)}`
