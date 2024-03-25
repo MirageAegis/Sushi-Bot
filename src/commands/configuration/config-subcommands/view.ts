@@ -50,7 +50,7 @@ export const command: Subcommand = {
     // Command headers
     data: new SlashCommandSubcommandBuilder()
         .setName(name)
-        .setDescription("View the serber configurations for this server"),
+        .setDescription("View the server configurations for this server"),
     
     // Command exacution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
