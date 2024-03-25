@@ -30,8 +30,11 @@ import {
     PATH_LEVEL, Path, PathClasses, Paths, RECLASS_COST, RangerClasses, WarriorClasses,
     getClasses, getPaths, pathNames 
 } from "../rpg/types/class";
+import { path as pathless } from "../rpg/paths/pathless";
 import { MILLIS_PER_SEC } from "../util/format";
 import { verify, verifyAdmin } from "../util/verify";
+import { UnlockableSkills, wieldWeaponSkillNames } from "../rpg/types/skill";
+import { Weapon, WeaponClasses, WeaponNames, getWeaponClasses } from "../rpg/types/weapon";
 
 const playerSchema: Schema = new Schema({
     _id: String,
@@ -57,7 +60,7 @@ const playerSchema: Schema = new Schema({
     weapons: {
         unlocked: {
             type: Map,
-            of: String
+            of: [String]
         },
         equipped: String
     },
@@ -114,16 +117,16 @@ export type Stats = {
  * The weapons a user has, both unlocked and equipped
  */
 type Weapons = {
-    unlocked: Map<string, string>;
-    equipped: string;
+    unlocked: Map<WeaponClasses, WeaponNames[]>;
+    equipped: WeaponNames;
 };
 
 /**
  * The skills of a user, both unlocked and equipped.
  */
 type Skills = {
-    unlocked: string[];
-    equipped: string[];
+    unlocked: UnlockableSkills[];
+    equipped: UnlockableSkills[];
 };
 
 /**
@@ -262,13 +265,19 @@ const LEVEL_THRESHOLD: number = 100;
 
 export class Player {
     /**
+     * The master key that can be used to release any player.
+     */
+    // eslint-disable-next-line no-magic-numbers
+    public static readonly masterKey: number = -1;
+    
+    /**
      * The corresponding Mongo model used for reading and writing to the database.
      */
     private static readonly model: Model<PlayerI> = model<PlayerI>("Player", playerSchema);
 
     /**
-     * The cached servers.
-     * The servers are stored along with the ID for the timer responsible for
+     * The cached players.
+     * The players are stored along with the ID for the timer responsible for
      * clearing the memory.
      */
     private static cache: Map<Snowflake, [Player, NodeJS.Timeout]> = new Map();
@@ -279,7 +288,7 @@ export class Player {
     private data: HydratedDocument<PlayerI>;
 
     /**
-     * The timestamp that an action started, null if not in an action.
+     * The timestamp at which an action started, null if not in an action.
      */
     private inAction: number;
 
@@ -311,8 +320,11 @@ export class Player {
                     path: Paths.Pathless,
                     classes: []
                 },
+                inventory: new Map(),
                 stats: BASE_STATS
             });
+
+            pathless.unlock(this);
         } else {
             // Otherwise use the document from the database
             this.data = <HydratedDocument<PlayerI>> arg;
@@ -342,12 +354,18 @@ export class Player {
      * Release a player's action lock.
      * This MUST be called once an action has been finished.
      * `time` MUST match the `time` that was used when locking.
+     * The player can be released with a master key, which should only be
+     * accessible by administrators.
      * 
      * @param time the timestamp that was used for the lock
      * @returns whether the release was successful or not
      */
     public release(time: number): boolean {
-        if (!this.inAction || this.inAction !== time) {
+        if (
+            !this.inAction ||
+            this.inAction !== time ||
+            time !== Player.masterKey
+        ) {
             return false;
         }
 
@@ -926,6 +944,7 @@ export class Player {
         this.data.balance -= RECLASS_COST;
         this.data.classes.path = path;
         this.data.classes.subclasses = [];
+        getPaths().get(path).unlock(this);
         return [true, true];
     }
 
@@ -1029,11 +1048,13 @@ export class Player {
         if (this.classes[0]) {
             // Set the 2nd class to the provided class
             this.data.classes.subclasses[1] = cls;
+            getClasses().get(cls).unlock(this);
             return true;
         }
 
         // Otherwise, set the 1st class to the provided class
         this.data.classes.subclasses[0] = cls;
+        getClasses().get(cls).unlock(this);
         return true;
     }
 
@@ -1072,6 +1093,7 @@ export class Player {
 
         // Change the class at the requested position
         this.data.classes.subclasses[position] = cls;
+        getClasses().get(cls).unlock(this);
         return true;
     }
 
@@ -1096,6 +1118,7 @@ export class Player {
             return false;
         }
 
+        // TODO: Carry over overflowing exp
         // Reset the player's experience
         this.data.experience = 0;
         // Reset the player's level
@@ -1191,6 +1214,88 @@ export class Player {
     }
 
     /**
+     * Gets the weapon classes that a player can wield.
+     * This is dictated by a player's wield weapon skills.
+     * 
+     * @returns the weapon classes that the player can wield
+     */
+    public getWeaponClasses(): ReadonlySet<WeaponClasses> {
+        const classes: ReadonlyMap<PathClasses, Class<Paths, boolean>> = getClasses();
+
+        return getWeaponClasses(
+            // Wield weapon skills from the player's Path
+            ...getPaths().get(<Paths> this.path).wieldWeaponSkills.filter(s => wieldWeaponSkillNames.includes(s)),
+            // Wield weapon skills from the player's Class(es)
+            ...this.classes.map(c => classes.get(c).wieldWeaponSkills).flat()
+        );
+    }
+
+    /**
+     * Unlocks a weapon. Fails if the weapon has already been unlocked.
+     * 
+     * @param weapon the weapon to unlock
+     * @returns whether the unlock was successful or not
+     */
+    public unlockWeapon(weapon: Weapon<WeaponClasses>): boolean {
+        // The all unlocked weapons of the same type
+        const weapons: WeaponNames[] = this.data.weapons.unlocked.get(weapon.class);
+
+        // Check if the weapon has already been unlocked
+        if (weapons.includes(weapon.name)) {
+            return false;
+        }
+
+        // If not, add it
+        weapons.push(weapon.name);
+        weapon.unlock(this);
+        return true;
+    }
+
+    /**
+     * The player's inventory mapped from item name to amount.
+     */
+    public get inventory(): ReadonlyMap<string, number> {
+        return this.data.inventory;
+    }
+
+    /**
+     * Adds one or more of an item to a player's inventory.
+     * 
+     * @param item the item to add
+     * @param amount the amount of the item to add
+     */
+    public addItem(item: string, amount: number): void {
+        // Add the amount of an item to the inventory
+        // Creates a new entry if the player doesn't own any amount of the item
+        // eslint-disable-next-line no-magic-numbers
+        this.data.inventory.set(item, (this.inventory.get(item) ?? 0) + amount);
+    }
+
+    /**
+     * Deducts one or many of an item from a player's inventory. Fails if the user
+     * does'nt have enough to deduct.
+     * 
+     * @param item the item to deduct
+     * @param amount the amount of the item to deduct
+     * @returns whether the operation was successful or not
+     */
+    public deductItem(item: string, amount: number): boolean {
+        // The amount of the specified item that the player has,
+        // or undefined if the player has never owned the item
+        const itemAmount: number = this.inventory.get(item);
+
+        // If the player has never had the specified item or
+        // if they don't have enough to deduct, the operation fails
+        if (!itemAmount || itemAmount < amount) {
+            return false;
+        }
+
+        // Deduct the specified amount of the specified item
+        this.data.inventory.set(item, itemAmount - amount);
+        return true;
+    }
+
+    /**
      * The path of a player.
      */
     public get path(): Paths {
@@ -1282,5 +1387,16 @@ export class Player {
      */
     public get cooldowns(): ReadonlyCooldowns {
         return this.data.cooldowns;
+    }
+
+    /**
+     * The player's unlocked weapons, mapped from weapon class to weapon names.
+     */
+    public get weapons(): ReadonlyMap<WeaponClasses, readonly WeaponNames[]> {
+        return this.data.weapons.unlocked;
+    }
+
+    public get equippedWeapon(): WeaponNames {
+        return this.data.weapons.equipped;
     }
 }
