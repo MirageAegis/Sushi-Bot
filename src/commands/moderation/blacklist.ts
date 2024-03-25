@@ -109,7 +109,7 @@ export const command: Command = {
     help: new EmbedBuilder()
         .setTitle("Blacklist")
         .setDescription(
-            "An administrative command for reporting dangerous individuals that should be kept away from VTuber communities." +
+            "An administrative command for reporting dangerous individuals and GFX-bots that should be kept away from VTuber communities. " +
             "Blacklisted users are automatically banned from every server that Sushi Bot is in\n" +
             "**__DO NOT SPAM THIS COMMAND. FAILING TO COMPLY MAY RESULT IN HAVING ACCESS TO SUSHI BOT REVOKED__**"
         )
