@@ -22,7 +22,10 @@
  * SOFTWARE.
  */
 
+import { Player } from "../../schemas/player";
 import { Path, Paths } from "../types/class";
+import { WieldWeaponSkills } from "../types/skill";
+import { weapon as shortBow } from "../weapons/bows/short-bow";
 
 export const path: Path = {
     name: Paths.Ranger,
@@ -40,5 +43,12 @@ export const path: Path = {
         dexterity: 50,
         luck: 45
     },
-    skills: []
+    unlock(player: Player): void {
+        // Unlock short bow
+        player.unlockWeapon(shortBow);
+    },
+    wieldWeaponSkills: [
+        WieldWeaponSkills.WieldBows
+    ],
+    intrinsicSkills: []
 };

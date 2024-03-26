@@ -22,7 +22,10 @@
  * SOFTWARE.
  */
 
+import { Player } from "../../schemas/player";
 import { Path, Paths } from "../types/class";
+import { WieldWeaponSkills } from "../types/skill";
+import { weapon as woodenSword } from "../weapons/swords/wooden-sword";
 
 export const path: Path = {
     name: Paths.Pathless,
@@ -39,5 +42,12 @@ export const path: Path = {
         dexterity: 30,
         luck: 30
     },
-    skills: []
+    unlock(player: Player): void {
+        // Unlock wooden sword
+        player.unlockWeapon(woodenSword);
+    },
+    wieldWeaponSkills: [
+        WieldWeaponSkills.WieldSwords
+    ],
+    intrinsicSkills: []
 };

@@ -22,7 +22,11 @@
  * SOFTWARE.
  */
 
+import { Player } from "../../schemas/player";
 import { Path, Paths } from "../types/class";
+import { WieldWeaponSkills } from "../types/skill";
+import { weapon as oakStaff } from "../weapons/staves/oak-staff";
+
 
 export const path: Path = {
     name: Paths.Caster,
@@ -40,5 +44,12 @@ export const path: Path = {
         dexterity: 25,
         luck: 35
     },
-    skills: []
+    unlock(player: Player): void {
+        // Unlock oak staff
+        player.unlockWeapon(oakStaff);
+    },
+    wieldWeaponSkills: [
+        WieldWeaponSkills.CastMagic
+    ],
+    intrinsicSkills: []
 };
