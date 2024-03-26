@@ -24,6 +24,7 @@
 
 import { Player } from "../../schemas/player";
 import { CasterClasses, Class, Paths } from "../types/class";
+import { IntrinsicSkills } from "../types/skill";
 
 export const cls: Class<Paths.Caster> = {
     path: Paths.Caster,
@@ -47,5 +48,7 @@ export const cls: Class<Paths.Caster> = {
         return;
     },
     wieldWeaponSkills: [],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.MagicMastery
+    ]
 };

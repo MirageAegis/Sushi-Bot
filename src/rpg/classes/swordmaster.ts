@@ -23,6 +23,7 @@
  */
 
 import { Player } from "../../schemas/player";
+import { IntrinsicSkills } from "../types/skill";
 import { Class, Paths, WarriorClasses } from "../types/class";
 
 export const cls: Class<Paths.Warrior> = {
@@ -48,5 +49,7 @@ export const cls: Class<Paths.Warrior> = {
         return;
     },
     wieldWeaponSkills: [],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.SwordMastery
+    ]
 };
