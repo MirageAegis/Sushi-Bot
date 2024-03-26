@@ -22,7 +22,10 @@
  * SOFTWARE.
  */
 
+import { Player } from "../../schemas/player";
 import { Class, Paths, WarriorClasses } from "../types/class";
+import { WieldWeaponSkills } from "../types/skill";
+import { weapon as ironDagger } from "../weapons/daggers/iron-dagger";
 
 export const cls: Class<Paths.Warrior> = {
     path: Paths.Warrior,
@@ -40,5 +43,12 @@ export const cls: Class<Paths.Warrior> = {
         dexterity: 25,
         luck: 25
     },
-    skills: []
+    unlock(player: Player): void {
+        // Unlock iron dagger
+        player.unlockWeapon(ironDagger);
+    },
+    wieldWeaponSkills: [
+        WieldWeaponSkills.WieldDaggers
+    ],
+    intrinsicSkills: []
 };

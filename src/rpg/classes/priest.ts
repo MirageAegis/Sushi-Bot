@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
+import { Player } from "../../schemas/player";
 import { CasterClasses, Class, Paths } from "../types/class";
+import { WieldWeaponSkills } from "../types/skill";
 
 export const cls: Class<Paths.Caster> = {
     path: Paths.Caster,
@@ -40,5 +42,13 @@ export const cls: Class<Paths.Caster> = {
         dexterity: 0,
         luck: 0
     },
-    skills: []
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    unlock(player: Player): void {
+        // Nothing further to unlock
+        return;
+    },
+    wieldWeaponSkills: [
+        WieldWeaponSkills.HolyArts
+    ],
+    intrinsicSkills: []
 };

@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+import { Player } from "../../schemas/player";
 import { Class, Paths, WarriorClasses } from "../types/class";
 
 export const cls: Class<Paths.Warrior> = {
@@ -41,5 +42,11 @@ export const cls: Class<Paths.Warrior> = {
         dexterity: 5,
         luck: -10
     },
-    skills: []
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    unlock(player: Player): void {
+        // Nothing further to unlock
+        return;
+    },
+    wieldWeaponSkills: [],
+    intrinsicSkills: []
 };

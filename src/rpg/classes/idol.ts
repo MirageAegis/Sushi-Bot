@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+import { Player } from "../../schemas/player";
 import { AdministratorClasses, Class } from "../types/class";
 
 export const cls: Class<null, true> = {
@@ -40,5 +41,11 @@ export const cls: Class<null, true> = {
         dexterity: 10,
         luck: 10
     },
-    skills: []
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    unlock(player: Player): void {
+        // Nothing further to unlock
+        return;
+    },
+    wieldWeaponSkills: [],
+    intrinsicSkills: []
 };

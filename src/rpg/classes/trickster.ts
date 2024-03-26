@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+import { Player } from "../../schemas/player";
 import { Class, Paths, RangerClasses } from "../types/class";
 
 export const cls: Class<Paths.Ranger> = {
@@ -40,5 +41,11 @@ export const cls: Class<Paths.Ranger> = {
         dexterity: 5,
         luck: 25
     },
-    skills: []
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    unlock(player: Player): void {
+        // Nothing further to unlock
+        return;
+    },
+    wieldWeaponSkills: [],
+    intrinsicSkills: []
 };
