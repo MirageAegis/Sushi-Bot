@@ -32,13 +32,13 @@ import { getUserReportsChannel } from "../../util/channels.js";
  * Command for alerting the administrators about someone to blacklist
  */
 
-const name: string = "blacklist";
+const name: string = "report";
 
 export const command: Command = {
     // Command headers
     data: <SlashCommandBuilder> new SlashCommandBuilder()
         .setName(name)
-        .setDescription("Alert the Sushi admins about a potentially dangerous individual")
+        .setDescription("Alert the Sushi admins about a potentially dangerous individual or GFX-bots")
         .setDMPermission(false)
         .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
         .addUserOption(o => 
@@ -48,7 +48,7 @@ export const command: Command = {
         )
         .addStringOption(o =>
             o.setName("reason")
-                .setDescription("Why should this user be blacklisted? Provide a short paragraph")
+                .setDescription("Why is this user being reported? Provide a short paragraph")
                 .setRequired(true)
         ),
 
@@ -107,7 +107,7 @@ export const command: Command = {
 
     // Help command embed
     help: new EmbedBuilder()
-        .setTitle("Blacklist")
+        .setTitle("Report")
         .setDescription(
             "An administrative command for reporting dangerous individuals and GFX-bots that should be kept away from VTuber communities. " +
             "Blacklisted users are automatically banned from every server that Sushi Bot is in\n" +
