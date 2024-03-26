@@ -76,15 +76,20 @@ export const command: Command = {
 
         // Roll a numbers between 1~sides
         let roll: number;
-        let multiResponse: string = `${user} rolled ${amount} D${sides}s, which resulted in the following:\n`;
+        const rolls: number[] = [];
+        let multiResponse: string = `${user} rolled a ${amount}D${sides}, which resulted in the following:\n`;
         for (let i = 0; i < amount; i++) {
             roll = Math.ceil(Math.random() * sides);
-            multiResponse += `- ${Math.ceil(Math.random() * sides)}\n`;
+            rolls.push(roll);
+            multiResponse += `- ${roll}\n`;
         }
+
+        // Sum the rolls for multirolls
+        multiResponse += `Your roll resulted in a sum of ${rolls.reduce((acc, curr) => acc + curr)}`;
 
         // The response saying that the dice is being rolled
         const response = await ctx.reply(
-            `${user} rolls ${multi ? amount : "a"} D${sides}${multi ? "s" : ""}...\n`
+            `${user} rolls a ${amount}D${sides}...\n`
         );
 
         setTimeout(async () => {
@@ -94,7 +99,7 @@ export const command: Command = {
             }
 
             await response.edit(
-                `${user} rolled ${roll} on a D${sides}!`
+                `${user} rolled ${roll} on a 1D${sides}!`
             );
         }, ROLL_DELAY);
     },
