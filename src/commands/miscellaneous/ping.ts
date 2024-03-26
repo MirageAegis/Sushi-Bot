@@ -42,7 +42,7 @@ export const command: Command = {
     // Command exacution
     async execute(ctx: ChatInputCommandInteraction): Promise<void> {
         // Retrieves the avarage ping from the websocket
-        await ctx.reply(`:ping_pong: ${ctx.client.ws.ping} ms`);
+        await ctx.reply(`🏓 ${ctx.client.ws.ping} ms`);
     },
 
     // Error handler
