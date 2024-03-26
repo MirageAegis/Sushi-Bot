@@ -87,7 +87,7 @@ export const command: Subcommand = {
     help: new EmbedBuilder()
         .setTitle("Welcome")
         .setDescription(
-            "A server configutation command that sets the welcome message for the server"
+            "A server configuration command that sets the welcome message for the server"
         )
         .addFields(
             { name: "Format", value: `\`/${name} [channel] [message]\`` },

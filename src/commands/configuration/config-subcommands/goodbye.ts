@@ -87,16 +87,16 @@ export const command: Subcommand = {
     help: new EmbedBuilder()
         .setTitle("Goodbye")
         .setDescription(
-            "A server configutation command that sets the goodbye message for the server"
+            "A server configuration command that sets the goodbye message for the server"
         )
         .addFields(
             { name: "Format", value: `\`/${name} [channel] [message]\`` },
-            { name: "[channel]", value: "Optional parameter. The channel to say goodbye to members in. Omit to remove welcome messages" },
+            { name: "[channel]", value: "Optional parameter. The channel to say goodbye to members in. Omit to remove goodbye messages" },
             {
                 name: "[message]",
                 value: "Optional parameter. The message to say goodbye with. Omit to use the default message\n" +
                        "Variables:\n" +
-                       `- \`${NAME}\` - Replaced with the new member's display name\n` +
+                       `- \`${NAME}\` - Replaced with the member's display name\n` +
                        `- \`${PING}\` - Replaced with a mention to the member\n` +
                        `- \`${SERVER}\` - Replaced with the server's name\n` +
                        `- \`${OWNER}\` - Replaced with the server owner's display name\n` +
