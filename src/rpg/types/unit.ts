@@ -81,7 +81,7 @@ export class Unit {
             luck: 0
         };
         for (const modifier of modifierSkills) {
-            modifiers = modifier.boost(modifiers);
+            modifiers = modifier.boost(this, modifiers);
         }
 
         this._modifiers = modifiers;

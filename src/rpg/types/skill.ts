@@ -71,6 +71,7 @@ export enum WieldWeaponSkills {
  */
 export enum IntrinsicSkills {
     SwordMastery = "Sword Mastery",
+    MagicMastery = "Magic Mastery",
     Fortress = "Fortress",
     Silencer = "Silencer",
     Blessed = "Blessed",
@@ -121,7 +122,7 @@ export type Skill<
     /**
      * The Skill's name.
      */
-    readonly name: E extends SkillTypes.WieldWeapon ? WieldWeaponSkills :
+    readonly name: T extends SkillTypes.WieldWeapon ? WieldWeaponSkills :
                    I extends true ? IntrinsicSkills :
                    UnlockableSkills;
 
@@ -157,11 +158,12 @@ export type Skill<
      * 
      * Takes a Stats object and returns a modified Stats object
      * 
-     * @param stats the unit's Stats with potential modifiers
+     * @param unit the unit with potential stat modifiers
+     * @param stats the unit's stat modifiers
      * @returns the unit's Stats with this modifier applied
      */
     readonly boost: T extends SkillTypes.StatModifier ?
-                    { (stats: Stats): Stats } :
+                    { (unit: Unit, stats: Stats): Stats } :
                     null;
 
     /**
@@ -228,7 +230,7 @@ const wieldWeaponSkills: Map<WieldWeaponSkills, Skill<SkillTypes.WieldWeapon, nu
         const skillPath: string = path.join(intrinsicSkillsFolder, file);
         const s: Skill<SkillTypes, AttackAugmentEffects, true> = require(skillPath).skill;
 
-        const name: IntrinsicSkills = s.name;
+        const name: IntrinsicSkills = <IntrinsicSkills> s.name;
 
         intrinsicSkills.set(name, s);
     }
