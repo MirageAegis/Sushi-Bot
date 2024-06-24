@@ -55,6 +55,7 @@ export const weapon: Weapon<WeaponClasses.Shield> = {
             might: attacker.stats.strength + this.might,
             count: this.count,
             type: this.type,
+            dmgType: this.damage,
             attackSpeed: attackSpeed,
             hit: calculateHitStat(this.hit, this.damage, attacker),
             crit: calculateCritStat(this.crit, attacker),
