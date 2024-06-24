@@ -104,6 +104,11 @@ export type AttackForecast = {
     readonly type: AttackTypes;
 
     /**
+     * The type of damage of the attack. Determines whether Defence or Resistance will be used.
+     */
+    readonly dmgType: DamageTypes;
+
+    /**
      * The attack speed of the attack.
      * 
      * The Unit with greater attack speed will attack first, unless they use a heavy attack.
@@ -154,7 +159,17 @@ export type Attack = {
     readonly duplicated: boolean;
 
     /**
-     * The damage displayed in the attack forecast
+     * The might value used for the attack.
+     */
+    readonly might: number;
+
+    /**
+     * The protection value used by the target.
+     */
+    readonly protection: number;
+
+    /**
+     * The damage displayed in the attack forecast.
      */
     readonly forecast: number;
 
