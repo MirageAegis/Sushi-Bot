@@ -509,6 +509,10 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
         streams = streams.filter(s => !oldUrls.includes(s.url));
     }
 
+    if (!streams.length) {
+        return;
+    }
+
     // Auto go-live for server owners
     // Auto shout out for non server owners
     if (member.id === guild.ownerId) {
@@ -519,15 +523,21 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
 
         const channel: TextChannel = <TextChannel> client.channels.cache.get(server.goLive.channel);
 
-        for (const stream of streams) {
+        try {
+            // Only post for the first stream activity
+            await channel.send(formatGoLivePost(streams[0], server.goLive.message));
+        } catch (e) {
+            // Remove auto go-live configuration if we fail to send
             try {
-                await channel.send(formatGoLivePost(stream, server.goLive.message));
-            } catch (e) {
-                // Remove auto go-live configuration if we fail to send
-                server.goLive = null;
-                await server.save();
-                throw e;
+                await (await guild.fetchOwner()).send(
+                    `I've disabled auto go-live posts in your server (**${guild.name}**) because I failed to post in ${channel}`
+                );
+            } catch {
+                await getAdminLogsChannel().send(`Couldn't DM <@${guild.ownerId}> about removing auto go-live configurations`);
             }
+            server.goLive = null;
+            await server.save();
+            throw e;
         }
     } else {
         // Skip if no auto shout out configured
@@ -544,15 +554,21 @@ export const onPresenceUpdate = async (client: Client, before: Presence, after: 
 
         const channel: TextChannel = <TextChannel> client.channels.cache.get(server.shoutout.channel);
 
-        for (const stream of streams) {
+        try {
+            // Only shout out the first stream activity
+            await channel.send(formatGoLivePost(streams[0], server.shoutout.message));
+        } catch (e) {
+            // Remove auto shout out configuration if we fail to send
             try {
-                await channel.send(formatGoLivePost(stream, server.shoutout.message));
-            } catch (e) {
-                // Remove auto shout out configuration if we fail to send
-                server.shoutout = null;
-                await server.save();
-                throw e;
+                await (await guild.fetchOwner()).send(
+                    `I've disabled auto shout outs in your server (**${guild.name}**) because I failed to post in ${channel}`
+                );
+            } catch {
+                await getAdminLogsChannel().send(`Couldn't DM <@${guild.ownerId}> about removing auto shout out configurations`);
             }
+            server.shoutout = null;
+            await server.save();
+            throw e;
         }
     }
 };
