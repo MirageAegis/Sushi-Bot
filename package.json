@@ -18,6 +18,8 @@
         "axios": "^1.4.0",
         "discord.js": "^14.13.0",
         "dotenv": "^16.0.3",
+        "kitsu": "^10.1.5",
+        "kitsu-core": "^10.1.5",
         "mongoose": "^7.3.4"
     },
     "devDependencies": {
