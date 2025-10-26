@@ -24,16 +24,16 @@
 
 import { Player } from "../../schemas/player";
 import { Class, Paths, RangerClasses } from "../types/class";
+import { IntrinsicSkills } from "../types/skill";
 
 export const cls: Class<Paths.Ranger> = {
     path: Paths.Ranger,
     name: RangerClasses.Sniper,
     description: "A Ranger who specialises in lethal attacks. Snipers " +
-                 "are very accurate with their bows and ofter land hits " +
-                 "on vital spots",
+        "are very accurate with their bows and ofter land hits " +
+        "on vital spots",
     growths: {
         health: 5,
-        guard: 0,
         strength: 10,
         magic: 0,
         speed: -10,
@@ -42,11 +42,13 @@ export const cls: Class<Paths.Ranger> = {
         dexterity: 25,
         luck: 0
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },
     wieldWeaponSkills: [],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.PowerShot
+    ]
 };

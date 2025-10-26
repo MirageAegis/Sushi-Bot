@@ -30,10 +30,9 @@ export const cls: Class<Paths.Caster> = {
     path: Paths.Caster,
     name: CasterClasses.Sage,
     description: "A Caster who specialises in quick spell casting. Sages " +
-                 "can cast spells silently, which drastically speeds up attacks",
+        "can cast spells silently, which drastically speeds up attacks",
     growths: {
         health: 0,
-        guard: 0,
         strength: 0,
         magic: 10,
         speed: -5,
@@ -42,8 +41,8 @@ export const cls: Class<Paths.Caster> = {
         dexterity: 10,
         luck: 10
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },

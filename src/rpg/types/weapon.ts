@@ -24,6 +24,7 @@
 
 import { Player } from "../../schemas/player";
 import { AttackForecast, AttackTypes, DamageTypes } from "./attack";
+import { Effects } from "./effect";
 import { WieldWeaponSkills } from "./skill";
 import { Unit } from "./unit";
 
@@ -79,12 +80,12 @@ export type Weapon<T extends WeaponClasses> = {
      * The weapon's name.
      */
     readonly name: T extends WeaponClasses.Sword ? Swords :
-                   T extends WeaponClasses.Axe ? Axes :
-                   T extends WeaponClasses.Shield ? Shields :
-                   T extends WeaponClasses.Dagger ? Daggers :
-                   T extends WeaponClasses.Staff ? Staves :
-                   T extends WeaponClasses.Bow ? Bows :
-                   never;
+    T extends WeaponClasses.Axe ? Axes :
+    T extends WeaponClasses.Shield ? Shields :
+    T extends WeaponClasses.Dagger ? Daggers :
+    T extends WeaponClasses.Staff ? Staves :
+    T extends WeaponClasses.Bow ? Bows :
+    never;
 
     /**
      * The weapon's description.
@@ -145,7 +146,7 @@ export type Weapon<T extends WeaponClasses> = {
     /**
      * The effects that the weapon has.
      */
-    readonly effects: string[];
+    readonly effects: Effects[];
 
     /**
      * Lets a Unit use the weapon.

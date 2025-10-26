@@ -24,15 +24,15 @@
 
 import { Player } from "../../schemas/player";
 import { Class, Paths, RangerClasses } from "../types/class";
+import { IntrinsicSkills } from "../types/skill";
 
 export const cls: Class<Paths.Ranger> = {
     path: Paths.Ranger,
     name: RangerClasses.Adventurer,
     description: "A seasoned Ranger who has been in many battles. Adventurers " +
-                 "know their way in battles and can avoid attacks with ease",
+        "know their way in battles and can avoid attacks with ease",
     growths: {
         health: 5,
-        guard: 0,
         strength: 5,
         magic: 0,
         speed: 15,
@@ -41,11 +41,13 @@ export const cls: Class<Paths.Ranger> = {
         dexterity: 5,
         luck: 0
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },
     wieldWeaponSkills: [],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.SixthSense
+    ]
 };

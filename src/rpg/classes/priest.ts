@@ -24,16 +24,15 @@
 
 import { Player } from "../../schemas/player";
 import { CasterClasses, Class, Paths } from "../types/class";
-import { WieldWeaponSkills } from "../types/skill";
+import { IntrinsicSkills, WieldWeaponSkills } from "../types/skill";
 
 export const cls: Class<Paths.Caster> = {
     path: Paths.Caster,
     name: CasterClasses.Priest,
     description: "A Caster who specialises in support spells. Priests " +
-                 "wield Holy Magic which can heal and buff allies",
+        "wield Holy Magic which can heal and buff allies",
     growths: {
         health: 0,
-        guard: 0,
         strength: 0,
         magic: 10,
         speed: 0,
@@ -42,13 +41,15 @@ export const cls: Class<Paths.Caster> = {
         dexterity: 0,
         luck: 0
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },
     wieldWeaponSkills: [
         WieldWeaponSkills.HolyArts
     ],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.Blessed
+    ]
 };

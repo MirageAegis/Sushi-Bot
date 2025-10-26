@@ -23,6 +23,7 @@
  */
 
 import { Avoidance } from "../util/calculations";
+import { Effects } from "./effect";
 import { Unit } from "./unit";
 
 /**
@@ -49,12 +50,7 @@ export enum AttackTypes {
     /**
      * Heavy attacks are always placed after Normal attacks.
      */
-    Heavy = "Heavy",
-
-    /**
-     * Attacks without follow ups will never attack more than once a turn.
-     */
-    Single = "Single"
+    Heavy = "Heavy"
 }
 
 /**
@@ -78,6 +74,28 @@ export enum DamageTypes {
 }
 
 /**
+ * Damage with its augments.
+ */
+export type Damage = {
+    /**
+     * The base damage to multiply and add to.
+     */
+    base: number;
+
+    /**
+     * Number to multiply the damage or healing by, comes first.
+     */
+    multiply: number;
+
+    /**
+     * Number to add to the damage or healing, comes last.
+     */
+    add: number;
+};
+
+export const EMPTY_DAMAGE: Damage = { base: 0, multiply: 0, add: 0 };
+
+/**
  * The attack forecast for an interaction.
  * The values are the raw values used to determine the actual damage output.
  */
@@ -85,28 +103,34 @@ export type AttackForecast = {
     /**
      * The Unit who's performing the attack.
      */
-    readonly attacker: Unit;
+    attacker: Unit;
 
     /**
      * The might of an attack. Affects how much damage is dealt.
      */
-    readonly might: number;
+    might: number;
 
     /**
      * The number of attacks that will be performed in the interaction.
      * This excludes follow ups from attack speed difference.
      */
-    readonly count: number;
+    count: number;
 
     /**
      * The type of the attack. Dictates attack order and whether follow ups are possible.
      */
-    readonly type: AttackTypes;
+    type: AttackTypes;
+
+
+    /**
+     * Whether the attacker can perform follow-up attacks.
+     */
+    canFollowUp: boolean;
 
     /**
      * The type of damage of the attack. Determines whether Defence or Resistance will be used.
      */
-    readonly dmgType: DamageTypes;
+    dmgType: DamageTypes;
 
     /**
      * The attack speed of the attack.
@@ -116,32 +140,42 @@ export type AttackForecast = {
      * The Unit will perform a follow up attack if their attack speed is greater than the
      * opposing Unit's attack speed by 5 or more.
      */
-    readonly attackSpeed: number;
+    attackSpeed: number;
 
     /**
      * The hit stat used for the attack.
      */
-    readonly hit: number;
+    hit: number;
 
     /**
      * The critical hit stat used for the attack.
      */
-    readonly crit: number;
+    crit: number;
 
     /**
      * The avoidance stat used for the attack.
      */
-    readonly avo: Avoidance;
+    avo: Avoidance;
 
     /**
      * The critical hit avoidance stat used for the attack.
      */
-    readonly critAvo: number;
+    critAvo: number;
 
     /**
-     * The attack effects applied to the attack.
+     * The attack effects applied to all the attacks.
      */
-    readonly effects: readonly string[];
+    effects: Effects[];
+
+    /**
+     * Calculate recoil damage for all attacks derived from the attack forecast, if applicable.
+     */
+    recoil: Damage;
+
+    /**
+     * Calculate heal on hit for all attacks derived from the attack forecast, if applicable.
+     */
+    heal: Damage;
 };
 
 /**
@@ -151,50 +185,64 @@ export type Attack = {
     /**
      * The Unit who's performing the attack.
      */
-    readonly attacker: Unit;
+    attacker: Unit;
 
     /**
      * Whether the attack has been duplicated by a skill or not.
      */
-    readonly duplicated: boolean;
+    duplicated: boolean;
 
     /**
      * The might value used for the attack.
      */
-    readonly might: number;
+    might: number;
 
     /**
      * The protection value used by the target.
      */
-    readonly protection: number;
+    protection: number;
 
     /**
      * The damage displayed in the attack forecast.
      */
-    readonly forecast: number;
+    forecast: number;
 
     /**
      * The actual damage output, taking critical hits and skills into consideration.
      */
-    readonly damage: number;
+    damage: Damage;
 
     /**
      * The amount of damage the Unit takes as a result of the interaction.
      */
-    readonly recoil: number;
+    recoil: Damage;
 
     /**
      * The amount of health the Unit recovers as a result of the interaction.
      */
-    readonly heal: number;
+    heal: Damage;
+
+    /**
+     * Effects applied by this attack.
+     */
+    effects: Effects[];
+
+    /**
+     * A message displayed before the actual message, used for skill activations.
+     * Should be empty by default.
+     */
+    extraMessage: string;
 
     /**
      * The message displayed in the battle report.
      */
-    readonly message: string;
+    message: string;
 };
 
 /**
  * Represents a turn in a battle with all attacks in order.
  */
-export type BattleTurn = Attack[];
+export type BattleTurn = {
+    message: string,
+    attacks: Attack[]
+};

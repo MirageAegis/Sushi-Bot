@@ -1,7 +1,7 @@
 /* 
  * MIT License
  * 
- * Copyright (c) 2023-present Mirage Aegis
+ * Copyright (c) 2025-present Mirage Aegis
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,33 +22,30 @@
  * SOFTWARE.
  */
 
-import { Player } from "../../schemas/player";
-import { Path, Paths } from "../types/class";
-import { WieldWeaponSkills } from "../types/skill";
-import { weapon as oakStaff } from "../weapons/staves/oak-staff";
+/* eslint-disable no-magic-numbers */
 
+import { Attack } from "../../types/attack";
+import { Skill, SkillTypes, IntrinsicSkills, AttackAugmentEffects } from "../../types/skill";
+import { Unit } from "../../types/unit";
 
-export const path: Path = {
-    name: Paths.Caster,
-    description: "The Path of the Caster is one that blesses those who tread it " +
-        "with a great magical prowess fit for magical combat. This comes at the " +
-        "cost of being vulnerable to physical attacks",
-    growths: {
-        health: 60,
-        strength: 10,
-        magic: 55,
-        speed: 30,
-        defence: 20,
-        resistance: 50,
-        dexterity: 25,
-        luck: 35
+export const skill: Skill<SkillTypes.AttackAugment, true, AttackAugmentEffects.Multiplicative, true> = {
+    name: IntrinsicSkills.Silencer,
+    description: "Gain +20 CRIT in combat and a small chance to triple damage dealt on hit depending on dexterity",
+    effect: AttackAugmentEffects.Multiplicative,
+    intrinsic: true,
+    wieldWeapon: false,
+    boost: null,
+    attack(unit: Unit, target: Unit, attack: Attack): [Attack, boolean] {
+        const roll = Math.ceil(Math.random() * 100);
+        if (roll > unit.stats.dexterity / 8) {
+            attack.damage.multiply *= 3;
+            attack.heal.multiply *= 3;
+            attack.extraMessage += `${unit.name}'s [${IntrinsicSkills.Silencer}]\n`;
+            return [attack, true];
+        }
+        return [attack, false];
     },
-    unlock(player: Player): void {
-        // Unlock oak staff
-        player.unlockWeapon(oakStaff);
-    },
-    wieldWeaponSkills: [
-        WieldWeaponSkills.CastMagic
-    ],
-    intrinsicSkills: []
+    defend: null,
+    reorder: null,
+    multiply: null
 };

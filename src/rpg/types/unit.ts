@@ -24,8 +24,8 @@
 
 import { Snowflake } from "discord.js";
 import { Stats } from "../../schemas/player";
-import { Skill, SkillTypes } from "./skill";
-import { AttackForecast, DamageTypes } from "./attack";
+import { AttackAugmentEffects, DefenceAugmentEffects, Skill, SkillTypes } from "./skill";
+import { Attack, AttackForecast, BattleTurn, DamageTypes } from "./attack";
 import { Weapon, WeaponClasses } from "./weapon";
 import { calculateAttackSpeed } from "../util/calculations";
 
@@ -71,7 +71,6 @@ export class Unit {
 
         let modifiers: Stats = {
             health: 0,
-            guard: 0,
             strength: 0,
             magic: 0,
             speed: 0,
@@ -95,7 +94,6 @@ export class Unit {
     public get stats(): Stats {
         return {
             health: this._stats.health + this._modifiers.health,
-            guard: this._stats.guard + this._modifiers.guard,
             strength: this._stats.strength + this._modifiers.strength,
             magic: this._stats.magic + this._modifiers.magic,
             speed: this._stats.speed + this._modifiers.speed,
@@ -116,7 +114,7 @@ export class Unit {
             health: this.health,
             damageType: this.weapon.damage,
             might: this.weapon.might +
-                   (this.weapon.damage === DamageTypes.Physical ? this.stats.strength :
+                (this.weapon.damage === DamageTypes.Physical ? this.stats.strength :
                     this.stats.resistance),
             defence: this.stats.defence,
             resistance: this.stats.resistance
@@ -125,5 +123,104 @@ export class Unit {
 
     public get attackSpeed(): number {
         return calculateAttackSpeed(this.weapon.damage, this.weapon.weight, this);
+    }
+
+    public applyMultiplicativeAttackSkills(target: Unit, attack: Attack): Attack {
+        const attackSkills = <Skill<SkillTypes.AttackAugment, true, AttackAugmentEffects.Multiplicative, boolean>[]>
+            this.skills.filter(s => s.attack && (s.effect === AttackAugmentEffects.Multiplicative));
+
+        for (const skill of attackSkills) {
+            const [newAttack, modified] = skill.attack(this, target, attack);
+            if (modified) {
+                return newAttack;
+            }
+        }
+        return attack;
+    }
+
+    public applyAdditiveAttackSkills(target: Unit, attack: Attack): Attack {
+        const attackSkills = <Skill<SkillTypes.AttackAugment, true, AttackAugmentEffects.Additive, boolean>[]>
+            this.skills.filter(s => s.attack && (s.effect === AttackAugmentEffects.Additive));
+
+        for (const skill of attackSkills) {
+            const [newAttack, modified] = skill.attack(this, target, attack);
+            if (modified) {
+                return newAttack;
+            }
+        }
+        return attack;
+    }
+
+    public applyStatusAttackSkills(target: Unit, attack: Attack): Attack {
+        const attackSkills = <Skill<SkillTypes.AttackAugment, true, AttackAugmentEffects.Status, boolean>[]>
+            this.skills.filter(s => s.attack && (s.effect === AttackAugmentEffects.Status));
+
+        for (const skill of attackSkills) {
+            const [newAttack, modified] = skill.attack(this, target, attack);
+            if (modified) {
+                return newAttack;
+            }
+        }
+        return attack;
+    }
+
+    public applyOrderAttackSkills(battleTurn: BattleTurn): BattleTurn {
+        const attackSkills = this.skills.filter(s => s.reorder);
+
+        for (const skill of attackSkills) {
+            const [newTurn, modified] = skill.reorder(this, battleTurn);
+            if (modified) {
+                return newTurn;
+            }
+        }
+        return battleTurn;
+    }
+
+    public applyDuplicativeSkills(attack: Attack): Attack[] {
+        const duplicativeSkills = this.skills.filter(s => s.multiply);
+
+        for (const skill of duplicativeSkills) {
+            const [newAttacks, modified] = skill.multiply(attack);
+            if (modified) {
+                return newAttacks;
+            }
+        }
+        return [attack];
+    }
+
+    public applyAdditiveDefenceSkills(attacker: Unit, attack: Attack): Attack {
+        const defenceSkills = this.skills.filter(s => s.defend && (s.effect === DefenceAugmentEffects.Additive));
+
+        for (const skill of defenceSkills) {
+            const [newAttack, modified] = skill.defend(this, attacker, attack);
+            if (modified) {
+                return newAttack;
+            }
+        }
+        return attack;
+    }
+
+    public applyMultiplicativeDefenceSkills(attacker: Unit, attack: Attack): Attack {
+        const defenceSkills = this.skills.filter(s => s.defend && (s.effect === DefenceAugmentEffects.Multiplicative));
+
+        for (const skill of defenceSkills) {
+            const [newAttack, modified] = skill.defend(this, attacker, attack);
+            if (modified) {
+                return newAttack;
+            }
+        }
+        return attack;
+    }
+
+    public applyStatusDefenceSkills(attacker: Unit, attack: Attack): Attack {
+        const defenceSkills = this.skills.filter(s => s.defend && (s.effect === DefenceAugmentEffects.Status));
+
+        for (const skill of defenceSkills) {
+            const [newAttack, modified] = skill.defend(this, attacker, attack);
+            if (modified) {
+                return newAttack;
+            }
+        }
+        return attack;
     }
 }

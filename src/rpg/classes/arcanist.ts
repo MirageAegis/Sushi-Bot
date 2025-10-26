@@ -30,11 +30,10 @@ export const cls: Class<Paths.Caster> = {
     path: Paths.Caster,
     name: CasterClasses.Arcanist,
     description: "A Caster who specialises in powerful dark spells. Arcanists " +
-                 "wield forbidden Dark Magic which are quite destructive and can " +
-                 "debuff enemies",
+        "wield forbidden Dark Magic which are quite destructive and can " +
+        "debuff enemies",
     growths: {
         health: 5,
-        guard: 0,
         strength: 0,
         magic: 20,
         speed: -10,
@@ -43,8 +42,8 @@ export const cls: Class<Paths.Caster> = {
         dexterity: 0,
         luck: 0
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },

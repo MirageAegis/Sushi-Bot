@@ -24,7 +24,7 @@
 
 import { Skill, SkillTypes, WieldWeaponSkills } from "../../types/skill";
 
-export const skill: Skill<SkillTypes.WieldWeapon, null, true> = {
+export const skill: Skill<SkillTypes.WieldWeapon, true, null, true> = {
     name: WieldWeaponSkills.WieldBows,
     description: "Allows a unit to wield bows",
     effect: null,

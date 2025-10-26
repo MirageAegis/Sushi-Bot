@@ -24,15 +24,15 @@
 
 import { Player } from "../../schemas/player";
 import { Class, CommonClasses } from "../types/class";
+import { IntrinsicSkills } from "../types/skill";
 
 export const cls: Class<null> = {
     path: null,
     name: CommonClasses.Cavalier,
     description: "A horseback rider who leverages their speed in battle. Cavaliers " +
-                 "make swift and powerful attacks with the help of their mount",
+        "make swift and powerful attacks with the help of their mount",
     growths: {
         health: 0,
-        guard: 0,
         strength: 0,
         magic: 0,
         speed: 10,
@@ -41,11 +41,13 @@ export const cls: Class<null> = {
         dexterity: -10,
         luck: 10
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },
     wieldWeaponSkills: [],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.Mounted
+    ]
 };

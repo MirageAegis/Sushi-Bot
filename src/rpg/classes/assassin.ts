@@ -24,17 +24,16 @@
 
 import { Player } from "../../schemas/player";
 import { Class, Paths, WarriorClasses } from "../types/class";
-import { WieldWeaponSkills } from "../types/skill";
+import { IntrinsicSkills, WieldWeaponSkills } from "../types/skill";
 import { weapon as ironDagger } from "../weapons/daggers/iron-dagger";
 
 export const cls: Class<Paths.Warrior> = {
     path: Paths.Warrior,
     name: WarriorClasses.Assassin,
     description: "A Warrior who specialises in quick but deadly strikes. Assassins " +
-                 "are light on their feet, making them difficult to hit",
+        "are light on their feet, making them difficult to hit",
     growths: {
         health: -25,
-        guard: 0,
         strength: -10,
         magic: 0,
         speed: 35,
@@ -50,5 +49,7 @@ export const cls: Class<Paths.Warrior> = {
     wieldWeaponSkills: [
         WieldWeaponSkills.WieldDaggers
     ],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.Silencer
+    ]
 };

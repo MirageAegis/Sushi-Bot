@@ -24,15 +24,15 @@
 
 import { Player } from "../../schemas/player";
 import { AdministratorClasses, Class } from "../types/class";
+import { IntrinsicSkills } from "../types/skill";
 
 export const cls: Class<null, true> = {
     path: null,
     name: AdministratorClasses.Lord,
-    description: "An Lord of an Idol's domain. Lords are formidable " +
-                 "fighters and have a menacing presnece on the battlefield",
+    description: "A Lord of an Idol's domain. Lords are formidable " +
+        "fighters and have a menacing presnece on the battlefield",
     growths: {
         health: 10,
-        guard: 10,
         strength: 10,
         magic: 10,
         speed: 0,
@@ -41,11 +41,13 @@ export const cls: Class<null, true> = {
         dexterity: 10,
         luck: 10
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },
     wieldWeaponSkills: [],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.Commander
+    ]
 };

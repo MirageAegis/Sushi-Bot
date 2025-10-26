@@ -31,11 +31,10 @@ import { weapon as ironAxe } from "../weapons/axes/iron-axe";
 export const path: Path = {
     name: Paths.Warrior,
     description: "The Path of the Warrior is one that blesses those who tread it " +
-                 "with a strong physique fit for physical combat. This comes at the " +
-                 "cost of being vulnerable to magical attacks",
+        "with a strong physique fit for physical combat. This comes at the " +
+        "cost of being vulnerable to magical attacks",
     growths: {
         health: 75,
-        guard: 15,
         strength: 50,
         magic: 10,
         speed: 40,

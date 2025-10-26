@@ -30,10 +30,9 @@ export const cls: Class<null, true> = {
     path: null,
     name: AdministratorClasses.Arbiter,
     description: "An Arbiter of the world. Arbiters are powerful beings and " +
-                 "can wield any weapon they wish",
+        "can wield any weapon they wish",
     growths: {
         health: 0,
-        guard: 10,
         strength: 0,
         magic: 0,
         speed: 10,
@@ -42,8 +41,8 @@ export const cls: Class<null, true> = {
         dexterity: 10,
         luck: 10
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },

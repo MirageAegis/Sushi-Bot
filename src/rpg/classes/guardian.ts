@@ -24,20 +24,19 @@
 
 import { Player } from "../../schemas/player";
 import { Class, Paths, WarriorClasses } from "../types/class";
-import { WieldWeaponSkills } from "../types/skill";
+import { IntrinsicSkills, WieldWeaponSkills } from "../types/skill";
 import { weapon as ironShield } from "../weapons/shields/iron-shield";
 
 export const cls: Class<Paths.Warrior> = {
     path: Paths.Warrior,
     name: WarriorClasses.Guardian,
     description: "A Warrior who specialises in defending their allies. Guardians " +
-                 "are stoic knights that can take many hits before falling",
+        "are stoic knights that can take many hits before falling",
     growths: {
-        health: 15,
-        guard: 10,
+        health: 20,
         strength: 15,
         magic: 0,
-        speed: -30,
+        speed: -25,
         defence: 30,
         resistance: -10,
         dexterity: 0,
@@ -50,5 +49,7 @@ export const cls: Class<Paths.Warrior> = {
     wieldWeaponSkills: [
         WieldWeaponSkills.WieldShields
     ],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.Fortress
+    ]
 };

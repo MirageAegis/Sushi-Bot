@@ -41,7 +41,7 @@ export const genProfileEmbed = (user: User, server: Guild, player: Player): Embe
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(user.username)
         .setDescription(
-            `**Path:** ${player.path}${player.prestige ? `\n**Limit Breaker ${player.prestige}**`: ""}`
+            `**Path:** ${player.path}${player.prestige ? `\n**Limit Breaker ${player.prestige}**` : ""}`
         )
         .setColor(AZURE)
         .setAuthor({
@@ -68,11 +68,6 @@ export const genProfileEmbed = (user: User, server: Guild, player: Player): Embe
             {
                 name: "HP",
                 value: `${stats.health}`,
-                inline: true
-            },
-            {
-                name: "GP",
-                value: `${stats.guard}`,
                 inline: true
             },
             {
@@ -154,7 +149,7 @@ export const genLevelUpEmbed = (
     const embed: EmbedBuilder = new EmbedBuilder()
         .setTitle(user.username)
         .setDescription(
-            `**Path:** ${player.path}${player.prestige ? `\n**Limit Breaker ${player.prestige}**`: ""}`
+            `**Path:** ${player.path}${player.prestige ? `\n**Limit Breaker ${player.prestige}**` : ""}`
         )
         .setColor(GREEN)
         .setAuthor({
@@ -176,11 +171,6 @@ export const genLevelUpEmbed = (
             {
                 name: "HP",
                 value: `${beforeStats.health}${afterStats.health !== beforeStats.health ? ` ➟ **${afterStats.health}**` : ""}`,
-                inline: true
-            },
-            {
-                name: "GP",
-                value: `${beforeStats.guard}${afterStats.guard !== beforeStats.guard ? ` ➟ **${afterStats.guard}**` : ""}`,
                 inline: true
             },
             {
@@ -275,11 +265,6 @@ export const genLimitbreakEmbed = (
             {
                 name: "HP",
                 value: `${beforeStats.health}${afterStats.health !== beforeStats.health ? ` ➟ **${afterStats.health}**` : ""}`,
-                inline: true
-            },
-            {
-                name: "GP",
-                value: `${beforeStats.guard}${afterStats.guard !== beforeStats.guard ? ` ➟ **${afterStats.guard}**` : ""}`,
                 inline: true
             },
             {

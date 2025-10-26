@@ -24,15 +24,15 @@
 
 import { Player } from "../../schemas/player";
 import { Class, Paths, RangerClasses } from "../types/class";
+import { IntrinsicSkills } from "../types/skill";
 
 export const cls: Class<Paths.Ranger> = {
     path: Paths.Ranger,
     name: RangerClasses.Trickster,
     description: "A Ranger who specialises in disrupting enemies. Tricksters " +
-                 "can apply various debuffs to enemies to soften them up",
+        "can apply various debuffs to enemies to soften them up",
     growths: {
         health: 0,
-        guard: 0,
         strength: -10,
         magic: 0,
         speed: 10,
@@ -41,11 +41,13 @@ export const cls: Class<Paths.Ranger> = {
         dexterity: 5,
         luck: 25
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },
     wieldWeaponSkills: [],
-    intrinsicSkills: []
+    intrinsicSkills: [
+        IntrinsicSkills.TippedArrows
+    ]
 };

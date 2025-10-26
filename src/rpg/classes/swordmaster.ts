@@ -30,11 +30,10 @@ export const cls: Class<Paths.Warrior> = {
     path: Paths.Warrior,
     name: WarriorClasses.Swordmaster,
     description: "A Warrior who has mastered the way of the sword. Swordmasters " +
-                 "make quick work of their enemies using with their overwhelming " +
-                 "strength and sword skills",
+        "make quick work of their enemies using with their overwhelming " +
+        "strength and sword skills",
     growths: {
         health: 5,
-        guard: 0,
         strength: 20,
         magic: 0,
         speed: 10,
@@ -43,8 +42,8 @@ export const cls: Class<Paths.Warrior> = {
         dexterity: 5,
         luck: -10
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
+        /* Unused */ player;
         // Nothing further to unlock
         return;
     },

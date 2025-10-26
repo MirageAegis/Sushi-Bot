@@ -23,7 +23,7 @@
  */
 
 import { Player } from "../../../schemas/player";
-import { AttackForecast, AttackTypes, DamageTypes } from "../../types/attack";
+import { AttackForecast, AttackTypes, DamageTypes, EMPTY_DAMAGE } from "../../types/attack";
 import { Unit } from "../../types/unit";
 import { Axes, Weapon, WeaponClasses } from "../../types/weapon";
 import {
@@ -55,13 +55,16 @@ export const weapon: Weapon<WeaponClasses.Axe> = {
             might: attacker.stats.strength + this.might,
             count: this.count,
             type: this.type,
+            canFollowUp: true,
             dmgType: this.damage,
             attackSpeed: attackSpeed,
-            hit: calculateHitStat(this.hit, this.damage, attacker),
+            hit: calculateHitStat(this.hit, attacker),
             crit: calculateCritStat(this.crit, attacker),
             avo: calculateAvoidance(attackSpeed, attacker),
             critAvo: calculateCritAvoidance(attacker),
-            effects: this.effects
+            effects: this.effects,
+            recoil: EMPTY_DAMAGE,
+            heal: EMPTY_DAMAGE
         };
     }
 };

@@ -27,7 +27,7 @@ import { Skill, SkillTypes, IntrinsicSkills } from "../../types/skill";
 import { Unit } from "../../types/unit";
 import { WeaponClasses } from "../../types/weapon";
 
-export const skill: Skill<SkillTypes.StatModifier, null, true> = {
+export const skill: Skill<SkillTypes.StatModifier, true, null, true> = {
     name: IntrinsicSkills.SwordMastery,
     description: "Swiftens sword attacks",
     effect: null,
@@ -36,20 +36,10 @@ export const skill: Skill<SkillTypes.StatModifier, null, true> = {
     boost(unit: Unit, stats: Stats): Stats {
         // Add 5 speed if unit is wielding a sword
         if (unit.weapon.class === WeaponClasses.Staff) {
-            return {
-                health: stats.health,
-                guard: stats.guard,
-                strength: stats.strength,
-                magic: stats.magic,
-                // eslint-disable-next-line no-magic-numbers
-                speed: stats.speed + 5,
-                defence: stats.defence,
-                resistance: stats.resistance,
-                dexterity: stats.dexterity,
-                luck: stats.luck
-            };
+            // eslint-disable-next-line no-magic-numbers
+            stats.speed += 5;
         }
-        
+
         return stats;
     },
     attack: null,

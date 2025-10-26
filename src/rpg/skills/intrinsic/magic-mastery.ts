@@ -27,7 +27,7 @@ import { Skill, SkillTypes, IntrinsicSkills } from "../../types/skill";
 import { Unit } from "../../types/unit";
 import { WeaponClasses } from "../../types/weapon";
 
-export const skill: Skill<SkillTypes.StatModifier, null, true> = {
+export const skill: Skill<SkillTypes.StatModifier, true, null, true> = {
     name: IntrinsicSkills.MagicMastery,
     description: "Hastens spell incantations",
     effect: null,
@@ -36,20 +36,10 @@ export const skill: Skill<SkillTypes.StatModifier, null, true> = {
     boost(unit: Unit, stats: Stats): Stats {
         // Add 5 dexterity if unit is wielding a staff (casting magic)
         if (unit.weapon.class === WeaponClasses.Staff) {
-            return {
-                health: stats.health,
-                guard: stats.guard,
-                strength: stats.strength,
-                magic: stats.magic,
-                speed: stats.speed,
-                defence: stats.defence,
-                resistance: stats.resistance,
-                // eslint-disable-next-line no-magic-numbers
-                dexterity: stats.dexterity + 5,
-                luck: stats.luck
-            };
+            // eslint-disable-next-line no-magic-numbers
+            stats.dexterity += 5;
         }
-        
+
         return stats;
     },
     attack: null,

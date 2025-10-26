@@ -23,7 +23,7 @@
  */
 
 import { Player } from "../../../schemas/player";
-import { AttackForecast, AttackTypes, DamageTypes } from "../../types/attack";
+import { AttackForecast, AttackTypes, DamageTypes, EMPTY_DAMAGE } from "../../types/attack";
 import { Unit } from "../../types/unit";
 import { Swords, Weapon, WeaponClasses } from "../../types/weapon";
 import {
@@ -34,7 +34,7 @@ import {
 export const weapon: Weapon<WeaponClasses.Sword> = {
     name: Swords.Wooden,
     description: "A basic wooden sword. This sword is very weak but " +
-                 "easy to wield",
+        "easy to wield",
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unlock(player: Player): void {
         // Nothing further to unlock
@@ -56,13 +56,16 @@ export const weapon: Weapon<WeaponClasses.Sword> = {
             might: attacker.stats.strength + this.might,
             count: this.count,
             type: this.type,
+            canFollowUp: true,
             dmgType: this.damage,
             attackSpeed: attackSpeed,
-            hit: calculateHitStat(this.hit, this.damage, attacker),
+            hit: calculateHitStat(this.hit, attacker),
             crit: calculateCritStat(this.crit, attacker),
             avo: calculateAvoidance(attackSpeed, attacker),
             critAvo: calculateCritAvoidance(attacker),
-            effects: this.effects
+            effects: this.effects,
+            recoil: EMPTY_DAMAGE,
+            heal: EMPTY_DAMAGE
         };
     }
 };

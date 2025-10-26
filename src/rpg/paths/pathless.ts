@@ -30,17 +30,16 @@ import { weapon as woodenSword } from "../weapons/swords/wooden-sword";
 export const path: Path = {
     name: Paths.Pathless,
     description: "A non-existent Path for those who are not ready to tread one yet. " +
-                 "This \"Path\" grows quite slowly but can choose a Path once ready.",
+        "This \"Path\" grows quite slowly but can choose a Path once ready.",
     growths: {
         health: 50,
-        guard: 5,
-        strength: 30,
-        magic: 30,
-        speed: 30,
-        defence: 30,
-        resistance: 30,
-        dexterity: 30,
-        luck: 30
+        strength: 25,
+        magic: 25,
+        speed: 25,
+        defence: 25,
+        resistance: 25,
+        dexterity: 25,
+        luck: 25
     },
     unlock(player: Player): void {
         // Unlock wooden sword

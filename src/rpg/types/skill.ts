@@ -25,7 +25,7 @@
 import path from "node:path";
 import fs from "node:fs";
 import { Stats } from "../../schemas/player";
-import { Attack, AttackForecast, BattleTurn } from "./attack";
+import { Attack, BattleTurn } from "./attack";
 import { Unit } from "./unit";
 
 /**
@@ -44,8 +44,13 @@ export enum SkillTypes {
  */
 export enum AttackAugmentEffects {
     AttackOrder = "Attack Order",
-    DuplicativeNormal = "Duplicative (Normal)",
-    DuplicativeArts = "Duplicative (Arts)",
+    Duplicative = "Duplicative",
+    Multiplicative = "Multiplicative",
+    Additive = "Additive",
+    Status = "Status"
+}
+
+export enum DefenceAugmentEffects {
     Multiplicative = "Multiplicative",
     Additive = "Additive",
     Status = "Status"
@@ -55,32 +60,32 @@ export enum AttackAugmentEffects {
  * Skills that allow players to wield certain weapon classes.
  */
 export enum WieldWeaponSkills {
-    WieldSwords = "Wield Swords",
-    WieldAxes = "Wield Axes",
-    WieldShields = "Wield Shields",
-    WieldDaggers = "Wield Daggers",
-    WieldBows = "Wield Bows",
-    CastMagic = "Cast Magic",
-    HolyArts = "Holy Arts",
-    ArcaneArts = "Arcane Arts",
-    Omnipotent = "Omnipotent"
+    WieldSwords = "Wield Swords",  // Pathless, Warrior
+    WieldAxes = "Wield Axes",  // Warrior
+    WieldShields = "Wield Shields",  // Guardian
+    WieldDaggers = "Wield Daggers",  // Assassin
+    WieldBows = "Wield Bows",  // Ranger
+    CastMagic = "Cast Magic",  // Caster
+    HolyArts = "Holy Arts",  // Priest
+    ArcaneArts = "Arcane Arts",  // Arcanist
+    Omnipotent = "Omnipotent"  // Arbiter
 }
 
 /**
  * Skills tied to Paths and Classes.
  */
 export enum IntrinsicSkills {
-    SwordMastery = "Sword Mastery",
-    MagicMastery = "Magic Mastery",
-    Fortress = "Fortress",
-    Silencer = "Silencer",
-    Blessed = "Blessed",
-    TippedArrows = "Tipped Arrows",
-    PowerShot = "Power Shot",
-    SixthSense = "Sixth Sense",
-    Mounted = "Mounted",
-    Encore = "Encore",
-    Commander = "Commander"
+    SwordMastery = "Sword Mastery",  // Swordmaster
+    MagicMastery = "Magic Mastery",  // Sage
+    Fortress = "Fortress",  // Guardian
+    Silencer = "Silencer",  // Assassin
+    Blessed = "Blessed",  // Priest
+    TippedArrows = "Tipped Arrows",  // Trickster
+    PowerShot = "Power Shot",  // Sniper
+    SixthSense = "Sixth Sense",  // Adventurer
+    Mounted = "Mounted",  // Cavalier
+    Encore = "Encore",  // Idol
+    Commander = "Commander"  // Lord
 }
 
 /**
@@ -95,11 +100,18 @@ export enum UnlockableSkills {
     Endurance = "Endurance",
     Resilience = "Resilience",
     Heroic = "Heroic",
-    AgnisBlessing = "Agni's Blessing",
-    ZephyrussBlessing = "Zephyrus's Blessing",
-    JupitersBlessing = "Jupiter's Blessing",
+    AgnisFlame = "Agni's Flame",
+    ZephyrussBreeze = "Zephyrus's Breeze",
+    JupitersSpark = "Jupiter's Spark",
     AmaterasusBlessing = "Amaterasu's Blessing",
-    ThanatossBlessing = "Thanatos's Blessing"
+    ThanatossHex = "Thanatos's Hex"
+}
+
+/**
+ * Skills that only enemies can have.
+ */
+export enum EnemyOnlySkills {
+    Untouchable = "Untouchable"
 }
 
 export type SkillNames = WieldWeaponSkills |
@@ -111,20 +123,27 @@ export type SkillNames = WieldWeaponSkills |
  * by other means.
  * 
  * @template T the type of Skill this is
+ * @template Player whether players can have the skill
  * @template E the augment effect, if applicable
  * @template I whether the Skill is an intrinsic one or not
  */
 export type Skill<
     T extends SkillTypes,
-    E extends AttackAugmentEffects = null,
+    Player extends boolean = true,
+    E extends (
+        T extends SkillTypes.AttackAugment ? AttackAugmentEffects :
+        T extends SkillTypes.DefenceAugment ? DefenceAugmentEffects :
+        null
+    ) = null,
     I extends boolean = false
 > = {
     /**
      * The Skill's name.
      */
-    readonly name: T extends SkillTypes.WieldWeapon ? WieldWeaponSkills :
-                   I extends true ? IntrinsicSkills :
-                   UnlockableSkills;
+    readonly name: Player extends false ? EnemyOnlySkills :
+    T extends SkillTypes.WieldWeapon ? WieldWeaponSkills :
+    I extends true ? IntrinsicSkills :
+    UnlockableSkills;
 
     /**
      * The Skill's description.
@@ -135,11 +154,7 @@ export type Skill<
      * The type of effect the skill has if it's an attack- or defence augment.
      * Determines when the skill is activated.
      */
-    readonly effect: T extends SkillTypes.AttackAugment ?
-                     E :
-                     T extends SkillTypes.DefenceAugment ?
-                     E :
-                     null;
+    readonly effect: E;
 
     /**
      * Whether the Skill is an intrinsic Path- or Class Skill or not.
@@ -150,7 +165,7 @@ export type Skill<
      * Whether the skill is a wield weapon skill or not.
      */
     readonly wieldWeapon: T extends SkillTypes.WieldWeapon ?
-                          true : false;
+    true : false;
 
     /**
      * The use of a stat modifier skill.
@@ -163,36 +178,40 @@ export type Skill<
      * @returns the unit's Stats with this modifier applied
      */
     readonly boost: T extends SkillTypes.StatModifier ?
-                    { (unit: Unit, stats: Stats): Stats } :
-                    null;
+    { (unit: Unit, stats: Stats): Stats } :
+    null;
 
     /**
      * The use of an attack augment Skill.
      * `null` if not an attack augment.
+     * Should also be null if the augment is a reorder
      * 
-     * Takes the unit's AttackForecast and returns a modified AttackForecast.
+     * Takes the unit's Attack and returns a modified Attack.
      * 
      * @param unit the unit who triggered the skill
-     * @param attack an AttackForecast to be augmented
-     * @returns the modified AttackForecast
+     * @param attack the Attack to be augmented
+     * @param target the attack's target
+     * @returns the modified Attack and whether it was modified or not
      */
-    readonly attack: T extends SkillTypes.AttackAugment ?
-                     { (unit: Unit, attack: AttackForecast): AttackForecast } :
-                     null;
+    readonly attack: E extends AttackAugmentEffects.AttackOrder ? null :  // AttackOrder uses reorder
+    T extends SkillTypes.AttackAugment ?
+    { (unit: Unit, target: Unit, attack: Attack): [Attack, boolean] } :
+    null;
 
     /**
      * The use of a defence augment Skill.
      * `null` if not a defence augment.
      * 
-     * Takes the opponent's AttackForecast and returns a modified AttackForecast.
+     * Takes the opponent's Attack and returns a modified Attack.
      * 
      * @param unit the unit who triggered the skill
-     * @param attack an AttackForecast to be augmented
-     * @returns the modified AttackForecast
+     * @param attack the Attack to be augmented
+     * @param attacker the attacker
+     * @returns the modified Attack and whether it was modified or not
      */
     readonly defend: T extends SkillTypes.DefenceAugment ?
-                     { (unit: Unit, attack: AttackForecast): AttackForecast } :
-                     null;
+    { (unit: Unit, attacker: Unit, attack: Attack): [Attack, boolean] } :
+    null;
 
     /**
      * The use of an attack order augment skill.
@@ -202,24 +221,29 @@ export type Skill<
      * 
      * @param unit the unit who triggered the skill
      * @param battleTurn the BattleTurn to be reorderd
-     * @returns the reordered BattleTurn
+     * @returns the reordered BattleTurn and whether it was actually reordered
      */
     readonly reorder: E extends AttackAugmentEffects.AttackOrder ?
-                      { (unit: Unit, battleTurn: BattleTurn): BattleTurn } :
-                      null;
+    { (unit: Unit, battleTurn: BattleTurn): [BattleTurn, boolean] } :
+    null;
 
     /**
      * The use of an attack duplication skill.
-     * Duplication of normal attacks and Arts are separated.
+     * `null` if not an attack duplication skill
+     * 
+     * Takes the unit's Attack and returns an array of modified Attack.
+     * 
+     * @param unit the unit who triggered the skill
+     * @param attack an Attack to be augmented
+     * @returns the modified Attacks and whether it was modified or not
      */
-    readonly multiply: E extends AttackAugmentEffects.DuplicativeNormal |
-                       AttackAugmentEffects.DuplicativeArts ?
-                       { (attack: Attack): Attack[] } :
-                       null;
+    readonly multiply: E extends AttackAugmentEffects.Duplicative ?
+    { (attack: Attack): [Attack[], boolean] } :
+    null;
 };
 
-const intrinsicSkills: Map<IntrinsicSkills, Skill<SkillTypes, AttackAugmentEffects, true>> = new Map();
-const wieldWeaponSkills: Map<WieldWeaponSkills, Skill<SkillTypes.WieldWeapon, null, true>> = new Map();
+const intrinsicSkills: Map<IntrinsicSkills, Skill<SkillTypes, true, AttackAugmentEffects, true>> = new Map();
+const wieldWeaponSkills: Map<WieldWeaponSkills, Skill<SkillTypes.WieldWeapon, true, null, true>> = new Map();
 
 {
     const intrinsicSkillsFolder: string = path.join(__dirname, "../skills/intrinsic");
@@ -228,21 +252,21 @@ const wieldWeaponSkills: Map<WieldWeaponSkills, Skill<SkillTypes.WieldWeapon, nu
     // Load data from all intrinsic skills
     for (const file of intrinsicSkillFiles) {
         const skillPath: string = path.join(intrinsicSkillsFolder, file);
-        const s: Skill<SkillTypes, AttackAugmentEffects, true> = require(skillPath).skill;
+        const s: Skill<SkillTypes, true, AttackAugmentEffects, true> = require(skillPath).skill;
 
-        const name: IntrinsicSkills = <IntrinsicSkills> s.name;
+        const name: IntrinsicSkills = <IntrinsicSkills>s.name;
 
         intrinsicSkills.set(name, s);
     }
 
-    
+
     const wieldWeaponSkillsFolder: string = path.join(__dirname, "../skills/wield-weapon");
     const wieldWeaponSkillFiles: string[] = fs.readdirSync(wieldWeaponSkillsFolder).filter(f => f.endsWith(".js"));
 
     // Load data from all classes
     for (const file of wieldWeaponSkillFiles) {
         const skillPath: string = path.join(wieldWeaponSkillsFolder, file);
-        const s: Skill<SkillTypes.WieldWeapon, null, true> = require(skillPath).skill;
+        const s: Skill<SkillTypes.WieldWeapon, true, null, true> = require(skillPath).skill;
 
         const name: WieldWeaponSkills = s.name;
 
@@ -255,7 +279,7 @@ const wieldWeaponSkills: Map<WieldWeaponSkills, Skill<SkillTypes.WieldWeapon, nu
  * 
  * @returns a map with all the intrinsic skills
  */
-export const getIntrinsicSkills = (): ReadonlyMap<IntrinsicSkills, Skill<SkillTypes, AttackAugmentEffects, true>> => {
+export const getIntrinsicSkills = (): ReadonlyMap<IntrinsicSkills, Skill<SkillTypes, true, AttackAugmentEffects, true>> => {
     return intrinsicSkills;
 };
 
@@ -266,7 +290,7 @@ export const intrinsicSkillNames: IntrinsicSkills[] = Object.values(IntrinsicSki
  * 
  * @returns a map with all the wield weapon skills
  */
-export const getWieldWeaponSkills = (): ReadonlyMap<WieldWeaponSkills, Skill<SkillTypes.WieldWeapon, null, true>> => {
+export const getWieldWeaponSkills = (): ReadonlyMap<WieldWeaponSkills, Skill<SkillTypes.WieldWeapon, true, null, true>> => {
     return wieldWeaponSkills;
 };
 

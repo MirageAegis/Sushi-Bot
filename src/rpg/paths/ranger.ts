@@ -30,11 +30,10 @@ import { weapon as shortBow } from "../weapons/bows/short-bow";
 export const path: Path = {
     name: Paths.Ranger,
     description: "The Path of the Ranger is one that blesses those who tread it " +
-                 "with unparallelled vision and devastating armour piercing attacks. " +
-                 "This comes at the cost of being vulnerable to most attacks",
+        "with unparallelled vision and devastating armour piercing attacks. " +
+        "This comes at the cost of being vulnerable to most attacks",
     growths: {
         health: 50,
-        guard: 15,
         strength: 55,
         magic: 15,
         speed: 30,

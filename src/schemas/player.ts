@@ -24,11 +24,11 @@
 
 import { GuildMember, PermissionsBitField, Snowflake } from "discord.js";
 import { Schema, HydratedDocument, Model, model } from "mongoose";
-import { 
+import {
     AdministratorClasses, CLASS_1_LEVEL, CLASS_2_LEVEL, CasterClasses, Class,
     CommonClasses,
     PATH_LEVEL, Path, PathClasses, Paths, RECLASS_COST, RangerClasses, WarriorClasses,
-    getClasses, getPaths, pathNames 
+    getClasses, getPaths, pathNames
 } from "../rpg/types/class";
 import { path as pathless } from "../rpg/paths/pathless";
 import { MILLIS_PER_SEC } from "../util/format";
@@ -102,8 +102,21 @@ type Classes = {
  * The stats of a user.
  */
 export type Stats = {
+    health: number;
+    strength: number;
+    magic: number;
+    speed: number;
+    defence: number;
+    resistance: number;
+    dexterity: number;
+    luck: number;
+};
+
+/**
+ * The stats of a user.
+ */
+export type ReadonlyStats = {
     readonly health: number;
-    readonly guard: number;
     readonly strength: number;
     readonly magic: number;
     readonly speed: number;
@@ -175,9 +188,8 @@ interface PlayerI {
     dailyStreak: number;
 }
 
-const BASE_STATS: Stats = {
+const BASE_STATS: ReadonlyStats = {
     health: 30,
-    guard: 15,
     strength: 7,
     magic: 7,
     speed: 7,
@@ -269,7 +281,7 @@ export class Player {
      */
     // eslint-disable-next-line no-magic-numbers
     public static readonly masterKey: number = -1;
-    
+
     /**
      * The corresponding Mongo model used for reading and writing to the database.
      */
@@ -315,7 +327,7 @@ export class Player {
         if (typeof arg === "string" || arg instanceof String) {
             // Create new server document if a Snowflake was passed
             this.data = new Player.model({
-                _id: <string> arg,
+                _id: <string>arg,
                 classes: {
                     path: Paths.Pathless,
                     classes: []
@@ -327,7 +339,7 @@ export class Player {
             pathless.unlock(this);
         } else {
             // Otherwise use the document from the database
-            this.data = <HydratedDocument<PlayerI>> arg;
+            this.data = <HydratedDocument<PlayerI>>arg;
         }
         this.inAction = null;
     }
@@ -391,7 +403,7 @@ export class Player {
         } else {
             // Otherwise, fetch from the database
             const data: HydratedDocument<PlayerI> = await Player.model.findById(id);
-            
+
             // If the database didn't have the server,
             // create a new document
             server = data ? new Player(data) : new Player(id);
@@ -473,17 +485,7 @@ export class Player {
     }> {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
-        const stats: Stats = {
-            health: this.stats.health,
-            guard: this.stats.guard,
-            strength: this.stats.strength,
-            magic: this.stats.magic,
-            speed: this.stats.speed,
-            defence: this.stats.defence,
-            resistance: this.stats.resistance,
-            dexterity: this.stats.dexterity,
-            luck: this.stats.luck
-        };
+        const stats: Stats = this.stats;
         const level: number = this.data.level;
 
         // Do nothing if on cooldown
@@ -526,9 +528,8 @@ export class Player {
         }
 
         // Accumulated growths from levelling up
-        const growths = {
+        const growths: Stats = {
             health: 0,
-            guard: 0,
             strength: 0,
             magic: 0,
             speed: 0,
@@ -548,7 +549,6 @@ export class Player {
 
             // Update the growths
             growths.health += increases.health;
-            growths.guard += increases.guard;
             growths.strength += increases.strength;
             growths.magic += increases.magic;
             growths.speed += increases.speed;
@@ -564,7 +564,6 @@ export class Player {
         // Update the stats
         this.data.stats = {
             health: stats.health + growths.health,
-            guard: stats.guard + growths.guard,
             strength: stats.strength + growths.strength,
             magic: stats.magic + growths.magic,
             speed: stats.speed + growths.speed,
@@ -587,7 +586,7 @@ export class Player {
             // If the resulting level is past ano of the Class requirements and
             // the player is doesn't have the corresponding class, then they have a Class unlock
             classUnlock: this.level >= CLASS_1_LEVEL && !this.classes[0] ||
-                         this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
+                this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
             canLimitbreak: this.canLimitbreak
         };
     }
@@ -653,17 +652,7 @@ export class Player {
     }> {
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
-        const stats: Stats = {
-            health: this.stats.health,
-            guard: this.stats.guard,
-            strength: this.stats.strength,
-            magic: this.stats.magic,
-            speed: this.stats.speed,
-            defence: this.stats.defence,
-            resistance: this.stats.resistance,
-            dexterity: this.stats.dexterity,
-            luck: this.stats.luck
-        };
+        const stats: Stats = this.stats;
         const level: number = this.data.level;
         const streak: number = this.dailyStreak;
 
@@ -747,9 +736,8 @@ export class Player {
         }
 
         // Accumulated growths from levelling up
-        const growths = {
+        const growths: Stats = {
             health: 0,
-            guard: 0,
             strength: 0,
             magic: 0,
             speed: 0,
@@ -769,7 +757,6 @@ export class Player {
 
             // Update the growths
             growths.health += increases.health;
-            growths.guard += increases.guard;
             growths.strength += increases.strength;
             growths.magic += increases.magic;
             growths.speed += increases.speed;
@@ -785,7 +772,6 @@ export class Player {
         // Update the stats
         this.data.stats = {
             health: stats.health + growths.health,
-            guard: stats.guard + growths.guard,
             strength: stats.strength + growths.strength,
             magic: stats.magic + growths.magic,
             speed: stats.speed + growths.speed,
@@ -816,7 +802,7 @@ export class Player {
             // If the resulting level is past ano of the Class requirements and
             // the player is doesn't have the corresponding class, then they have a Class unlock
             classUnlock: this.level >= CLASS_1_LEVEL && !this.classes[0] ||
-                         this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
+                this.level >= CLASS_2_LEVEL && !this.classes[1] ? true : false,
             canLimitbreak: this.canLimitbreak
         };
     }
@@ -869,7 +855,6 @@ export class Player {
 
         // The rolls for each stat, ranges from 1~100
         const healthRoll: number = Math.ceil(Math.random() * 100);
-        const guardRoll: number = Math.ceil(Math.random() * 100);
         const strengthRoll: number = Math.ceil(Math.random() * 100);
         const magicRoll: number = Math.ceil(Math.random() * 100);
         const speedRoll: number = Math.ceil(Math.random() * 100);
@@ -881,7 +866,6 @@ export class Player {
         // if the roll falls within the growth rate, the stat gets increased
         return {
             health: healthRoll <= growths.health ? 1 : 0,
-            guard: guardRoll <= growths.guard ? 1 : 0,
             strength: strengthRoll <= growths.strength ? 1 : 0,
             magic: magicRoll <= growths.magic ? 1 : 0,
             speed: speedRoll <= growths.speed ? 1 : 0,
@@ -906,8 +890,8 @@ export class Player {
      * Whether a player can change Path or not.
      */
     public get canChangePath(): boolean {
-        return this.level >= PATH_LEVEL && 
-               (this.path === Paths.Pathless || this.balance >= RECLASS_COST);
+        return this.level >= PATH_LEVEL &&
+            (this.path === Paths.Pathless || this.balance >= RECLASS_COST);
     }
 
     /**
@@ -1118,7 +1102,6 @@ export class Player {
             return false;
         }
 
-        // TODO: Carry over overflowing exp
         // Reset the player's experience
         this.data.experience = 0;
         // Reset the player's level
@@ -1143,9 +1126,8 @@ export class Player {
         const allClasses: ReadonlyMap<PathClasses, Class<Paths, boolean>> = getClasses();
 
         // Start with the path growths
-        const growths = {
+        const growths: Stats = {
             health: path.growths.health,
-            guard: path.growths.guard,
             strength: path.growths.strength,
             magic: path.growths.magic,
             speed: path.growths.speed,
@@ -1166,7 +1148,6 @@ export class Player {
             }
 
             growths.health += cls.growths.health ?? 0;
-            growths.guard += cls.growths.guard ?? 0;
             growths.strength += cls.growths.strength ?? 0;
             growths.magic += cls.growths.magic ?? 0;
             growths.speed += cls.growths.speed ?? 0;
@@ -1197,7 +1178,7 @@ export class Player {
         if (this === target) {
             return [true, null];
         }
-        
+
         // The current timestamp in seconds
         const now: number = Math.floor(Date.now() / MILLIS_PER_SEC);
 
@@ -1224,7 +1205,7 @@ export class Player {
 
         return getWeaponClasses(
             // Wield weapon skills from the player's Path
-            ...getPaths().get(<Paths> this.path).wieldWeaponSkills.filter(s => wieldWeaponSkillNames.includes(s)),
+            ...getPaths().get(<Paths>this.path).wieldWeaponSkills.filter(s => wieldWeaponSkillNames.includes(s)),
             // Wield weapon skills from the player's Class(es)
             ...this.classes.map(c => classes.get(c).wieldWeaponSkills).flat()
         );
@@ -1312,11 +1293,10 @@ export class Player {
     /**
      * The stats of a player.
      */
-    public get stats(): Stats {
+    public get stats(): ReadonlyStats {
         // Return a copy of the stats
         return {
             health: this.data.stats.health,
-            guard: this.data.stats.guard,
             strength: this.data.stats.strength,
             magic: this.data.stats.magic,
             speed: this.data.stats.speed,

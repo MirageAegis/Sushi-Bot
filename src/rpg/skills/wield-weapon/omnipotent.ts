@@ -24,7 +24,7 @@
 
 import { Skill, SkillTypes, WieldWeaponSkills } from "../../types/skill";
 
-export const skill: Skill<SkillTypes.WieldWeapon, null, true> = {
+export const skill: Skill<SkillTypes.WieldWeapon, true, null, true> = {
     name: WieldWeaponSkills.Omnipotent,
     description: "Allows a unit to wield any weapon class and cast any type of magic",
     effect: null,
